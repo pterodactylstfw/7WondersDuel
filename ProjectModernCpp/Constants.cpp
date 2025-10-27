@@ -14,7 +14,6 @@ std::string colorToString(CardColor color){
         }
 }
 std::string resourceToString(ResourceType type) {
-    {
         switch (type) {
         case ResourceType::WOOD:     return "Wood";
         case ResourceType::CLAY:     return "Clay";
@@ -24,7 +23,6 @@ std::string resourceToString(ResourceType type) {
         case ResourceType::NONE:     return "None";
         default:                     return "Unknown";
         }
-    }
 }
 
 std::string scientificSymbolToString(ScientificSymbol symbol){

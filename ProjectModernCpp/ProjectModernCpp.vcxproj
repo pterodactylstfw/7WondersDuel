@@ -125,9 +125,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CardEffect.cpp" />
+    <ClCompile Include="Constants.cpp" />
     <ClCompile Include="ProjectModernCpp.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CardEffect.h" />
     <ClInclude Include="Constants.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

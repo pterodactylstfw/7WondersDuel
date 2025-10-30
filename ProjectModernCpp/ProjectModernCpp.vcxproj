@@ -125,11 +125,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Card.cpp" />
     <ClCompile Include="Constants.cpp" />
     <ClCompile Include="Cost.cpp" />
     <ClCompile Include="ProjectModernCpp.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Card.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="Cost.h" />
   </ItemGroup>

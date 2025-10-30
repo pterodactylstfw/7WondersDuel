@@ -8,13 +8,13 @@ class Wonder
 private:
 	std::string m_name;
 	Cost m_cost;
-	bool m_isConstructed;
+	bool m_isBuilt;
 	std::string m_effectDescription;
 	uint8_t m_victoryPoints;
 
 public:
 
-	Wonder(std::string&& name, Cost& cost) :m_name(name), m_cost(cost), m_isConstructed(false), m_effectDescription(""), m_victoryPoints(0) {}
+	Wonder(std::string&& name, Cost& cost);
 	
 	Wonder(const Wonder& other) = default;
 	

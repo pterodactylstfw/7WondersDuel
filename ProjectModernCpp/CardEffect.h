@@ -14,7 +14,7 @@ private:
 	int m_coinsPerWonder;
 	std::map<CardColor, int> m_coinsPerCardType;
 
-	int pointsPerWonder;
+	int m_pointsPerWonder;
 	std::map<CardColor, int> m_pointsPerCardType;
 
 	bool m_playAgain;

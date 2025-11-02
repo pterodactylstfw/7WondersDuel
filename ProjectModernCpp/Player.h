@@ -6,6 +6,9 @@
 #include <array>
 
 #include "Constants.h"
+#include "Wonder.h"
+#include "Card.h"
+#include "ResourceProduction.h"
 
 class Player
 {
@@ -31,7 +34,7 @@ public:
 
 	void addCard(std::unique_ptr<Card>&& card);
 	void addWonder(std::unique_ptr<Wonder>&& wonder, int index);
-	void constructWonder(int index, State_GameState& state);
+	//void constructWonder(int index, State_GameState& state);
 	void addProgressToken(std::unique_ptr<ProgressToken>&& token);
 
 	void addResource(ResourceType type, int qty);
@@ -43,5 +46,22 @@ public:
 	void addVictoryPoints(int points);
 	void setDiscountRaw(int discount);
 	void setDiscountManufactured(int discount);
+
+	bool canAfford(const Cost& cost, const Player& opponent) const;
+	int calculateResourceCost(const Cost& cost, const Player& opponent) const;
+	bool hasChainForCard(const Card& card) const;
+	bool canBuildCard(const Card& card, const Player& opponent) const;
+
+	std::map<ResourceType, int> getTotalResources() const;
+	//int getCardsOfType(const CardType& type) const;
+	int getConstructedWondersCount() const;
+	int getFinalScore(const Player& opponent) const;
+
+	bool hasScientificVictory() const;
+	int getMilitaryShields() const;
+	int getCoins() const;
+	std::string& getName() const;
+	std::array<std::unique_ptr<Wonder>, 4>& getWonders();
+	std::vector<std::unique_ptr<Wonder>>& getConstructedWonders() const;
 	
 };

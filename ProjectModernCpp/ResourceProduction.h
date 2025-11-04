@@ -24,5 +24,7 @@ public:
 	std::map<ResourceType, int> getTotalProduction() const;
 
 	bool isEmpty() const;
+
+	std::string getDescription() const;
 };
 

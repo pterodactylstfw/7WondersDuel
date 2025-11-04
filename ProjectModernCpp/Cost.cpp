@@ -2,6 +2,7 @@
 #include <sstream>
 #include <algorithm>
 #include <numeric>
+#include <compare>
 
 Cost::Cost() :m_coinCost(0) {}
 Cost::Cost(int coins) : m_coinCost(coins) {}
@@ -178,4 +179,88 @@ Cost Cost::applyCustomDiscount(const std::map<ResourceType, int>& discounts) con
     }
 
     return result;
+}
+Cost Cost::operator-(const Cost& discount) const {
+    Cost result = *this;
+    result.m_coinCost = std::max(0, result.m_coinCost - discount.m_coinCost);
+    for (const auto& [type, discountAmount] : discount.m_resourceCosts) {
+        auto it = result.m_resourceCosts.find(type);
+        if (it != result.m_resourceCosts.end()) {
+            it->second = std::max(0, it->second - discountAmount);
+            if (it->second == 0) {
+                result.m_resourceCosts.erase(it);
+            }
+        }
+    }
+    return result;
+}
+
+Cost& Cost::operator-=(const Cost& discount) {
+    *this = *this - discount;
+    return *this;
+}
+
+std::strong_ordering Cost::operator<=>(const Cost& other) const {
+    int thisTotal = m_coinCost + getTotalResourceCount();
+    int otherTotal = other.m_coinCost + other.getTotalResourceCount();
+    if (auto cmp = thisTotal <=> otherTotal; cmp != 0)
+        return cmp;
+    if (auto cmp = m_coinCost <=> other.m_coinCost; cmp != 0)
+        return cmp;
+
+    return m_resourceCosts <=> other.m_resourceCosts;
+}
+
+bool Cost::operator==(const Cost& other) const {
+    return m_coinCost == other.m_coinCost &&
+        m_resourceCosts == other.m_resourceCosts;
+}
+
+Cost Cost::operator+(const Cost& other) const {
+    Cost result = *this;
+    result.m_coinCost += other.m_coinCost;
+    for (const auto& [type, amount] : other.m_resourceCosts) {
+        result.m_resourceCosts[type] += amount;
+    }
+    return result;
+}
+
+Cost& Cost::operator+=(const Cost& other) {
+    *this = *this + other;
+    return *this;
+}
+
+Cost Cost::applyGeneralDiscount(int amount, const std::vector<ResourceType>& preferredOrder) const {
+    Cost result = *this;
+    int remaining = amount;
+
+    for (ResourceType type : preferredOrder) {
+        if (remaining <= 0) break;
+
+        auto it = result.m_resourceCosts.find(type);
+        if (it != result.m_resourceCosts.end()) {
+            int canDiscount = std::min(remaining, it->second);
+            it->second -= canDiscount;
+            remaining -= canDiscount;
+
+            if (it->second == 0) {
+                result.m_resourceCosts.erase(it);
+            }
+        }
+    }
+
+    return result;
+}
+
+Cost Cost::applyArchitectureDiscount(int amount) const {
+    return applyGeneralDiscount(amount);
+}
+
+Cost Cost::applyMasonryDiscount(int amount) const {
+    return applyGeneralDiscount(amount);
+}
+
+std::ostream& operator<<(std::ostream& os, const Cost& cost) {
+    os << cost.toString();
+    return os;
 }

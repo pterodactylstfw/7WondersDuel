@@ -23,7 +23,6 @@ public:
 	void setCoinCost(int coins);
 	void addResourceCost(ResourceType type, int quantity);
 
-	bool isFree() const;
 	bool hasResourceCost() const;
 	bool hasCoinCost() const;
 	int  getTotalResourceCount() const;
@@ -35,6 +34,7 @@ public:
 
 	Cost applyDiscount(ResourceType type, int amount) const;
 	Cost applyCustomDiscount(const std::map<ResourceType, int>& discounts) const;
+	Cost applyGeneralDiscount(int amount, const std::vector<ResourceType>& preferredOrder = {}) const;
 
 	Cost applyArchitectureDiscount(int amount = 2) const;
 	Cost applyMasonryDiscount(int amount = 2) const;
@@ -44,8 +44,8 @@ public:
 	Cost operator-(const Cost& discount) const;
 	Cost& operator-=(const Cost& discount);
 
-	auto operator<=>(const Cost& other) const;
-	bool operator==(const Cost& other) const = default;
+	std::strong_ordering operator<=>(const Cost& other) const;
+    bool operator==(const Cost& other) const;
 
 	friend std::ostream& operator<<(std::ostream& os, const Cost& cost);
 };

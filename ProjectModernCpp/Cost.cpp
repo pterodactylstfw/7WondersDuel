@@ -60,3 +60,13 @@ std::string Cost::toString() const {
     }
     return ss.str();
 }
+
+Cost Cost::operator+(const Cost& other) const
+{
+    Cost result = *this;
+    result.m_coinCost += other.m_coinCost;
+    for (const auto& [type, amount] : other.m_resourceCosts) {
+        result.m_resourceCosts[type] += amount;
+    }
+    return result;
+}

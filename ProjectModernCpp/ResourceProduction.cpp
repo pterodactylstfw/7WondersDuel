@@ -1,4 +1,5 @@
 #include "ResourceProduction.h"
+#include <sstream>
 
 void ResourceProduction::addFixedResource(ResourceType type, int quantity)
 {
@@ -39,4 +40,38 @@ std::map<ResourceType, int> ResourceProduction::getTotalProduction() const
 bool ResourceProduction::isEmpty() const
 {
 	return m_fixedResources.empty() && m_choices.empty();
+}
+
+std::string ResourceProduction::getDescription() const
+{
+	if (isEmpty()) {
+		return "";
+	}
+
+	std::stringstream ss;
+	bool firstElement = true;
+
+	for (const auto& pair : m_fixedResources) {
+		if (!firstElement) {
+			ss << ", ";
+		}
+		ss << pair.second << " " << resourceToString(pair.first); 
+		firstElement = false;
+	}
+
+	for (const auto& choiceGroup : m_choices) {
+		if (!firstElement) {
+			ss << ", ";
+		}
+
+		for (int i = 0; i < choiceGroup.size(); i++) {
+			ss << resourceToString(choiceGroup[i]);
+			if (i < choiceGroup.size() - 1) {
+				ss << "/"; 
+			}
+		}
+		firstElement = false;
+	}
+
+	return ss.str();
 }

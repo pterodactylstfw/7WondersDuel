@@ -10,7 +10,6 @@ public:
 	Cost();
 	Cost(int coins);
 	Cost(int coins, const std::map<ResourceType, int>& resources);
-
 	Cost(const Cost&) = default;
 	Cost& operator=(const Cost&) = default;
 	Cost(Cost&&) = default;
@@ -19,30 +18,22 @@ public:
 
 	int getCoinCost() const;
 	const std::map<ResourceType, int>& getResourceCosts() const;
-    int getResourceCost(ResourceType type) const;
-	
-    void setCoinCost(int coins);
-    void addResourceCost(ResourceType type, int quantity);
-	
+	int getResourceCost(ResourceType type) const;
+	bool isFree() const;
+	void setCoinCost(int coins);
+	void addResourceCost(ResourceType type, int quantity);
+
 	bool isFree() const;
 	bool hasResourceCost() const;
 	bool hasCoinCost() const;
-	int getTotalResourceCount() const;
+	int  getTotalResourceCount() const;
 
 	std::string toString() const;
 	std::string toShortString() const;
-	std::string toDetailedString() const;
-
-	bool canAfford(int availableCoins,
-		const std::map<ResourceType, int>& availableResources) const;
-	int calculateTradingCost(
-		const std::map<ResourceType, int>& playerResources,
-		const std::map<ResourceType, int>& opponentProduction,
-		const std::map<ResourceType, int>& tradingDiscounts = {}) const;
+	bool canAfford(int availableCoins, const std::map<ResourceType, int>& availableResources) const;
+	int calculateTradingCost(const std::map<ResourceType, int>& playerResources, const std::map<ResourceType, int>& opponentProduction, const std::map<ResourceType, int>& tradingDiscounts = {}) const;
 
 	Cost applyDiscount(ResourceType type, int amount) const;
-	Cost applyGeneralDiscount(int amount) const;
-	Cost applyGeneralDiscount(int amount, const std::vector<ResourceType>& preferredOrder) const;
 	Cost applyCustomDiscount(const std::map<ResourceType, int>& discounts) const;
 
 	Cost applyArchitectureDiscount(int amount = 2) const;

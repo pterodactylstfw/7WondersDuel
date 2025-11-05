@@ -1,14 +1,33 @@
 #include "ResourceProduction.h"
 #include <sstream>
 
-void ResourceProduction::addFixedResource(ResourceType type, int quantity)
+ResourceProduction::ResourceProduction(ResourceProduction&& other) noexcept :
+	m_fixedResources(std::move(other.m_fixedResources)),
+	m_choices(std::move(other.m_choices))
 {
-	this->m_fixedResources[type] += quantity;
 }
 
-void ResourceProduction::addChoice(std::vector<ResourceType>& options)
+ResourceProduction& ResourceProduction::operator=(ResourceProduction&& other) noexcept
+{
+	if (this != &other)
+	{
+		m_fixedResources = std::move(other.m_fixedResources);
+		m_choices = std::move(other.m_choices);
+	}
+	return *this;
+}
+
+
+ResourceProduction& ResourceProduction::addFixedResource(ResourceType type, int quantity)
+{
+	this->m_fixedResources[type] += quantity;
+	return *this; 
+}
+
+ResourceProduction& ResourceProduction::addChoice(const std::vector<ResourceType>& options)
 {
 	this->m_choices.push_back(options);
+	return *this; 
 }
 
 const std::map<ResourceType, int>& ResourceProduction::getFixedResources() const

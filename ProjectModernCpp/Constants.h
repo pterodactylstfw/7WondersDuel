@@ -41,13 +41,13 @@ enum class ResourceType {
 };
 
 enum class ScientificSymbol {
-    COMPASS,
-    GEAR,
-    TABLET,
-    SUNDIAL,
-    WHEEL,
-    MORTAR_PESTLE,
-    ASTROLABE,
+    ASTROLABE,      
+    SCALES,         
+    SUNDIAL,        
+    MORTAR_PESTLE,  
+    DRAFTING_COMPASS, 
+    QUILL_INKWELL,  
+    WHEEL,          
     NONE
 };
 

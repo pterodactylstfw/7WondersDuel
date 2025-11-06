@@ -130,6 +130,7 @@
     <ClCompile Include="Constants.cpp" />
     <ClCompile Include="Cost.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="GameState.cpp" />
     <ClCompile Include="ProjectModernCpp.cpp" />
     <ClCompile Include="ResourceProduction.cpp" />
     <ClCompile Include="Wonder.cpp" />
@@ -139,6 +140,7 @@
     <ClInclude Include="Card.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="Cost.h" />
+    <ClInclude Include="GameState.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="ResourceProduction.h" />
     <ClInclude Include="Wonder.h" />

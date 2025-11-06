@@ -127,6 +127,7 @@
   <ItemGroup>
     <ClCompile Include="CardEffect.cpp" />
     <ClCompile Include="Card.cpp" />
+    <ClCompile Include="CardFactory.cpp" />
     <ClCompile Include="Constants.cpp" />
     <ClCompile Include="Cost.cpp" />
     <ClCompile Include="GameState.cpp" />
@@ -137,6 +138,7 @@
   <ItemGroup>
     <ClInclude Include="CardEffect.h" />
     <ClInclude Include="Card.h" />
+    <ClInclude Include="CardFactory.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="Cost.h" />
     <ClInclude Include="GameState.h" />

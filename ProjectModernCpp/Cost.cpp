@@ -10,6 +10,18 @@ Cost::Cost(int coins, const std::map<ResourceType, int>& resources)
     : m_coinCost(coins), m_resourceCosts(resources) {
 }
 
+Cost& Cost::withCoinCost(int coins)
+{
+    m_coinCost = coins;
+	return *this;
+}
+
+Cost& Cost::withResourceCost(ResourceType type, int amount)
+{
+    m_resourceCosts[type] = amount;
+	return *this;
+}
+
 int Cost::getCoinCost() const {
     return m_coinCost;
 }
@@ -42,16 +54,6 @@ int Cost::getTotalResourceCount() const {
     return std::accumulate(m_resourceCosts.begin(), m_resourceCosts.end(), 0,
         [](int sum, const auto& pair) { return sum + pair.second; }
     );
-}
-
-void Cost::addResourceCost(ResourceType type, int quantity) {
-    if (type == ResourceType::NONE)
-        return;
-    m_resourceCosts[type] += quantity;
-}
-
-void Cost::setCoinCost(int coins) {
-    m_coinCost = coins;
 }
 
 std::string Cost::toString() const {

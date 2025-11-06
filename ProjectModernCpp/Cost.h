@@ -16,12 +16,13 @@ public:
 	Cost& operator=(Cost&&) = default;
 	~Cost() = default;
 
+	Cost& withCoinCost(int coins);
+	Cost& withResourceCost(ResourceType type, int amount);
+
 	int getCoinCost() const;
 	const std::map<ResourceType, int>& getResourceCosts() const;
 	int getResourceCost(ResourceType type) const;
 	bool isFree() const;
-	void setCoinCost(int coins);
-	void addResourceCost(ResourceType type, int quantity);
 
 	bool hasResourceCost() const;
 	bool hasCoinCost() const;

@@ -25,15 +25,9 @@ CardEffect& CardEffect::withScienceSymbol(ScientificSymbol symbol) noexcept
     return *this;
 }
 
-CardEffect& CardEffect::withDiscountRaw(int amount) noexcept
+CardEffect& CardEffect::withDiscount(ResourceType type, int amount)
 {
-    m_discountRaw = amount; 
-    return *this;
-}
-
-CardEffect& CardEffect::withDiscountManufactured(int amount) noexcept
-{
-    m_discountManufactured = amount;
+    m_discounts[type] += amount;
     return *this;
 }
 
@@ -111,8 +105,7 @@ bool CardEffect::isEmpty() const
 		m_victoryPoints == 0 &&
 		m_shields == 0 &&
 		m_baseCoins == 0 &&
-		m_discountRaw == 0 &&
-		m_discountManufactured == 0;
+		m_discounts.empty();
 }
 
 std::string CardEffect::getDescription() const
@@ -138,12 +131,12 @@ std::string CardEffect::getDescription() const
     if (m_scienceSymbol.has_value()) 
         ss << "Ofera simbolul stiintific: " << scientificSymbolToString(m_scienceSymbol.value()) << ". ";
 
-    if (m_discountRaw.has_value()) 
-        ss << "Discount de " << m_discountRaw.value() << " la resursele brute. ";
-    
-    if (m_discountManufactured.has_value()) 
-        ss << "Discount de " << m_discountManufactured.value() << " la resursele manufacturate. ";
-    
+    if(!m_discounts.empty()) {
+        for (const auto& [type, amount] : m_discounts) {
+            ss << "Ofera reducere de " << amount << " la resursa " << resourceToString(type) << ". ";
+        }
+	}
+
     if (m_coinsPerWonder.has_value()) 
         ss << "Ofera " << m_coinsPerWonder.value() << " monede/minune construita. ";
     

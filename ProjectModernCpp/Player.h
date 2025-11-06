@@ -53,7 +53,7 @@ public:
 	bool canBuildCard(const Card& card, const Player& opponent) const;
 
 	std::map<ResourceType, int> getTotalResources() const;
-	//int getCardsOfType(const CardType& type) const;
+	int getCardsOfType(const CardColor& color) const;
 	int getConstructedWondersCount() const;
 	int getFinalScore(const Player& opponent) const;
 

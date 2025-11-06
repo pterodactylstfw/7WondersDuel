@@ -129,6 +129,7 @@
     <ClCompile Include="Card.cpp" />
     <ClCompile Include="Constants.cpp" />
     <ClCompile Include="Cost.cpp" />
+    <ClCompile Include="Player.cpp" />
     <ClCompile Include="GameState.cpp" />
     <ClCompile Include="ProjectModernCpp.cpp" />
     <ClCompile Include="ResourceProduction.cpp" />

@@ -136,6 +136,7 @@
     <ClCompile Include="Wonder.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\nlohmann\json.hpp" />
     <ClInclude Include="CardEffect.h" />
     <ClInclude Include="Card.h" />
     <ClInclude Include="Constants.h" />

@@ -13,16 +13,21 @@ private:
 public:
 	ResourceProduction() = default;
 
-	void addFixedResource(ResourceType type, int quantity);
-	void addChoice(std::vector<ResourceType>& options);
+	ResourceProduction(const ResourceProduction& other) = default;
+	ResourceProduction& operator=(const ResourceProduction& other) = default;
+
+	ResourceProduction(ResourceProduction&& other) noexcept;
+	ResourceProduction& operator=(ResourceProduction&& other) noexcept;
+
+	ResourceProduction& addFixedResource(ResourceType type, int quantity);
+	ResourceProduction& addChoice(const std::vector<ResourceType>& options);
 
 	const std::map<ResourceType, int>& getFixedResources() const;
 	const std::vector<std::vector<ResourceType>>& getChoices() const;
 
 	bool hasChoices() const;
-
 	std::map<ResourceType, int> getTotalProduction() const;
-
 	bool isEmpty() const;
+	std::string getDescription() const;
 };
 

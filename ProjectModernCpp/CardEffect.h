@@ -2,40 +2,69 @@
 
 #include <iostream>
 #include <map>
+#include <optional>
 
 #include "Constants.h"
+#include "ResourceProduction.h"
 
 class CardEffect
 {
 private:
 
-	bool m_grantsProgressToken;
+	std::optional<int> m_victoryPoints;
+	std::optional<int> m_shields;
+	std::optional<int> m_baseCoins;
 
-	int m_coinsPerWonder;
+	std::optional<ScientificSymbol> m_scienceSymbol;
+
+	std::optional<int> m_discountRaw;
+	std::optional<int> m_discountManufactured;
+
+	ResourceProduction m_production;
+
+	std::optional<int> m_coinsPerWonder = 0;
 	std::map<CardColor, int> m_coinsPerCardType;
 
-	int m_pointsPerWonder;
+	std::optional<int> m_pointsPerWonder = 0;
 	std::map<CardColor, int> m_pointsPerCardType;
 
-	bool m_playAgain;
-	bool m_countOpponentCards;
-	bool m_copyGuild;
-
-	// ResourceProduction m_production; 
-	ScientificSymbol m_scienceSymbol;
-
-	int m_victoryPoints;
-	int m_shields;
-	int m_baseCoins;
-
-	int m_discountRaw;
-	int m_discountManufactured;
+	std::optional<bool> m_playAgain = false;
+	std::optional<bool> m_grantsProgressToken = false;
+	std::optional<bool> m_countOpponentCards = false;
+	std::optional<bool> m_copyGuild = false;
 
 
 public:
 
 	CardEffect() = default;
+
+	CardEffect& withVictoryPoints(int points) noexcept;
+	CardEffect& withShields(int shields) noexcept;
+	CardEffect& withBaseCoins(int coins) noexcept;
+
+	CardEffect& withScienceSymbol(ScientificSymbol symbol) noexcept;
+
+	CardEffect& withDiscountRaw(int amount) noexcept;
+	CardEffect& withDiscountManufactured(int amount) noexcept;
+
+	CardEffect& withProduction(const ResourceProduction& prod);
+	CardEffect& withProduction(ResourceProduction&& prod);
+
+	CardEffect& withPointsPerWonder(int points) noexcept;
+	CardEffect& withPointsPerCardType(CardColor color, int points);
+
+	CardEffect& withCoinsPerWonder(int coins) noexcept;
+	CardEffect& withCoinsPerCardType(CardColor color, int coins);
+
+	CardEffect& grantsPlayAgain() noexcept;
+	CardEffect& grantsProgressToken() noexcept;
+	CardEffect& grantsGuildCopy() noexcept;
+	CardEffect& countsOpponentCards() noexcept;
+
+
 	bool isEmpty() const;
+	
+	std::string getDescription() const;
 
 };
 

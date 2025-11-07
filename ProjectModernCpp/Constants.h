@@ -2,6 +2,8 @@
 #include<string>
 
 namespace GameConstants {
+
+    constexpr uint8_t NUMBER_OF_PLAYERS = 2;
     constexpr uint8_t STARTING_COINS = 7;
     constexpr uint8_t CARDS_PER_AGE = 20;
     constexpr uint8_t MAX_WONDERS_TOTAL = 7;

@@ -127,16 +127,20 @@
   <ItemGroup>
     <ClCompile Include="CardEffect.cpp" />
     <ClCompile Include="Card.cpp" />
+    <ClCompile Include="CardFactory.cpp" />
     <ClCompile Include="Constants.cpp" />
     <ClCompile Include="Cost.cpp" />
+    <ClCompile Include="Player.cpp" />
     <ClCompile Include="GameState.cpp" />
     <ClCompile Include="ProjectModernCpp.cpp" />
     <ClCompile Include="ResourceProduction.cpp" />
     <ClCompile Include="Wonder.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\nlohmann\json.hpp" />
     <ClInclude Include="CardEffect.h" />
     <ClInclude Include="Card.h" />
+    <ClInclude Include="CardFactory.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="Cost.h" />
     <ClInclude Include="GameState.h" />

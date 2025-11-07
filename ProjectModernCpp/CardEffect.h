@@ -17,8 +17,7 @@ private:
 
 	std::optional<ScientificSymbol> m_scienceSymbol;
 
-	std::optional<int> m_discountRaw;
-	std::optional<int> m_discountManufactured;
+	std::map<ResourceType, int> m_discounts;
 
 	ResourceProduction m_production;
 
@@ -44,8 +43,7 @@ public:
 
 	CardEffect& withScienceSymbol(ScientificSymbol symbol) noexcept;
 
-	CardEffect& withDiscountRaw(int amount) noexcept;
-	CardEffect& withDiscountManufactured(int amount) noexcept;
+	CardEffect& withDiscount(ResourceType type, int amount);
 
 	CardEffect& withProduction(const ResourceProduction& prod);
 	CardEffect& withProduction(ResourceProduction&& prod);

@@ -24,6 +24,8 @@ public:
 	Card(std::string_view name, CardColor color, uint8_t age, Cost cost, CardEffect effect,
 		std::optional<std::string> freeChainFrom, std::optional<std::string> providesChainTo);
 
+	Card(std::string_view name, CardColor color, uint8_t age, Cost cost, CardEffect effect);
+
 	Card(const Card& other) = default;
 
 	Card& operator = (const Card& other) = default;

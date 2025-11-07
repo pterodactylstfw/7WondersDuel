@@ -27,15 +27,14 @@ std::string resourceToString(ResourceType type) {
 
 std::string scientificSymbolToString(ScientificSymbol symbol){
     switch (symbol) {
-    case ScientificSymbol::COMPASS:        return "Compass";
-    case ScientificSymbol::GEAR:           return "Gear";
-    case ScientificSymbol::TABLET:         return "Tablet";
-    case ScientificSymbol::SUNDIAL:        return "Sundial";
-    case ScientificSymbol::WHEEL:          return "Wheel";
-    case ScientificSymbol::MORTAR_PESTLE:  return "Mortar & Pestle";
-    case ScientificSymbol::ASTROLABE:      return "Astrolabe";
-    case ScientificSymbol::NONE:           return "None";
-    default:                               return "Unknown";
+	case ScientificSymbol::ASTROLABE:        return "Astrolabe";
+	case ScientificSymbol::SCALES:           return "Scales";
+	case ScientificSymbol::SUNDIAL:          return "Sundial";
+	case ScientificSymbol::MORTAR_PESTLE:    return "Mortar and Pestle";
+	case ScientificSymbol::DRAFTING_COMPASS: return "Drafting Compass";
+	case ScientificSymbol::QUILL_INKWELL:    return "Quill and Inkwell";
+	case ScientificSymbol::WHEEL:            return "Wheel";
+    default:                                 return "Unknown";
     }
 }
 

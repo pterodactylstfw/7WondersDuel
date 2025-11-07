@@ -11,6 +11,10 @@ Card::Card(std::string_view name, CardColor color, uint8_t age, Cost cost, CardE
 	m_providesChainTo(std::move(providesChainTo)) {
 }
 
+Card::Card(std::string_view name, CardColor color, uint8_t age, Cost cost, CardEffect effect):
+	Card(name, color, age, std::move(cost), std::move(effect), std::nullopt, std::nullopt) {
+}
+
 bool Card::canBeBuiltFreelyAfter(const Card& previousCard) const
 {
 	return (m_freeChainFrom == previousCard.getName());

@@ -25,8 +25,7 @@ private:
 	std::vector< std::unique_ptr<ProgressToken>> progressTokens;
 
 	ResourceProduction resourceProduction;
-	int discountRaw;
-	int discountManufactured;
+	std::map<ResourceType, int> tradeDiscounts;
 
 public:
 	

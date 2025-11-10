@@ -25,8 +25,7 @@ private:
 	std::vector< std::unique_ptr<ProgressToken>> progressTokens;
 
 	ResourceProduction resourceProduction;
-	int discountRaw;
-	int discountManufactured;
+	std::map<ResourceType, int> tradeDiscounts;
 
 public:
 	
@@ -38,14 +37,14 @@ public:
 	void addProgressToken(std::unique_ptr<ProgressToken>&& token);
 
 	void addResource(ResourceType type, int qty);
-	void addResourceChoice(const std::vector<ResourceType>& choices);
+	void addResourceChoice(std::vector<ResourceType>& choices);
 	void addCoins(int amount);
 	bool removeCoins(int amount);
 	void addMilitaryShields(int shields);
 	void addScientificSymbol(ScientificSymbol symbol);
 	void addVictoryPoints(int points);
-	void setDiscountRaw(int discount);
-	void setDiscountManufactured(int discount);
+	//void setDiscountRaw(int discount);
+	//void setDiscountManufactured(int discount);
 
 	bool canAfford(const Cost& cost, const Player& opponent) const;
 	int calculateResourceCost(const Cost& cost, const Player& opponent) const;

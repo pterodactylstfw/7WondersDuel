@@ -14,7 +14,7 @@ void Player::addWonder(std::unique_ptr<Wonder>&& wonder, int index)
 	wonders[index] = std::move(wonder);
 }
 
-void Player::addProgressToken(std::unique_ptr<ProgressToken>&& token)
+void Player::addProgressToken(std::unique_ptr<ProgressTokenType>&& token)
 {
 	progressTokens.push_back(std::move(token));
 }

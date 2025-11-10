@@ -20,5 +20,23 @@ public:
 	ProgressToken(ProgressToken&&) noexcept = default;
 	ProgressToken& operator=(ProgressToken&&) noexcept = default;
 	~ProgressToken() = default;
+
+	ProgressTokenType getType() const;
+	std::string_view getName() const;
+	std::string_view getDescription() const;
+	uint8_t getVictoryPoints() const;
+	bool isActive() const;
+
+	void setActive(bool active);
+
+	void displayInfo() const;
+	std::string toString() const;
+
+	auto operator<=>(const ProgressToken& other) const = default;
+	bool operator==(const ProgressToken& other) const = default;
+
+	static std::vector<ProgressToken> createAllTokens();
+	static ProgressToken createToken(ProgressTokenType type);
+	friend std::ostream& operator<<(std::ostream& os, const ProgressToken& token);
 };
 

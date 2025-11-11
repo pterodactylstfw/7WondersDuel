@@ -376,3 +376,188 @@ std::vector<std::unique_ptr<Card>> CardFactory::createAgeIIDeck()
 
 	return ageIIDeck;
 }
+
+std::vector<std::unique_ptr<Card>> CardFactory::createAgeIIIDeck()
+{
+	std::vector<std::unique_ptr<Card>> ageIIIDeck;
+	ageIIIDeck.reserve(20);
+
+	ageIIIDeck.push_back(std::make_unique<Card>(
+		"Arsenal", CardColor::RED, 3,
+		Cost().withResourceCost(ResourceType::CLAY, 3)
+			  .withResourceCost(ResourceType::WOOD, 2),
+		CardEffect().withShields(3)
+	));
+
+	ageIIIDeck.push_back(std::make_unique<Card>(
+		"Courthouse", CardColor::RED, 3,
+		Cost().withCoinCost(8),
+		CardEffect().withShields(3)
+	));
+
+	ageIIIDeck.push_back(std::make_unique<Card>(
+		"Academy", CardColor::GREEN, 3,
+		Cost().withResourceCost(ResourceType::STONE, 1)
+			  .withResourceCost(ResourceType::WOOD, 1)
+			  .withResourceCost(ResourceType::GLASS, 2),
+		CardEffect().withScienceSymbol(ScientificSymbol::SUNDIAL)
+					.withVictoryPoints(3)
+	));
+
+	ageIIIDeck.push_back(std::make_unique<Card>(
+		"Study", CardColor::GREEN, 3,
+		Cost().withResourceCost(ResourceType::WOOD, 2)
+			  .withResourceCost(ResourceType::GLASS, 1)
+			  .withResourceCost(ResourceType::PAPYRUS, 1),
+		CardEffect().withScienceSymbol(ScientificSymbol::SUNDIAL)
+					.withVictoryPoints(3)
+	));
+
+	ageIIIDeck.push_back(std::make_unique<Card>(
+		"Chamber of Commerce", CardColor::YELLOW, 3,
+		Cost().withResourceCost(ResourceType::PAPYRUS, 2),
+		CardEffect().withCoinsPerCardType(CardColor::GREY, 3)
+					.withVictoryPoints(3)
+	));
+
+	ageIIIDeck.push_back(std::make_unique<Card>(
+		"Port", CardColor::YELLOW, 3,
+		Cost().withResourceCost(ResourceType::WOOD, 1)
+			  .withResourceCost(ResourceType::GLASS, 1)
+			  .withResourceCost(ResourceType::PAPYRUS, 1),
+		CardEffect().withCoinsPerCardType(CardColor::BROWN, 2)
+					.withVictoryPoints(3)
+	));
+
+	ageIIIDeck.push_back(std::make_unique<Card>(
+		"Armory", CardColor::YELLOW, 3,
+		Cost().withResourceCost(ResourceType::STONE, 2)
+			  .withResourceCost(ResourceType::GLASS, 1),
+		CardEffect().withCoinsPerCardType(CardColor::RED, 1)
+					.withVictoryPoints(3)
+	));
+
+	ageIIIDeck.push_back(std::make_unique<Card>(
+		"Palace", CardColor::BLUE, 3,
+		Cost().withResourceCost(ResourceType::CLAY, 1)
+			  .withResourceCost(ResourceType::STONE, 1)
+			  .withResourceCost(ResourceType::WOOD, 1)
+			  .withResourceCost(ResourceType::GLASS, 2),
+		CardEffect().withVictoryPoints(7)
+	));
+
+	ageIIIDeck.push_back(std::make_unique<Card>(
+		"Town Hall", CardColor::BLUE, 3,
+		Cost().withResourceCost(ResourceType::STONE, 3)
+			  .withResourceCost(ResourceType::WOOD, 2),
+		CardEffect().withVictoryPoints(7)
+	));
+
+	ageIIIDeck.push_back(std::make_unique<Card>(
+		"Obelisk", CardColor::BLUE, 3,
+		Cost().withResourceCost(ResourceType::STONE, 2)
+			  .withResourceCost(ResourceType::GLASS, 1),
+		CardEffect().withVictoryPoints(5)
+	));
+
+	ageIIIDeck.push_back(std::make_unique<Card>(
+		"Fortifications", CardColor::RED, 3,
+		Cost().withResourceCost(ResourceType::STONE, 2)
+			  .withResourceCost(ResourceType::CLAY, 1)
+			  .withResourceCost(ResourceType::PAPYRUS, 1),
+		CardEffect().withShields(2),
+		"Palisade",
+		std::nullopt
+	));
+
+	ageIIIDeck.push_back(std::make_unique<Card>(
+		"Siege Workshop", CardColor::RED, 3,
+		Cost().withResourceCost(ResourceType::WOOD, 3)
+			  .withResourceCost(ResourceType::GLASS, 1),
+		CardEffect().withShields(2),
+		"Archery Range",
+		std::nullopt
+	));
+
+	ageIIIDeck.push_back(std::make_unique<Card>(
+		"Circus", CardColor::RED, 3,
+		Cost().withResourceCost(ResourceType::CLAY, 2)
+			  .withResourceCost(ResourceType::STONE, 2),
+		CardEffect().withShields(2),
+		"Parade Ground",
+		std::nullopt
+	));
+
+	ageIIIDeck.push_back(std::make_unique<Card>(
+		"University", CardColor::GREEN, 3,
+		Cost().withResourceCost(ResourceType::CLAY, 1)
+			  .withResourceCost(ResourceType::GLASS, 1)
+			  .withResourceCost(ResourceType::PAPYRUS, 1),
+		CardEffect().withScienceSymbol(ScientificSymbol::ASTROLABE)
+					.withVictoryPoints(2),
+		"School",
+		std::nullopt
+	));
+
+	ageIIIDeck.push_back(std::make_unique<Card>(
+		"Observatory", CardColor::GREEN, 3,
+		Cost().withResourceCost(ResourceType::STONE, 1)
+			  .withResourceCost(ResourceType::PAPYRUS, 2),
+		CardEffect().withScienceSymbol(ScientificSymbol::ASTROLABE)
+					.withVictoryPoints(2),
+		"Laboratory",
+		std::nullopt
+	));
+
+	ageIIIDeck.push_back(std::make_unique<Card>(
+		"Gardens", CardColor::BLUE, 3,
+		Cost().withResourceCost(ResourceType::CLAY, 2)
+			  .withResourceCost(ResourceType::WOOD, 2),
+		CardEffect().withVictoryPoints(6),
+		"Statue",
+		std::nullopt
+	));
+
+	ageIIIDeck.push_back(std::make_unique<Card>(
+		"Pantheon", CardColor::BLUE, 3,
+		Cost().withResourceCost(ResourceType::CLAY, 1)
+			  .withResourceCost(ResourceType::WOOD, 1)
+			  .withResourceCost(ResourceType::PAPYRUS, 2),
+		CardEffect().withVictoryPoints(6),
+		"Temple",
+		std::nullopt
+	));
+
+	ageIIIDeck.push_back(std::make_unique<Card>(
+		"Senate", CardColor::BLUE, 3,
+		Cost().withResourceCost(ResourceType::CLAY, 2)
+			  .withResourceCost(ResourceType::STONE, 1)
+			  .withResourceCost(ResourceType::PAPYRUS, 1),
+		CardEffect().withVictoryPoints(5),
+		"Rostrum",
+		std::nullopt
+	));
+
+	ageIIIDeck.push_back(std::make_unique<Card>(
+		"Lighthouse", CardColor::YELLOW, 3,
+		Cost().withResourceCost(ResourceType::CLAY, 2)
+			  .withResourceCost(ResourceType::GLASS, 1),
+		CardEffect().withCoinsPerCardType(CardColor::YELLOW, 1)
+					.withVictoryPoints(3),
+		"Tavern",
+		std::nullopt
+	));
+
+	ageIIIDeck.push_back(std::make_unique<Card>(
+		"Arena", CardColor::YELLOW, 3,
+		Cost().withResourceCost(ResourceType::CLAY, 1)
+			  .withResourceCost(ResourceType::STONE, 1)
+			  .withResourceCost(ResourceType::WOOD, 1),
+		CardEffect().withCoinsPerWonder(2)
+					.withVictoryPoints(3),
+		"Brewery",
+		std::nullopt
+	));
+
+	return ageIIIDeck;
+}

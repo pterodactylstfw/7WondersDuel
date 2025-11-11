@@ -21,16 +21,16 @@ private:
 
 	ResourceProduction m_production;
 
-	std::optional<int> m_coinsPerWonder = 0;
+	std::optional<int> m_coinsPerWonder;
 	std::map<CardColor, int> m_coinsPerCardType;
 
-	std::optional<int> m_pointsPerWonder = 0;
+	std::optional<int> m_pointsPerWonder;
 	std::map<CardColor, int> m_pointsPerCardType;
 
-	std::optional<bool> m_playAgain = false;
-	std::optional<bool> m_grantsProgressToken = false;
-	std::optional<bool> m_countOpponentCards = false;
-	std::optional<bool> m_copyGuild = false;
+	std::optional<bool> m_playAgain;
+	std::optional<bool> m_grantsProgressToken;
+	std::optional<bool> m_countOpponentCards;
+	std::optional<bool> m_copyGuild;
 
 
 public:

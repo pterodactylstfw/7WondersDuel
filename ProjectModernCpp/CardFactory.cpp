@@ -561,3 +561,76 @@ std::vector<std::unique_ptr<Card>> CardFactory::createAgeIIIDeck()
 
 	return ageIIIDeck;
 }
+
+std::vector<std::unique_ptr<Card>> CardFactory::createGuildDeck()
+{
+	std::vector<std::unique_ptr<Card>> guildDeck;
+	guildDeck.reserve(7);
+
+	guildDeck.push_back(std::make_unique<Card>(
+		"Merchants Guild", CardColor::PURPLE, 3,
+		Cost().withResourceCost(ResourceType::CLAY, 1)
+			  .withResourceCost(ResourceType::WOOD, 1)
+			  .withResourceCost(ResourceType::GLASS, 1)
+			  .withResourceCost(ResourceType::PAPYRUS, 1),
+		CardEffect().withCoinsPerCardType(CardColor::YELLOW, 1)
+					.withPointsPerCardType(CardColor::YELLOW, 1)
+	));
+
+	guildDeck.push_back(std::make_unique<Card>(
+		"Shipowners Guild", CardColor::PURPLE, 3,
+		Cost().withResourceCost(ResourceType::CLAY, 1)
+			  .withResourceCost(ResourceType::STONE, 1)
+			  .withResourceCost(ResourceType::GLASS, 1)
+			  .withResourceCost(ResourceType::PAPYRUS, 1),
+		CardEffect().withCoinsPerCardType(CardColor::BROWN, 1)
+					.withCoinsPerCardType(CardColor::GREY, 1)
+					.withPointsPerCardType(CardColor::BROWN, 1)
+					.withPointsPerCardType(CardColor::GREY, 1)
+	));
+
+	guildDeck.push_back(std::make_unique<Card>(
+		"Builders Guild", CardColor::PURPLE, 3,
+		Cost().withResourceCost(ResourceType::STONE, 2)
+			  .withResourceCost(ResourceType::CLAY, 1)
+			  .withResourceCost(ResourceType::WOOD, 1)
+			  .withResourceCost(ResourceType::GLASS, 1),
+		CardEffect().withPointsPerWonder(2)
+	));
+
+	guildDeck.push_back(std::make_unique<Card>(
+		"Magistrates Guild", CardColor::PURPLE, 3,
+		Cost().withResourceCost(ResourceType::WOOD, 2)
+			  .withResourceCost(ResourceType::CLAY, 1)
+			  .withResourceCost(ResourceType::PAPYRUS, 1),
+		CardEffect().withCoinsPerCardType(CardColor::BLUE, 1)
+					.withPointsPerCardType(CardColor::BLUE, 1)
+	));
+
+	guildDeck.push_back(std::make_unique<Card>(
+		"Scientists Guild", CardColor::PURPLE, 3,
+		Cost().withResourceCost(ResourceType::CLAY, 2)
+			  .withResourceCost(ResourceType::WOOD, 2),
+		CardEffect().withCoinsPerCardType(CardColor::GREEN, 1)
+					.withPointsPerCardType(CardColor::GREEN, 1)
+	));
+
+	guildDeck.push_back(std::make_unique<Card>(
+		"Moneylenders Guild", CardColor::PURPLE, 3,
+		Cost().withResourceCost(ResourceType::STONE, 2)
+			  .withResourceCost(ResourceType::WOOD, 2),
+		CardEffect() // TO ADD
+	));
+
+	guildDeck.push_back(std::make_unique<Card>(
+		"Tacticians Guild", CardColor::PURPLE, 3,
+		Cost().withResourceCost(ResourceType::STONE, 2)
+			  .withResourceCost(ResourceType::CLAY, 1)
+			  .withResourceCost(ResourceType::PAPYRUS, 1),
+		CardEffect().withCoinsPerCardType(CardColor::RED, 1)
+					.withPointsPerCardType(CardColor::RED, 1)
+	));
+
+	return guildDeck;
+}
+

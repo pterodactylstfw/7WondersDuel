@@ -2,6 +2,9 @@
 #include "Constants.h"
 #include <map>
 #include <vector>
+
+using json = nlohmann::json;
+
 class Cost {
 private:
 	int m_coinCost;
@@ -49,4 +52,7 @@ public:
     bool operator==(const Cost& other) const;
 
 	friend std::ostream& operator<<(std::ostream& os, const Cost& cost);
+
+	friend void to_json(json& j, const Cost& cost);
+	friend void from_json(const json& j, Cost& cost);
 };

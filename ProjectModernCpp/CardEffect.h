@@ -7,6 +7,8 @@
 #include "Constants.h"
 #include "ResourceProduction.h"
 
+using json = nlohmann::json;
+
 class CardEffect
 {
 private:
@@ -63,6 +65,9 @@ public:
 	bool isEmpty() const;
 	
 	std::string getDescription() const;
+
+	friend void to_json(json& j, const CardEffect& cardEffect);
+	friend void from_json(const json& j, CardEffect& cardEffect);
 
 };
 

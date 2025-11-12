@@ -169,3 +169,74 @@ std::string CardEffect::getDescription() const
     
     return ss.str();
 }
+
+void to_json(json& j, const CardEffect& cardEffect)
+{
+    j = json{ {"victoryPoints", cardEffect.m_victoryPoints},
+        {"shields", cardEffect.m_shields},
+        {"baseCoins", cardEffect.m_baseCoins},
+        {"scienceSymbol", cardEffect.m_scienceSymbol},
+        {"discounts", cardEffect.m_discounts},
+        {"production", cardEffect.m_production},
+        {"coinsPerWonder", cardEffect.m_coinsPerWonder},
+        {"coinsPerCardType", cardEffect.m_coinsPerCardType},
+        {"pointsPerWonder", cardEffect.m_pointsPerWonder},
+        {"pointsPerCardType", cardEffect.m_pointsPerCardType},
+        {"playAgain", cardEffect.m_playAgain},
+        {"grantsProgressToken", cardEffect.m_grantsProgressToken},
+        {"countOpponentCards", cardEffect.m_countOpponentCards},
+        {"copyGuild", cardEffect.m_copyGuild}
+    };
+}
+
+void from_json(const json& j, CardEffect& cardEffect)
+{
+
+    cardEffect.m_victoryPoints = j.contains("victoryPoints") && !j["victoryPoints"].is_null()
+        ? std::optional<int>(j["victoryPoints"].get<int>())
+		: std::nullopt; // schelet explicat pt optional : daca exista cheia "victoryPoints" si val!=null
+                            //, atunci initializeaza m_victoryPoints cu valoarea din json, altfel pune nullopt
+
+
+    cardEffect.m_shields = j.contains("shields") && !j["shields"].is_null()
+        ? std::optional<int>(j["shields"].get<int>())
+        : std::nullopt;
+
+    cardEffect.m_baseCoins = j.contains("baseCoins") && !j["baseCoins"].is_null()
+        ? std::optional<int>(j["baseCoins"].get<int>())
+        : std::nullopt;
+
+    cardEffect.m_scienceSymbol = j.contains("scienceSymbol") && !j["scienceSymbol"].is_null()
+        ? std::optional<ScientificSymbol>(j["scienceSymbol"].get<ScientificSymbol>())
+        : std::nullopt;
+
+    cardEffect.m_playAgain = j.contains("playAgain") && !j["playAgain"].is_null()
+        ? std::optional<bool>(j["playAgain"].get<bool>())
+        : std::nullopt;
+
+
+    cardEffect.m_grantsProgressToken = j.contains("grantsProgressToken") && !j["grantsProgressToken"].is_null()
+        ? std::optional<bool>(j["grantsProgressToken"].get<bool>())
+        : std::nullopt;
+
+    cardEffect.m_countOpponentCards = j.contains("countOpponentCards") && !j["countOpponentCards"].is_null()
+        ? std::optional<bool>(j["countOpponentCards"].get<bool>())
+        : std::nullopt;
+
+    cardEffect.m_copyGuild = j.contains("copyGuild") && !j["copyGuild"].is_null()
+        ? std::optional<bool>(j["copyGuild"].get<bool>())
+        : std::nullopt;
+
+    cardEffect.m_coinsPerWonder = j.contains("coinsPerWonder") && !j["coinsPerWonder"].is_null()
+        ? std::optional<int>(j["coinsPerWonder"].get<int>())
+        : std::nullopt;
+
+    cardEffect.m_pointsPerWonder = j.contains("pointsPerWonder") && !j["pointsPerWonder"].is_null()
+        ? std::optional<int>(j["pointsPerWonder"].get<int>())
+        : std::nullopt;
+
+    cardEffect.m_discounts = j.value("discounts", std::map<ResourceType, int>{});
+    cardEffect.m_production = j.value("production", ResourceProduction{});
+    cardEffect.m_coinsPerCardType = j.value("coinsPerCardType", std::map<CardColor, int>{});
+    cardEffect.m_pointsPerCardType = j.value("pointsPerCardType", std::map<CardColor, int>{});
+}

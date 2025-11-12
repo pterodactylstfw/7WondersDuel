@@ -1,5 +1,8 @@
 ﻿#pragma once
 #include<string>
+#include "../include/nlohmann/json.hpp"
+
+using json = nlohmann::json;
 
 namespace GameConstants {
 
@@ -31,6 +34,20 @@ enum class CardColor {
     NONE
 };
 
+NLOHMANN_JSON_SERIALIZE_ENUM(CardColor,
+    {
+        {CardColor::BROWN, "Brown"},
+        {CardColor::GREY, "Grey"},
+        {CardColor::BLUE, "Blue"},
+        {CardColor::GREEN, "Green"},
+        {CardColor::YELLOW, "Yellow"},
+        {CardColor::RED, "Red"},
+        {CardColor::PURPLE, "Purple"},
+        {CardColor::NONE, "None"}
+    }
+);
+
+
 enum class ResourceType {
     WOOD,       
     CLAY,       
@@ -39,6 +56,18 @@ enum class ResourceType {
     PAPYRUS,    
     NONE
 };
+
+NLOHMANN_JSON_SERIALIZE_ENUM(ResourceType,
+    {
+        {ResourceType::WOOD, "Wood"},
+        {ResourceType::CLAY, "Clay"},
+        {ResourceType::STONE, "Stone"},
+        {ResourceType::GLASS, "Glass"},
+        {ResourceType::PAPYRUS, "Papyrus"},
+        {ResourceType::NONE, "None"}
+    }
+);
+
 
 enum class ScientificSymbol {
     ASTROLABE,      
@@ -51,12 +80,35 @@ enum class ScientificSymbol {
     NONE
 };
 
+NLOHMANN_JSON_SERIALIZE_ENUM(ScientificSymbol,
+    {
+        {ScientificSymbol::ASTROLABE, "Astrolabe"},
+        {ScientificSymbol::SCALES, "Scales"},
+        {ScientificSymbol::SUNDIAL, "Sundial"},
+        {ScientificSymbol::MORTAR_PESTLE, "Mortar and Pestle"},
+        {ScientificSymbol::DRAFTING_COMPASS, "Drafting Compass"},
+        {ScientificSymbol::QUILL_INKWELL, "Quill and Inkwell"},
+        {ScientificSymbol::WHEEL, "Wheel"},
+        {ScientificSymbol::NONE, "None"}
+    }
+);
+
+
 enum class VictoryType {
     NONE,
     MILITARY_SUPREMACY,      
     SCIENTIFIC_SUPREMACY,    
     CIVILIAN_VICTORY         
 };
+
+NLOHMANN_JSON_SERIALIZE_ENUM(VictoryType,
+    {
+        {VictoryType::NONE, "None"},
+        {VictoryType::MILITARY_SUPREMACY, "Military Supremacy"},
+        {VictoryType::SCIENTIFIC_SUPREMACY, "Scientific Supremacy"},
+        {VictoryType::CIVILIAN_VICTORY, "Civilian Victory"}
+    }
+);
 
 enum class ProgressToken {
     AGRICULTURE,   
@@ -71,6 +123,22 @@ enum class ProgressToken {
     URBANISM,       
     NONE
 };
+
+NLOHMANN_JSON_SERIALIZE_ENUM(ProgressToken,
+    {
+        {ProgressToken::AGRICULTURE, "Agriculture"},
+        {ProgressToken::ARCHITECTURE, "Architecture"},
+        {ProgressToken::ECONOMY, "Economy"},
+        {ProgressToken::LAW, "Law"},
+        {ProgressToken::MASONRY, "Masonry"},
+        {ProgressToken::MATHEMATICS, "Mathematics"},
+        {ProgressToken::PHILOSOPHY, "Philosophy"},
+        {ProgressToken::STRATEGY, "Strategy"},
+        {ProgressToken::THEOLOGY, "Theology"},
+        {ProgressToken::URBANISM, "Urbanism"},
+        {ProgressToken::NONE, "None"}
+    }
+);
 
 
 enum class PlayerAction {

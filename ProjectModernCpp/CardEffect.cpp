@@ -170,6 +170,14 @@ std::string CardEffect::getDescription() const
     return ss.str();
 }
 
+template<typename T>
+std::optional<T> get_optional(const json& j, const std::string& key) {
+    if (j.contains(key) && !j[key].is_null()) {
+        return std::optional<T>(j[key].get<T>());
+    }
+    return std::nullopt;
+}
+
 void to_json(json& j, const CardEffect& cardEffect)
 {
     j = json{ {"victoryPoints", cardEffect.m_victoryPoints},
@@ -191,49 +199,16 @@ void to_json(json& j, const CardEffect& cardEffect)
 
 void from_json(const json& j, CardEffect& cardEffect)
 {
-
-    cardEffect.m_victoryPoints = j.contains("victoryPoints") && !j["victoryPoints"].is_null()
-        ? std::optional<int>(j["victoryPoints"].get<int>())
-		: std::nullopt; // schelet explicat pt optional : daca exista cheia "victoryPoints" si val!=null
-                            //, atunci initializeaza m_victoryPoints cu valoarea din json, altfel pune nullopt
-
-
-    cardEffect.m_shields = j.contains("shields") && !j["shields"].is_null()
-        ? std::optional<int>(j["shields"].get<int>())
-        : std::nullopt;
-
-    cardEffect.m_baseCoins = j.contains("baseCoins") && !j["baseCoins"].is_null()
-        ? std::optional<int>(j["baseCoins"].get<int>())
-        : std::nullopt;
-
-    cardEffect.m_scienceSymbol = j.contains("scienceSymbol") && !j["scienceSymbol"].is_null()
-        ? std::optional<ScientificSymbol>(j["scienceSymbol"].get<ScientificSymbol>())
-        : std::nullopt;
-
-    cardEffect.m_playAgain = j.contains("playAgain") && !j["playAgain"].is_null()
-        ? std::optional<bool>(j["playAgain"].get<bool>())
-        : std::nullopt;
-
-
-    cardEffect.m_grantsProgressToken = j.contains("grantsProgressToken") && !j["grantsProgressToken"].is_null()
-        ? std::optional<bool>(j["grantsProgressToken"].get<bool>())
-        : std::nullopt;
-
-    cardEffect.m_countOpponentCards = j.contains("countOpponentCards") && !j["countOpponentCards"].is_null()
-        ? std::optional<bool>(j["countOpponentCards"].get<bool>())
-        : std::nullopt;
-
-    cardEffect.m_copyGuild = j.contains("copyGuild") && !j["copyGuild"].is_null()
-        ? std::optional<bool>(j["copyGuild"].get<bool>())
-        : std::nullopt;
-
-    cardEffect.m_coinsPerWonder = j.contains("coinsPerWonder") && !j["coinsPerWonder"].is_null()
-        ? std::optional<int>(j["coinsPerWonder"].get<int>())
-        : std::nullopt;
-
-    cardEffect.m_pointsPerWonder = j.contains("pointsPerWonder") && !j["pointsPerWonder"].is_null()
-        ? std::optional<int>(j["pointsPerWonder"].get<int>())
-        : std::nullopt;
+    cardEffect.m_victoryPoints = get_optional<int>(j, "victoryPoints");
+    cardEffect.m_shields = get_optional<int>(j, "shields");
+    cardEffect.m_baseCoins = get_optional<int>(j, "baseCoins");
+    cardEffect.m_scienceSymbol = get_optional<ScientificSymbol>(j, "scienceSymbol");
+    cardEffect.m_coinsPerWonder = get_optional<int>(j, "coinsPerWonder");
+    cardEffect.m_pointsPerWonder = get_optional<int>(j, "pointsPerWonder");
+    cardEffect.m_playAgain = get_optional<bool>(j, "playAgain");
+    cardEffect.m_grantsProgressToken = get_optional<bool>(j, "grantsProgressToken");
+    cardEffect.m_countOpponentCards = get_optional<bool>(j, "countOpponentCards");
+	cardEffect.m_copyGuild = get_optional<bool>(j, "copyGuild");    // am folosit functia template pentru a evita repetarea
 
     cardEffect.m_discounts = j.value("discounts", std::map<ResourceType, int>{});
     cardEffect.m_production = j.value("production", ResourceProduction{});

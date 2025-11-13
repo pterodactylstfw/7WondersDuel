@@ -31,7 +31,7 @@ private:
 	std::array<bool, GameConstants::CARDS_PER_AGE> m_cardAvailability;
 
 	std::vector<std::unique_ptr<Wonder>> m_allWonders;
-	std::vector<std::unique_ptr<ProgressToken>> m_availableProgressToken;
+	std::vector<std::unique_ptr<ProgressTokenType>> m_availableProgressToken;
 
 	bool m_gameOver;
 	//std::optional<VictoryType> m_victoryType;

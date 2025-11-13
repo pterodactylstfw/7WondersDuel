@@ -38,21 +38,22 @@ std::string scientificSymbolToString(ScientificSymbol symbol){
     }
 }
 
-std::string progressTokenToString(ProgressToken token)
+
+std::string progressTokenTypeToString(ProgressTokenType tokenType)
 {
-    switch (token) {
-    case ProgressToken::AGRICULTURE:   return "Agriculture";
-    case ProgressToken::ARCHITECTURE:  return "Architecture";
-    case ProgressToken::ECONOMY:       return "Economy";
-    case ProgressToken::LAW:           return "Law";
-    case ProgressToken::MASONRY:       return "Masonry";
-    case ProgressToken::MATHEMATICS:   return "Mathematics";
-    case ProgressToken::PHILOSOPHY:    return "Philosophy";
-    case ProgressToken::STRATEGY:      return "Strategy";
-    case ProgressToken::THEOLOGY:      return "Theology";
-    case ProgressToken::URBANISM:      return "Urbanism";
-    case ProgressToken::NONE:          return "None";
-    default:                           return "Unknown";
+    switch (tokenType) {
+    case ProgressTokenType::AGRICULTURE:   return "Agriculture";
+    case ProgressTokenType::ARCHITECTURE:  return "Architecture";
+    case ProgressTokenType::ECONOMY:       return "Economy";
+    case ProgressTokenType::LAW:           return "Law";
+    case ProgressTokenType::MASONRY:       return "Masonry";
+    case ProgressTokenType::MATHEMATICS:   return "Mathematics";
+    case ProgressTokenType::PHILOSOPHY:    return "Philosophy";
+    case ProgressTokenType::STRATEGY:      return "Strategy";
+    case ProgressTokenType::THEOLOGY:      return "Theology";
+    case ProgressTokenType::URBANISM:      return "Urbanism";
+    case ProgressTokenType::NONE:          return "None";
+    default:                               return "Unknown";
     }
 }
 

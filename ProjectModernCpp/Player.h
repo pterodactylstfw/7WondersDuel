@@ -22,7 +22,7 @@ private:
 	std::vector< std::unique_ptr<Card>> constructedCards;
 	std::array<std::unique_ptr<Wonder>,4> wonders;
 	std::vector< std::unique_ptr<Wonder>> constructedWonders;
-	std::vector< std::unique_ptr<ProgressToken>> progressTokens;
+	std::vector< std::unique_ptr<ProgressTokenType>> progressTokens;
 
 	ResourceProduction resourceProduction;
 	std::map<ResourceType, int> tradeDiscounts;
@@ -34,7 +34,7 @@ public:
 	void addCard(std::unique_ptr<Card>&& card);
 	void addWonder(std::unique_ptr<Wonder>&& wonder, int index);
 	//void constructWonder(int index, State_GameState& state);
-	void addProgressToken(std::unique_ptr<ProgressToken>&& token);
+	void addProgressToken(std::unique_ptr<ProgressTokenType>&& token);
 
 	void addResource(ResourceType type, int qty);
 	void addResourceChoice(std::vector<ResourceType>& choices);

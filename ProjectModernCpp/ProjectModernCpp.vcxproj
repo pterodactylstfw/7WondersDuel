@@ -132,6 +132,7 @@
     <ClCompile Include="Cost.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="GameState.cpp" />
+    <ClCompile Include="ProgressToken.cpp" />
     <ClCompile Include="ProjectModernCpp.cpp" />
     <ClCompile Include="ResourceProduction.cpp" />
     <ClCompile Include="Wonder.cpp" />
@@ -145,6 +146,7 @@
     <ClInclude Include="Cost.h" />
     <ClInclude Include="GameState.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="ProgressToken.h" />
     <ClInclude Include="ResourceProduction.h" />
     <ClInclude Include="Wonder.h" />
   </ItemGroup>

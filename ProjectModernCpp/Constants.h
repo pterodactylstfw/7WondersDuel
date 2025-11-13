@@ -58,7 +58,7 @@ enum class VictoryType {
     CIVILIAN_VICTORY         
 };
 
-enum class ProgressToken {
+enum class ProgressTokenType {
     AGRICULTURE,   
     ARCHITECTURE,   
     ECONOMY,        
@@ -72,7 +72,6 @@ enum class ProgressToken {
     NONE
 };
 
-
 enum class PlayerAction {
     CONSTRUCT_BUILDING,   
     DISCARD_FOR_COINS,    
@@ -85,7 +84,7 @@ std::string resourceToString(ResourceType type);
 
 std::string scientificSymbolToString(ScientificSymbol symbol);
 
-std::string progressTokenToString(ProgressToken token);
+std::string progressTokenTypeToString(ProgressTokenType tokenType);
 
 std::string victoryTypeToString(VictoryType type);
 

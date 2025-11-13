@@ -54,13 +54,12 @@ public:
 	std::map<ResourceType, int> getTotalResources() const;
 	int getCardsOfType(const CardColor& color) const;
 	int getConstructedWondersCount() const;
-	int getFinalScore(const Player& opponent) const;
+	int getFinalScore(const Player& opponent) const; 
 
 	bool hasScientificVictory() const;
 	int getMilitaryShields() const;
 	int getCoins() const;
-	std::string& getName() const;
 	std::array<std::unique_ptr<Wonder>, 4>& getWonders();
-	std::vector<std::unique_ptr<Wonder>>& getConstructedWonders() const;
+	std::vector<std::unique_ptr<Wonder>>& getConstructedWonders();
 	
 };

@@ -169,3 +169,53 @@ std::string CardEffect::getDescription() const
     
     return ss.str();
 }
+
+std::optional<int> CardEffect::getVictoryPointsPerCard() const
+{
+    return m_victoryPoints;
+}
+
+std::optional<int> CardEffect::getShields() const
+{
+    return m_shields;
+}
+
+std::optional<int> CardEffect::getBaseCoins() const
+{
+    return m_baseCoins;
+}
+
+std::optional<ScientificSymbol> CardEffect::getScienceSymbol() const
+{
+    return m_scienceSymbol;
+}
+
+const std::map<ResourceType, int>& CardEffect::getDiscounts() const
+{
+    return m_discounts;
+}
+
+const ResourceProduction& CardEffect::getProduction() const
+{
+    return m_production;
+}
+
+std::optional<int> CardEffect::getCoinsPerWonder() const
+{
+    return m_coinsPerWonder;
+}
+
+const std::map<CardColor, int>& CardEffect::getCoinsPerCardType() const
+{
+    return m_coinsPerCardType;
+}
+
+std::optional<int> CardEffect::getPointsPerWonder() const
+{
+    return m_pointsPerWonder;
+}
+
+const std::map<CardColor, int>& CardEffect::getPointsPerCardType() const
+{
+    return m_pointsPerCardType;
+}

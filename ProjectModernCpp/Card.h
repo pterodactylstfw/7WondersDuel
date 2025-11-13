@@ -7,6 +7,8 @@
 #include "Cost.h"
 #include "CardEffect.h"
 
+using json = nlohmann::json;
+
 class Card
 {
 private:
@@ -42,10 +44,6 @@ public:
 
 	const std::optional<std::string>& getFreeChainFrom() const;
 	const std::optional<std::string>& getProvidesChainTo() const;
-	//pe astea 3 nu le mai implementez
-	//void setFreeChainFrom(const std::string_view cardName);
-	//void setProvidesChainTo(const std::string_view cardName);
-	// void setEffect(const CardEffect & effect);
 
 	bool canBeBuiltFreelyAfter(const Card& previousCard) const;
 	bool canBuildFreeChainTo(const Card& nextCard) const;
@@ -54,6 +52,9 @@ public:
 	std::string getEffectDescription() const; // To be defined later
 
 	void displayCardInfo() const;
+
+	friend void to_json(json& j, const Card& card);
+	friend void from_json(const json& j, Card& card);
 
 
 	~Card() = default;

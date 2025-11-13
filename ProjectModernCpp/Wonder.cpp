@@ -21,3 +21,23 @@ std::string_view Wonder::getDescription() const {
 uint8_t Wonder::getVictoryPoints() const {
 	return m_victoryPoints;
 }
+
+void to_json(json& j, const Wonder& wonder)
+{
+	j = json{
+		{"name", wonder.m_name},
+		{"cost", wonder.m_cost},
+		{"isBuilt", wonder.m_isBuilt},
+		{"effectDescription", wonder.m_effectDescription},
+		{"victoryPoints", wonder.m_victoryPoints}
+	};
+}
+
+void from_json(const json& j, Wonder& wonder)
+{
+	j.at("name").get_to(wonder.m_name);
+	j.at("cost").get_to(wonder.m_cost);
+	j.at("isBuilt").get_to(wonder.m_isBuilt);
+	j.at("effectDescription").get_to(wonder.m_effectDescription);
+	j.at("victoryPoints").get_to(wonder.m_victoryPoints);
+}

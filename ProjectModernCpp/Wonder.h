@@ -3,6 +3,8 @@
 #include <string>
 #include "Cost.h"
 
+using json = nlohmann::json;
+
 class Wonder
 {
 private:
@@ -37,6 +39,8 @@ public:
 	std::string_view getDescription() const;
 	uint8_t getVictoryPoints() const;
 
+	friend void to_json(json& j, const Wonder& wonder);
+	friend void from_json(const json& j, Wonder& wonder);
 
 	~Wonder() = default;
 };

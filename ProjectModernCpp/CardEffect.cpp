@@ -169,3 +169,49 @@ std::string CardEffect::getDescription() const
     
     return ss.str();
 }
+
+template<typename T>
+std::optional<T> get_optional(const json& j, const std::string& key) {
+    if (j.contains(key) && !j[key].is_null()) {
+        return std::optional<T>(j[key].get<T>());
+    }
+    return std::nullopt;
+}
+
+void to_json(json& j, const CardEffect& cardEffect)
+{
+    j = json{ {"victoryPoints", cardEffect.m_victoryPoints},
+        {"shields", cardEffect.m_shields},
+        {"baseCoins", cardEffect.m_baseCoins},
+        {"scienceSymbol", cardEffect.m_scienceSymbol},
+        {"discounts", cardEffect.m_discounts},
+        {"production", cardEffect.m_production},
+        {"coinsPerWonder", cardEffect.m_coinsPerWonder},
+        {"coinsPerCardType", cardEffect.m_coinsPerCardType},
+        {"pointsPerWonder", cardEffect.m_pointsPerWonder},
+        {"pointsPerCardType", cardEffect.m_pointsPerCardType},
+        {"playAgain", cardEffect.m_playAgain},
+        {"grantsProgressToken", cardEffect.m_grantsProgressToken},
+        {"countOpponentCards", cardEffect.m_countOpponentCards},
+        {"copyGuild", cardEffect.m_copyGuild}
+    };
+}
+
+void from_json(const json& j, CardEffect& cardEffect)
+{
+    cardEffect.m_victoryPoints = get_optional<int>(j, "victoryPoints");
+    cardEffect.m_shields = get_optional<int>(j, "shields");
+    cardEffect.m_baseCoins = get_optional<int>(j, "baseCoins");
+    cardEffect.m_scienceSymbol = get_optional<ScientificSymbol>(j, "scienceSymbol");
+    cardEffect.m_coinsPerWonder = get_optional<int>(j, "coinsPerWonder");
+    cardEffect.m_pointsPerWonder = get_optional<int>(j, "pointsPerWonder");
+    cardEffect.m_playAgain = get_optional<bool>(j, "playAgain");
+    cardEffect.m_grantsProgressToken = get_optional<bool>(j, "grantsProgressToken");
+    cardEffect.m_countOpponentCards = get_optional<bool>(j, "countOpponentCards");
+	cardEffect.m_copyGuild = get_optional<bool>(j, "copyGuild");    // am folosit functia template pentru a evita repetarea
+
+    cardEffect.m_discounts = j.value("discounts", std::map<ResourceType, int>{});
+    cardEffect.m_production = j.value("production", ResourceProduction{});
+    cardEffect.m_coinsPerCardType = j.value("coinsPerCardType", std::map<CardColor, int>{});
+    cardEffect.m_pointsPerCardType = j.value("pointsPerCardType", std::map<CardColor, int>{});
+}

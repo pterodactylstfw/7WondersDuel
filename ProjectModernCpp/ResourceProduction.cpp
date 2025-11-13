@@ -94,3 +94,16 @@ std::string ResourceProduction::getDescription() const
 
 	return ss.str();
 }
+
+void to_json(json& j, const ResourceProduction& prod)
+{
+	j = json{ {"fixedResources", prod.m_fixedResources},
+		{"choices", prod.m_choices}
+	};
+}
+
+void from_json(const json& j, ResourceProduction& prod)
+{
+	prod.m_fixedResources = j.value("fixedResources", std::map<ResourceType, int>{});
+	prod.m_choices = j.value("choices", std::vector<std::vector<ResourceType>>{});
+}

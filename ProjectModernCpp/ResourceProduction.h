@@ -4,6 +4,8 @@
 #include <map>
 #include "Constants.h"
 
+using json = nlohmann::json;
+
 class ResourceProduction
 {
 private:
@@ -29,5 +31,8 @@ public:
 	std::map<ResourceType, int> getTotalProduction() const;
 	bool isEmpty() const;
 	std::string getDescription() const;
+
+	friend void to_json(json& j, const ResourceProduction& prod);
+	friend void from_json(const json& j, ResourceProduction& prod);
 };
 

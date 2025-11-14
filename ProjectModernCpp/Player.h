@@ -9,6 +9,9 @@
 #include "Wonder.h"
 #include "Card.h"
 #include "ResourceProduction.h"
+#include "ProgressToken.h"
+
+using json = nlohmann::json;
 
 class Player
 {
@@ -22,19 +25,21 @@ private:
 	std::vector< std::unique_ptr<Card>> constructedCards;
 	std::array<std::unique_ptr<Wonder>,4> wonders;
 	std::vector< std::unique_ptr<Wonder>> constructedWonders;
-	std::vector< std::unique_ptr<ProgressTokenType>> progressTokens;
+	std::vector< std::unique_ptr<ProgressToken>> progressTokens;
 
 	ResourceProduction resourceProduction;
 	std::map<ResourceType, int> tradeDiscounts;
 
 public:
+
+	Player() = default;
 	
 	Player(const std::string& playerName);
 
 	void addCard(std::unique_ptr<Card>&& card);
 	void addWonder(std::unique_ptr<Wonder>&& wonder, int index);
 	//void constructWonder(int index, State_GameState& state);
-	void addProgressToken(std::unique_ptr<ProgressTokenType>&& token);
+	void addProgressToken(std::unique_ptr<ProgressToken>&& token);
 
 	void addResource(ResourceType type, int qty);
 	void addResourceChoice(std::vector<ResourceType>& choices);
@@ -60,6 +65,12 @@ public:
 	int getMilitaryShields() const;
 	int getCoins() const;
 	std::array<std::unique_ptr<Wonder>, 4>& getWonders();
-	std::vector<std::unique_ptr<Wonder>>& getConstructedWonders();
+  std::vector<std::unique_ptr<Wonder>>& getConstructedWonders();
+
+	friend void to_json(json& j, const Player& player);
+	friend void from_json(const json& j, Player& player);
+
+
+
 	
 };

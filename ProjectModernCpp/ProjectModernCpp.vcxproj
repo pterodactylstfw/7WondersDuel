@@ -131,6 +131,7 @@
     <ClCompile Include="CardFactory.cpp" />
     <ClCompile Include="Constants.cpp" />
     <ClCompile Include="Cost.cpp" />
+    <ClCompile Include="GameController.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="GameState.cpp" />
     <ClCompile Include="ProgressToken.cpp" />
@@ -145,6 +146,7 @@
     <ClInclude Include="CardFactory.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="Cost.h" />
+    <ClInclude Include="GameController.h" />
     <ClInclude Include="GameState.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="ProgressToken.h" />

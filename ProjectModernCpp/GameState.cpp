@@ -1,5 +1,5 @@
 ﻿#include "GameState.h"
-
+#include <fstream>
 NLOHMANN_JSON_NAMESPACE_BEGIN
 
 template <typename T> struct adl_serializer<std::unique_ptr<T>> {
@@ -68,6 +68,55 @@ Player& GameState::getCurrentPlayer()
 Player& GameState::getOpponent()
 {
 	return *m_players[1 - m_currentPlayerIndex];
+}
+
+bool GameState::saveGame(std::string&& filename) const
+{
+    try
+    {
+        json j = *this;
+
+        std::ofstream file(filename);
+        if (!file.is_open()) {
+
+            return false;
+        }
+
+        file << j.dump(4);
+        file.close();
+        return true;
+    }
+    catch (const nlohmann::json::exception& e)
+    {
+        return false;
+    }
+}
+
+bool GameState::loadGame(std::string&& filename)
+{
+    try
+    {
+        std::ifstream file(filename);
+        if (!file.is_open()) {
+            std::cerr << "Eroare: Nu s-a putut deschide fisierul" << filename<< " pentru incarcare : " << std::endl;
+            return false;
+        }
+
+        nlohmann::json j;
+        file >> j;
+        file.close();
+
+        from_json(j, *this);
+
+        m_rng = std::mt19937(std::random_device{}());
+
+        return true;
+    }
+    catch (const nlohmann::json::exception& e)
+    {
+        std::cerr << "Eroare la deserializare JSON : " << e.what() << std::endl;
+        return false;
+    }
 }
 
 GameState::~GameState() = default;

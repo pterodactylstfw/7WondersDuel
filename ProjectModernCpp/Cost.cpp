@@ -266,3 +266,17 @@ std::ostream& operator<<(std::ostream& os, const Cost& cost) {
     os << cost.toString();
     return os;
 }
+
+void to_json(json& j, const Cost& cost)
+{
+    j = json{
+        {"coinCost", cost.m_coinCost},
+        {"resourceCosts", cost.m_resourceCosts}
+    };
+}
+
+void from_json(const json& j, Cost& cost)
+{
+    cost.m_coinCost = j.value("coinCost", 0);
+    cost.m_resourceCosts = j.value("resourceCosts", std::map<ResourceType, int>{});
+}

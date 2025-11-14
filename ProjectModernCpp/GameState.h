@@ -12,6 +12,7 @@
 //class Card;
 //class Wonder; de revizuit cu forward declarations
 
+using json = nlohmann::json;
 
 class GameState
 {
@@ -55,6 +56,9 @@ public:
 
 	bool saveGame(std::string&& filename) const;
 	bool loadGame(std::string&& filename);
+
+	friend void to_json(json& j, const GameState& state);
+	friend void from_json(const json& j, GameState& state);
 
 	~GameState();
 

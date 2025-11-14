@@ -78,12 +78,36 @@ const std::optional<std::string>& Card::getProvidesChainTo() const
 	return m_providesChainTo;
 }
 
-//void Card::setFreeChainFrom(const std::string_view cardName)
-//{
-//	m_freeChainFrom = cardName;
-//}
-//
-//void Card::setProvidesChainTo(const std::string_view cardName)
-//{
-//	m_providesChainTo = cardName;
-//} // de sters, nu e nevoie de ele intrucat se initializeaza o singura data in constructor
+
+template<typename T>
+std::optional<T> get_optional(const json& j, const std::string& key) {
+	if (j.contains(key) && !j[key].is_null()) {
+		return std::optional<T>(j[key].get<T>());
+	}
+	return std::nullopt;
+}
+
+void to_json(json& j, const Card& card)
+{
+	j = json{
+		{"name", card.m_name},
+		{"color", card.m_color},
+		{"age", card.m_age},
+		{"cost", card.m_cost},
+		{"effect", card.m_effect},
+		{"freeChainFrom", card.m_freeChainFrom},
+		{"providesChainTo", card.m_providesChainTo}
+	};
+}
+
+
+void from_json(const json& j, Card& card)
+{
+	j.at("name").get_to(card.m_name);
+	card.m_color = static_cast<CardColor>(j.at("color").get<int>());
+	j.at("age").get_to(card.m_age);
+	j.at("cost").get_to(card.m_cost);
+	j.at("effect").get_to(card.m_effect);
+	card.m_freeChainFrom = get_optional<std::string>(j, "freeChainFrom");
+	card.m_providesChainTo = get_optional<std::string>(j, "providesChainTo");
+}

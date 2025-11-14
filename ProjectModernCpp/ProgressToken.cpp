@@ -36,3 +36,23 @@ std::ostream& operator<<(std::ostream& os, const ProgressToken& token) {
     os << token.toString();
     return os;
 }
+
+void to_json(json& j, const ProgressToken& token)
+{
+    j = json{
+        {"type", token.m_tokenType},
+        {"name", token.m_name},
+        {"description", token.m_description},
+        {"victoryPoints", token.m_victoryPoints},
+        {"isActive", token.m_isActive}
+	};
+}
+
+void from_json(const json& j, ProgressToken& token)
+{
+    j.at("type").get_to(token.m_tokenType);
+    j.at("name").get_to(token.m_name);
+    j.at("description").get_to(token.m_description);
+    j.at("victoryPoints").get_to(token.m_victoryPoints);
+	j.at("isActive").get_to(token.m_isActive);
+}

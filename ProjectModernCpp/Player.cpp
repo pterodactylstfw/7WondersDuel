@@ -1,5 +1,27 @@
 #include "Player.h"
 
+NLOHMANN_JSON_NAMESPACE_BEGIN
+
+template <typename T> struct adl_serializer<std::unique_ptr<T>> {
+	template <typename BasicJsonType> static void to_json(BasicJsonType& json_value, const std::unique_ptr<T>& ptr)
+	{
+		if (ptr.get()) {
+			json_value = *ptr;
+		}
+		else {
+			json_value = nullptr;
+		}
+	}
+
+	template <typename BasicJsonType> static void from_json(const BasicJsonType& json_value, std::unique_ptr<T>& ptr)
+	{
+		T inner_val = json_value.template get<T>();
+		ptr = std::make_unique<T>(std::move(inner_val));
+	}
+};
+
+NLOHMANN_JSON_NAMESPACE_END // pentru rezolvarea problemei cu serializarea pointerilor unique - dupa discutia de pe forum nlohmann
+
 Player::Player(const std::string& playerName) : 
 	name(playerName), coins(GameConstants::STARTING_COINS), militaryShields(0), victoryPoints(0) { }
 
@@ -14,10 +36,11 @@ void Player::addWonder(std::unique_ptr<Wonder>&& wonder, int index)
 	wonders[index] = std::move(wonder);
 }
 
-void Player::addProgressToken(std::unique_ptr<ProgressTokenType>&& token)
+void Player::addProgressToken(std::unique_ptr<ProgressToken>&& token)
 {
 	progressTokens.push_back(std::move(token));
 }
+
 
 void Player::addResource(ResourceType type, int qty)
 {
@@ -147,4 +170,40 @@ bool Player::canBuildCard(const Card& card, const Player& opponent) const
 	if (canAfford(card.getCost(), opponent))
 		return true;
 	return false;
+}
+
+
+
+void to_json(json& j, const Player& player)
+{
+	j = json{
+		{"name", player.name},
+		{"coins", player.coins},
+		{"militaryShields", player.militaryShields},
+		{"victoryPoints", player.victoryPoints},
+		{"scientificSymbols", player.scientificSymbols},
+		{"constructedCards", player.constructedCards},
+		{"wonders", player.wonders},
+		{"constructedWonders", player.constructedWonders},
+		{"progressTokens", player.progressTokens},
+		{"resourceProduction", player.resourceProduction},
+		{"tradeDiscounts", player.tradeDiscounts}
+		
+		
+	};
+}
+
+void from_json(const json& j, Player& player)
+{
+	j.at("name").get_to(player.name);
+	j.at("coins").get_to(player.coins);
+	j.at("militaryShields").get_to(player.militaryShields);
+	j.at("victoryPoints").get_to(player.victoryPoints);
+	j.at("scientificSymbols").get_to(player.scientificSymbols);
+	j.at("constructedCards").get_to(player.constructedCards);
+	j.at("wonders").get_to(player.wonders);
+	j.at("constructedWonders").get_to(player.constructedWonders);
+	j.at("progressTokens").get_to(player.progressTokens);
+	j.at("resourceProduction").get_to(player.resourceProduction);
+	j.at("tradeDiscounts").get_to(player.tradeDiscounts);
 }

@@ -4,6 +4,8 @@
 #include <vector>
 #include <iostream>
 
+using json = nlohmann::json;
+
 class ProgressToken{
 private:
 	ProgressTokenType m_tokenType;
@@ -12,6 +14,9 @@ private:
 	uint8_t m_victoryPoints;
 	bool m_isActive;
 public:
+
+	ProgressToken() = default;
+
 	ProgressToken(ProgressTokenType type, const std::string& name,
 		const std::string& description, uint8_t victoryPoints);
 
@@ -38,5 +43,9 @@ public:
 	static std::vector<ProgressToken> createAllTokens();
 	static ProgressToken createToken(ProgressTokenType type);
 	friend std::ostream& operator<<(std::ostream& os, const ProgressToken& token);
+
+	friend void to_json(json& j, const ProgressToken& token);
+	friend void from_json(const json& j, ProgressToken& token);
+
 };
 

@@ -102,42 +102,42 @@ enum class VictoryType {
 };
 
 NLOHMANN_JSON_SERIALIZE_ENUM(VictoryType,
-    {
-        {VictoryType::NONE, "None"},
-        {VictoryType::MILITARY_SUPREMACY, "Military Supremacy"},
-        {VictoryType::SCIENTIFIC_SUPREMACY, "Scientific Supremacy"},
-        {VictoryType::CIVILIAN_VICTORY, "Civilian Victory"}
-    }
+    {
+        {VictoryType::NONE, "None"},
+        {VictoryType::MILITARY_SUPREMACY, "Military Supremacy"},
+        {VictoryType::SCIENTIFIC_SUPREMACY, "Scientific Supremacy"},
+        {VictoryType::CIVILIAN_VICTORY, "Civilian Victory"}
+    }
 );
 
 enum class ProgressTokenType {
-    AGRICULTURE,   
-    ARCHITECTURE,   
-    ECONOMY,        
-    LAW,            
-    MASONRY,        
-    MATHEMATICS,    
-    PHILOSOPHY,     
-    STRATEGY,       
-    THEOLOGY,       
-    URBANISM,       
-    NONE
+    AGRICULTURE,    
+    ARCHITECTURE,    
+    ECONOMY,         
+    LAW,            
+    MASONRY,        
+    MATHEMATICS,    
+    PHILOSOPHY,     
+    STRATEGY,       
+    THEOLOGY,       
+    URBANISM,       
+	NONE
 };
 
 NLOHMANN_JSON_SERIALIZE_ENUM(ProgressTokenType,
-    {
-        {ProgressTokenType::AGRICULTURE, "Agriculture"},
-        {ProgressTokenType::ARCHITECTURE, "Architecture"},
-        {ProgressTokenType::ECONOMY, "Economy"},
-        {ProgressTokenType::LAW, "Law"},
-        {ProgressTokenType::MASONRY, "Masonry"},
-        {ProgressTokenType::MATHEMATICS, "Mathematics"},
-        {ProgressTokenType::PHILOSOPHY, "Philosophy"},
-        {ProgressTokenType::STRATEGY, "Strategy"},
-        {ProgressTokenType::THEOLOGY, "Theology"},
-        {ProgressTokenType::URBANISM, "Urbanism"},
-        {ProgressTokenType::NONE, "None"}
-    }
+    {
+        {ProgressTokenType::AGRICULTURE, "Agriculture"},
+        {ProgressTokenType::ARCHITECTURE, "Architecture"},
+        {ProgressTokenType::ECONOMY, "Economy"},
+        {ProgressTokenType::LAW, "Law"},
+        {ProgressTokenType::MASONRY, "Masonry"},
+        {ProgressTokenType::MATHEMATICS, "Mathematics"},
+        {ProgressTokenType::PHILOSOPHY, "Philosophy"},
+        {ProgressTokenType::STRATEGY, "Strategy"},
+        {ProgressTokenType::THEOLOGY, "Theology"},
+        {ProgressTokenType::URBANISM, "Urbanism"},
+        {ProgressTokenType::NONE, "None"}
+    }
 );
 
 enum class PlayerAction {

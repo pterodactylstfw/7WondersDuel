@@ -1,4 +1,26 @@
-#include "GameState.h"
+﻿#include "GameState.h"
+
+NLOHMANN_JSON_NAMESPACE_BEGIN
+
+template <typename T> struct adl_serializer<std::unique_ptr<T>> {
+    template <typename BasicJsonType> static void to_json(BasicJsonType& json_value, const std::unique_ptr<T>& ptr)
+    {
+        if (ptr.get()) {
+            json_value = *ptr;
+        }
+        else {
+            json_value = nullptr;
+        }
+    }
+
+    template <typename BasicJsonType> static void from_json(const BasicJsonType& json_value, std::unique_ptr<T>& ptr)
+    {
+        T inner_val = json_value.template get<T>();
+        ptr = std::make_unique<T>(std::move(inner_val));
+    }
+};
+
+NLOHMANN_JSON_NAMESPACE_END
 
 GameState::GameState():m_currentPlayerIndex(0),
 m_currentTurn(1),
@@ -49,3 +71,48 @@ Player& GameState::getOpponent()
 }
 
 GameState::~GameState() = default;
+
+template<typename T>
+std::optional<T> get_optional(const json& j, const std::string& key) {
+	if (j.contains(key) && !j[key].is_null()) {
+		return std::optional<T>(j[key].get<T>());
+	}
+	return std::nullopt;
+}
+
+void to_json(json& j, const GameState& state)
+{
+    j = nlohmann::json{
+        {"players", state.m_players},
+        {"currentPlayerIndex", state.m_currentPlayerIndex},
+        {"currentTurn", state.m_currentTurn},
+        {"winnerIndex", state.m_winnerIndex},
+        {"ageIDeck", state.m_ageIDeck},
+        {"ageIIDeck", state.m_ageIIDeck},
+        {"ageIIIDeck", state.m_ageIIIDeck},
+        {"currentAge", state.m_currentAge},
+        {"currentAgeCards", state.m_currentAgeCards},
+        {"cardAvailability", state.m_cardAvailability},
+        {"allWonders", state.m_allWonders},
+        {"availableProgressToken", state.m_availableProgressToken},
+        {"gameOver", state.m_gameOver}
+    };
+}
+
+void from_json(const json& j, GameState& state)
+{
+    j.at("players").get_to(state.m_players);
+    j.at("currentPlayerIndex").get_to(state.m_currentPlayerIndex);
+    j.at("currentTurn").get_to(state.m_currentTurn);
+    state.m_winnerIndex = get_optional<uint8_t>(j, "winnerIndex");
+    j.at("ageIDeck").get_to(state.m_ageIDeck);
+    j.at("ageIIDeck").get_to(state.m_ageIIDeck);
+    j.at("ageIIIDeck").get_to(state.m_ageIIIDeck);
+    j.at("currentAge").get_to(state.m_currentAge);
+    j.at("currentAgeCards").get_to(state.m_currentAgeCards);
+    j.at("cardAvailability").get_to(state.m_cardAvailability);
+    j.at("allWonders").get_to(state.m_allWonders);
+    j.at("availableProgressToken").get_to(state.m_availableProgressToken);
+    j.at("gameOver").get_to(state.m_gameOver);
+}
+	

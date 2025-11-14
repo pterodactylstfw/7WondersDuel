@@ -100,7 +100,6 @@ void to_json(json& j, const Card& card)
 	};
 }
 
-//     cardEffect.m_discounts = j.value("discounts", std::map<ResourceType, int>{});
 
 void from_json(const json& j, Card& card)
 {

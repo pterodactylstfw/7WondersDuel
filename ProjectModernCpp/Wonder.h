@@ -16,6 +16,8 @@ private:
 
 public:
 
+	Wonder() = default;
+
 	Wonder(std::string&& name, Cost& cost);
 	
 	Wonder(const Wonder& other) = default;

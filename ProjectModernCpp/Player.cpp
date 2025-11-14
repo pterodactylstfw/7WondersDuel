@@ -148,3 +148,73 @@ bool Player::canBuildCard(const Card& card, const Player& opponent) const
 		return true;
 	return false;
 }
+
+std::map<ResourceType, int> Player::getTotalResources() const
+{
+	return resourceProduction.getTotalProduction();
+}
+
+int Player::getCardsOfType(const CardColor& color) const
+{
+	int nr = 0;
+	for (const auto& card : constructedCards)
+	{
+		if (card && card->getColor() == color)
+			nr++;
+	}
+
+	return nr;
+}
+
+int Player::getConstructedWondersCount() const
+{
+	return constructedWonders.size();
+}
+
+int Player::getFinalScore(const Player& opponent) const
+{
+	//+ military victory points ce urmeaza sa fie discutat
+	int nr = 0;
+
+	for (const auto& card : constructedCards)
+	{
+		const auto& vp = card->getEffect().getVictoryPointsPerCard();
+		if (vp.has_value())
+			nr += vp.value();
+	}
+
+	for (const auto& wonder : constructedWonders)
+	{
+		nr  += wonder->getVictoryPoints();
+	}
+
+	//+ victory points from progress token cand am clasa
+
+	nr += coins / 3;
+	return nr;
+}
+
+bool Player::hasScientificVictory() const
+{
+	return scientificSymbols.size() > GameConstants::SCIENTIFIC_SUPREMACY_SYMBOLS;
+}
+
+int Player::getMilitaryShields() const
+{
+	return militaryShields;
+}
+
+int Player::getCoins() const
+{
+	return coins;
+}
+
+std::array<std::unique_ptr<Wonder>, 4>& Player::getWonders()
+{
+	return wonders;
+}
+
+std::vector<std::unique_ptr<Wonder>>& Player::getConstructedWonders()
+{
+	return constructedWonders;
+}

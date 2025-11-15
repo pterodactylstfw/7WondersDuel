@@ -241,7 +241,7 @@ int Player::getFinalScore(const Player& opponent) const
 
 	for (const auto& wonder : constructedWonders)
 	{
-		nr  += wonder->getVictoryPoints();
+		nr += wonder->getVictoryPoints();
 	}
 
 	//+ victory points from progress token cand am clasa

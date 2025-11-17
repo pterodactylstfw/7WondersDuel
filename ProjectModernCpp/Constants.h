@@ -140,6 +140,40 @@ NLOHMANN_JSON_SERIALIZE_ENUM(ProgressTokenType,
     }
 );
 
+enum class WonderType {
+    THE_APPIAN_WAY,
+    CIRCUS_MAXIMUS,
+    THE_COLOSSUS,
+    THE_GREAT_LIBRARY,
+    THE_GREAT_LIGHTHOUSE,
+    THE_HANGING_GARDENS,
+    THE_MAUSOLEUM,
+    PIRAEUS,
+    THE_PYRAMIDS,
+    THE_SPHINX,
+    THE_STATUE_OF_ZEUS,
+    THE_TEMPLE_OF_ARTEMIS,
+    NONE
+};
+
+NLOHMANN_JSON_SERIALIZE_ENUM(WonderType,
+    {
+        {WonderType::THE_APPIAN_WAY, "The Appian Way"},
+        {WonderType::CIRCUS_MAXIMUS, "Circus Maximus"},
+        {WonderType::THE_COLOSSUS, "The Colossus"},
+        {WonderType::THE_GREAT_LIBRARY, "The Great Library"},
+        {WonderType::THE_GREAT_LIGHTHOUSE, "The Great Lighthouse"},
+        {WonderType::THE_HANGING_GARDENS, "The Hanging Gardens"},
+        {WonderType::THE_MAUSOLEUM, "The Mausoleum"},
+        {WonderType::PIRAEUS, "Piraeus"},
+        {WonderType::THE_PYRAMIDS, "The Pyramids"},
+        {WonderType::THE_SPHINX, "The Sphinx"},
+        {WonderType::THE_STATUE_OF_ZEUS, "The Statue of Zeus"},
+        {WonderType::THE_TEMPLE_OF_ARTEMIS, "The Temple of Artemis"},
+        { WonderType::NONE, "None" }
+    }
+);
+
 enum class PlayerAction {
     CONSTRUCT_BUILDING,   
     DISCARD_FOR_COINS,    

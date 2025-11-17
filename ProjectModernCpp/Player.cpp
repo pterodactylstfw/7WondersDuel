@@ -274,3 +274,7 @@ std::vector<std::unique_ptr<Wonder>>& Player::getConstructedWonders()
 {
 	return constructedWonders;
 }
+
+const std::string& Player::getName() const {
+    return name;
+}

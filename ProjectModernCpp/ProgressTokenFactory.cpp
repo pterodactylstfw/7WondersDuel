@@ -50,6 +50,15 @@ std::unique_ptr<ProgressToken> ProgressTokenFactory::createToken(ProgressTokenTy
 std::vector<std::unique_ptr<ProgressToken>> ProgressTokenFactory::createAllTokens() {
     std::vector<std::unique_ptr<ProgressToken>> tokens;
     tokens.reserve(10);
-
+    tokens.push_back(createToken(ProgressTokenType::AGRICULTURE));
+    tokens.push_back(createToken(ProgressTokenType::ARCHITECTURE));
+    tokens.push_back(createToken(ProgressTokenType::ECONOMY));
+    tokens.push_back(createToken(ProgressTokenType::LAW));
+    tokens.push_back(createToken(ProgressTokenType::MASONRY));
+    tokens.push_back(createToken(ProgressTokenType::MATHEMATICS));
+    tokens.push_back(createToken(ProgressTokenType::PHILOSOPHY));
+    tokens.push_back(createToken(ProgressTokenType::STRATEGY));
+    tokens.push_back(createToken(ProgressTokenType::THEOLOGY));
+    tokens.push_back(createToken(ProgressTokenType::URBANISM));
     return tokens;
 }

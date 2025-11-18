@@ -1,13 +1,11 @@
 #include "Wonder.h"
 
-Wonder::Wonder(std::string_view name, Cost cost, uint8_t victoryPoints, CardEffect effect)
-	: m_name(name) , m_cost(std::move(cost)), m_isBuilt(false), 
+Wonder::Wonder(WonderType type, Cost cost, uint8_t victoryPoints, CardEffect effect)
+	: m_type(type) , m_cost(std::move(cost)), m_isBuilt(false), 
 	  m_victoryPoints(victoryPoints), m_effect(std::move(effect)) { }
 
-//constructor temporar ptr a nu avea erori 
-//ptr cartile de nu au efect 
-Wonder::Wonder(std::string_view name, Cost cost, uint8_t victoryPoints)
-	: m_name(name), m_cost(std::move(cost)), m_isBuilt(false),
+Wonder::Wonder(WonderType type, Cost cost, uint8_t victoryPoints)
+	: m_type(type), m_cost(std::move(cost)), m_isBuilt(false),
 	m_victoryPoints(victoryPoints) { }
 
 std::string_view Wonder::getName() const {
@@ -30,6 +28,11 @@ uint8_t Wonder::getVictoryPoints() const {
 	return m_victoryPoints;
 }
 
+WonderType Wonder::getWonderType() const
+{
+	return m_type;
+}
+
 void to_json(json& j, const Wonder& wonder)
 {
 	j = json{
@@ -37,7 +40,8 @@ void to_json(json& j, const Wonder& wonder)
 		{"cost", wonder.m_cost},
 		{"isBuilt", wonder.m_isBuilt},
 		{"effectDescription", wonder.m_effectDescription},
-		{"victoryPoints", wonder.m_victoryPoints}
+		{"victoryPoints", wonder.m_victoryPoints},
+		{"effect", wonder.m_effect }
 	};
 }
 
@@ -48,4 +52,5 @@ void from_json(const json& j, Wonder& wonder)
 	j.at("isBuilt").get_to(wonder.m_isBuilt);
 	j.at("effectDescription").get_to(wonder.m_effectDescription);
 	j.at("victoryPoints").get_to(wonder.m_victoryPoints);
+	j.at("effect").get_to(wonder.m_effect);
 }

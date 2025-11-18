@@ -3,6 +3,7 @@
 #include <string>
 #include "Cost.h"
 #include "CardEffect.h"
+#include  "Constants.h"
 
 using json = nlohmann::json;
 
@@ -15,6 +16,7 @@ private:
 	uint8_t m_victoryPoints;
 	std::string m_effectDescription;
 	CardEffect m_effect;
+	WonderType m_type;
 
 public:
 
@@ -30,8 +32,8 @@ public:
 
 	Wonder& operator=(Wonder&& other) noexcept = default;
 
-	Wonder(std::string_view name, Cost cost, uint8_t victoryPoints, CardEffect effect);
-	Wonder(std::string_view name, Cost cost, uint8_t victoryPoints);
+	Wonder(WonderType type, Cost cost, uint8_t victoryPoints, CardEffect effect);
+	Wonder(WonderType type, Cost cost, uint8_t victoryPoints);
 
 	// for the next 2 functions, waiting for commits from my teammates:
 
@@ -45,6 +47,7 @@ public:
 	bool isBuilt() const;
 	std::string getDescription() const;
 	uint8_t getVictoryPoints() const;
+	WonderType getWonderType() const;
 
 	friend void to_json(json& j, const Wonder& wonder);
 	friend void from_json(const json& j, Wonder& wonder);

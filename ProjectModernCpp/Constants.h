@@ -191,3 +191,5 @@ std::string progressTokenTypeToString(ProgressTokenType tokenType);
 std::string victoryTypeToString(VictoryType type);
 
 std::string actionToString(PlayerAction action);
+
+std::string wonderTypeToString(WonderType type);

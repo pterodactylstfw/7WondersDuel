@@ -102,7 +102,32 @@ std::vector<std::unique_ptr<Wonder>> WonderFactory::createWonders()
 		9
 	));
 
+	Wonders.push_back(std::make_unique<Wonder>(
+		"The Sphinx",
+		Cost().withResourceCost(ResourceType::GLASS, 2)
+		.withResourceCost(ResourceType::CLAY, 1)
+		.withResourceCost(ResourceType::STONE, 1),
+		6,
+		CardEffect().grantsPlayAgain()
+	));
 
+	Wonders.push_back(std::make_unique<Wonder>(
+		"The Statue of Zeus",
+		Cost().withResourceCost(ResourceType::PAPYRUS, 1)
+		.withResourceCost(ResourceType::STONE, 3),
+		9
+	));
+
+	Wonders.push_back(std::make_unique<Wonder>(
+		"The Temple of Artemis",
+		Cost().withResourceCost(ResourceType::PAPYRUS, 1)
+		.withResourceCost(ResourceType::GLASS, 1)
+		.withResourceCost(ResourceType::STONE, 1)
+		.withResourceCost(ResourceType::WOOD, 1),
+		0,
+		CardEffect().withBaseCoins(12)
+		.grantsPlayAgain()
+	));
 
 	return Wonders;
 }

@@ -158,6 +158,29 @@ bool GameState::isCardAccessible(int index) const
     return true;
 }
 
+void GameState::removeCardFromPyramid(int index)
+{
+    if (index < 0 || index >= 20) return;
+
+    m_pyramid[index].m_isRemoved = true;
+
+    for (auto& node : m_pyramid) {
+        if (!node.m_isRemoved && !node.m_isFaceUp) { // actualizare automata stare vizuala
+            if (isCardAccessible(node.m_index)) {
+                node.m_isFaceUp = true;
+            }
+        }
+    }
+}
+
+std::unique_ptr<Card> GameState::takeCard(int index)
+{
+    if (index >= 0 && index < m_currentAgeCards.size()) {
+        return std::move(m_currentAgeCards[index]);
+    }
+    return nullptr;
+}
+
 
 bool GameState::saveGame(std::string&& filename) const
 {

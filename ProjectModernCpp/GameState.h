@@ -75,7 +75,6 @@ public:
 	bool isCardAccessible(int index) const;
 	void removeCardFromPyramid(int index); // pick card
 	std::unique_ptr<Card> takeCard(int index); // transfer de detinator carte intre playeri
-	const std::unique_ptr<Card>& getCardAt(int index) const;
 
 	bool saveGame(std::string&& filename) const;
 	bool loadGame(std::string&& filename);

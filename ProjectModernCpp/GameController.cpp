@@ -1,7 +1,7 @@
 #include "GameController.h"
 
 
-void GameController::applayWonderEffect(Player& player, Player& opponent, const Wonder& wonder)
+void GameController::applyWonderEffect(Player& player, Player& opponent, const Wonder& wonder)
 {
 	WonderType type = wonder.getWonderType();
 

@@ -15,8 +15,13 @@ template <typename T> struct adl_serializer<std::unique_ptr<T>> {
 
 	template <typename BasicJsonType> static void from_json(const BasicJsonType& json_value, std::unique_ptr<T>& ptr)
 	{
-		T inner_val = json_value.template get<T>();
-		ptr = std::make_unique<T>(std::move(inner_val));
+		if (json_value.is_null()) {
+			ptr = nullptr;
+		}
+		else {
+			T inner_val = json_value.template get<T>();
+			ptr = std::make_unique<T>(std::move(inner_val));
+		}
 	}
 };
 

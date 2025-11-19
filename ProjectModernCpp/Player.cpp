@@ -15,14 +15,19 @@ template <typename T> struct adl_serializer<std::unique_ptr<T>> {
 
 	template <typename BasicJsonType> static void from_json(const BasicJsonType& json_value, std::unique_ptr<T>& ptr)
 	{
-		T inner_val = json_value.template get<T>();
-		ptr = std::make_unique<T>(std::move(inner_val));
+		if (json_value.is_null()) {
+			ptr = nullptr;
+		}
+		else {
+			T inner_val = json_value.template get<T>();
+			ptr = std::make_unique<T>(std::move(inner_val));
+		}
 	}
 };
 
 NLOHMANN_JSON_NAMESPACE_END // pentru rezolvarea problemei cu serializarea pointerilor unique - dupa discutia de pe forum nlohmann
 
-Player::Player(const std::string& playerName) : 
+Player::Player(const std::string& playerName):
 	name(playerName), coins(GameConstants::STARTING_COINS), militaryShields(0), victoryPoints(0) { }
 
 void Player::addCard(std::unique_ptr<Card>&& card)
@@ -57,12 +62,15 @@ void Player::addCoins(int amount)
 	coins += amount;
 }
 
-bool Player::removeCoins(int amount)
+void Player::removeCoins(int amount)
 {
 	if (coins < amount)
-		return false;
+	{
+		coins = 0;
+		return;
+	}
 	coins -= amount;
-	return true;
+
 }
 
 void Player::addMilitaryShields(int shields)
@@ -210,16 +218,19 @@ std::map<ResourceType, int> Player::getTotalResources() const
 	return resourceProduction.getTotalProduction();
 }
 
-int Player::getCardsOfType(const CardColor& color) const
+std::vector<const Card*> Player::getCardsOfType(const CardColor& color) const
 {
-	int nr = 0;
+	std::vector<const Card*> result;
+
 	for (const auto& card : constructedCards)
 	{
 		if (card && card->getColor() == color)
-			nr++;
+		{
+			result.push_back(card.get()); // raw pointer, no ownership transfer
+		}
 	}
 
-	return nr;
+	return result;
 }
 
 int Player::getConstructedWondersCount() const
@@ -276,5 +287,23 @@ std::vector<std::unique_ptr<Wonder>>& Player::getConstructedWonders()
 }
 
 const std::string& Player::getName() const {
-    return name;
+  return name;
 }
+
+void Player::removeCard(const Card& card)
+{
+	const std::string& cardName = card.getName();
+
+	for (auto it = constructedCards.begin(); it != constructedCards.end(); )
+	{
+		if ( it->get()->getName() == cardName)
+		{
+			it = constructedCards.erase(it);
+			return;
+		}
+		else
+			it++;
+	}
+}
+
+

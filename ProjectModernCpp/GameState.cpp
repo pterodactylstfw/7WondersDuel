@@ -15,8 +15,13 @@ template <typename T> struct adl_serializer<std::unique_ptr<T>> {
 
     template <typename BasicJsonType> static void from_json(const BasicJsonType& json_value, std::unique_ptr<T>& ptr)
     {
-        T inner_val = json_value.template get<T>();
-        ptr = std::make_unique<T>(std::move(inner_val));
+        if (json_value.is_null()) {
+            ptr = nullptr;
+        }
+        else {
+            T inner_val = json_value.template get<T>();
+            ptr = std::make_unique<T>(std::move(inner_val));
+        }
     }
 };
 
@@ -28,7 +33,10 @@ m_winnerIndex(std::nullopt),
 m_currentAge(1),
 m_gameOver(false),
 m_rng(std::random_device{}())
-{}
+{
+    m_players[0] = std::make_unique<Player>("Player 1");
+    m_players[1] = std::make_unique<Player>("Player 2");
+}
 
 void GameState::switchPlayer()
 { 

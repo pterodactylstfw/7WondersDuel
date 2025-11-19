@@ -6,7 +6,7 @@ std::vector<std::unique_ptr<Wonder>> WonderFactory::createWonders()
 	Wonders.reserve(12);
 
 	Wonders.push_back(std::make_unique<Wonder>(
-		"The Appian Way",
+		WonderType::THE_APPIAN_WAY,
 		Cost().withResourceCost(ResourceType::PAPYRUS, 1)
 		.withResourceCost(ResourceType::CLAY, 2)
 		.withResourceCost(ResourceType::STONE, 2),
@@ -17,7 +17,7 @@ std::vector<std::unique_ptr<Wonder>> WonderFactory::createWonders()
 	));
 
 	Wonders.push_back(std::make_unique<Wonder>(
-		"Circus Maximus",
+		WonderType::CIRCUS_MAXIMUS,
 		Cost().withResourceCost(ResourceType::GLASS, 1)
 		.withResourceCost(ResourceType::WOOD, 1)
 		.withResourceCost(ResourceType::STONE, 2),
@@ -27,7 +27,7 @@ std::vector<std::unique_ptr<Wonder>> WonderFactory::createWonders()
 	));
 
 	Wonders.push_back(std::make_unique<Wonder>(
-		"The Colossus",
+		WonderType::THE_COLOSSUS,
 		Cost().withResourceCost(ResourceType::GLASS, 1)
 		.withResourceCost(ResourceType::CLAY, 3),
 		3,
@@ -36,7 +36,7 @@ std::vector<std::unique_ptr<Wonder>> WonderFactory::createWonders()
 	));
 
 	Wonders.push_back(std::make_unique<Wonder>(
-		"The Great Library",
+		WonderType::THE_GREAT_LIBRARY,
 		Cost().withResourceCost(ResourceType::PAPYRUS, 1)
 		.withResourceCost(ResourceType::GLASS, 1)
 		.withResourceCost(ResourceType::WOOD, 3),
@@ -46,7 +46,7 @@ std::vector<std::unique_ptr<Wonder>> WonderFactory::createWonders()
 	));
 
 	Wonders.push_back(std::make_unique<Wonder>(
-		"The Great Lighthouse",
+		WonderType::THE_GREAT_LIGHTHOUSE,
 		Cost().withResourceCost(ResourceType::PAPYRUS, 2)
 		.withResourceCost(ResourceType::STONE, 1)
 		.withResourceCost(ResourceType::WOOD, 1),
@@ -61,7 +61,7 @@ std::vector<std::unique_ptr<Wonder>> WonderFactory::createWonders()
 	));
 
 	Wonders.push_back(std::make_unique<Wonder>(
-		"The Hanging Gardens",
+		WonderType::THE_HANGING_GARDENS,
 		Cost().withResourceCost(ResourceType::PAPYRUS, 1)
 		.withResourceCost(ResourceType::GLASS, 1)
 		.withResourceCost(ResourceType::WOOD, 2),
@@ -71,7 +71,7 @@ std::vector<std::unique_ptr<Wonder>> WonderFactory::createWonders()
 	));
 
 	Wonders.push_back(std::make_unique<Wonder>(
-		"The Mausoleum",
+		WonderType::THE_MAUSOLEUM,
 		Cost().withResourceCost(ResourceType::PAPYRUS, 1)
 		.withResourceCost(ResourceType::GLASS, 2)
 		.withResourceCost(ResourceType::CLAY, 2),
@@ -81,7 +81,7 @@ std::vector<std::unique_ptr<Wonder>> WonderFactory::createWonders()
 	));
 
 	Wonders.push_back(std::make_unique<Wonder>(
-		"Piraeus",
+		WonderType::PIRAEUS,
 		Cost().withResourceCost(ResourceType::CLAY, 1)
 		.withResourceCost(ResourceType::STONE, 1)
 		.withResourceCost(ResourceType::WOOD, 2),
@@ -96,13 +96,38 @@ std::vector<std::unique_ptr<Wonder>> WonderFactory::createWonders()
 	));
 
 	Wonders.push_back(std::make_unique<Wonder>(
-		"The Pyramids",
+		WonderType::THE_PYRAMIDS,
 		Cost().withResourceCost(ResourceType::PAPYRUS, 1)
 		.withResourceCost(ResourceType::STONE, 3),
 		9
 	));
 
+	Wonders.push_back(std::make_unique<Wonder>(
+		WonderType::THE_SPHINX,
+		Cost().withResourceCost(ResourceType::GLASS, 2)
+		.withResourceCost(ResourceType::CLAY, 1)
+		.withResourceCost(ResourceType::STONE, 1),
+		6,
+		CardEffect().grantsPlayAgain()
+	));
 
+	Wonders.push_back(std::make_unique<Wonder>(
+		WonderType::THE_STATUE_OF_ZEUS,
+		Cost().withResourceCost(ResourceType::PAPYRUS, 1)
+		.withResourceCost(ResourceType::STONE, 3),
+		9
+	));
+
+	Wonders.push_back(std::make_unique<Wonder>(
+		WonderType::THE_TEMPLE_OF_ARTEMIS,
+		Cost().withResourceCost(ResourceType::PAPYRUS, 1)
+		.withResourceCost(ResourceType::GLASS, 1)
+		.withResourceCost(ResourceType::STONE, 1)
+		.withResourceCost(ResourceType::WOOD, 1),
+		0,
+		CardEffect().withBaseCoins(12)
+		.grantsPlayAgain()
+	));
 
 	return Wonders;
 }

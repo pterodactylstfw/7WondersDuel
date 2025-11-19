@@ -65,7 +65,8 @@ public:
 	int getMilitaryShields() const;
 	int getCoins() const;
 	std::array<std::unique_ptr<Wonder>, 4>& getWonders();
-  std::vector<std::unique_ptr<Wonder>>& getConstructedWonders();
+    std::vector<std::unique_ptr<Wonder>>& getConstructedWonders();
+    const std::string& getName() const;
 
 	friend void to_json(json& j, const Player& player);
 	friend void from_json(const json& j, Player& player);

@@ -131,12 +131,14 @@
     <ClCompile Include="CardFactory.cpp" />
     <ClCompile Include="Constants.cpp" />
     <ClCompile Include="Cost.cpp" />
+    <ClCompile Include="GameController.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="GameState.cpp" />
     <ClCompile Include="ProgressToken.cpp" />
     <ClCompile Include="ProjectModernCpp.cpp" />
     <ClCompile Include="ResourceProduction.cpp" />
     <ClCompile Include="Wonder.cpp" />
+    <ClCompile Include="WonderFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\nlohmann\json.hpp" />
@@ -145,11 +147,13 @@
     <ClInclude Include="CardFactory.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="Cost.h" />
+    <ClInclude Include="GameController.h" />
     <ClInclude Include="GameState.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="ProgressToken.h" />
     <ClInclude Include="ResourceProduction.h" />
     <ClInclude Include="Wonder.h" />
+    <ClInclude Include="WonderFactory.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

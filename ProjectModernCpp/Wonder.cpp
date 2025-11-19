@@ -1,6 +1,14 @@
 #include "Wonder.h"
 
-Wonder::Wonder(std::string&& name, Cost& cost):m_name(name), m_cost(cost), m_isBuilt(false), m_effectDescription(""), m_victoryPoints(0) {}
+Wonder::Wonder(std::string_view name, Cost cost, uint8_t victoryPoints, CardEffect effect)
+	: m_name(name) , m_cost(std::move(cost)), m_isBuilt(false), 
+	  m_victoryPoints(victoryPoints), m_effect(std::move(effect)) { }
+
+//constructor temporar ptr a nu avea erori 
+//ptr cartile de nu au efect 
+Wonder::Wonder(std::string_view name, Cost cost, uint8_t victoryPoints)
+	: m_name(name), m_cost(std::move(cost)), m_isBuilt(false),
+	m_victoryPoints(victoryPoints) { }
 
 std::string_view Wonder::getName() const {
 	return m_name;
@@ -14,7 +22,7 @@ bool Wonder::isBuilt() const {
 	return m_isBuilt;
 }
 
-std::string_view Wonder::getDescription() const {
+std::string Wonder::getDescription() const {
 	return m_effectDescription;
 }
 

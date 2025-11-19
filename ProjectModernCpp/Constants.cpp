@@ -57,6 +57,26 @@ std::string progressTokenTypeToString(ProgressTokenType tokenType)
     }
 }
 
+std::string wonderTypeToString(WonderType type)
+{
+    switch (type) {
+    case WonderType::THE_APPIAN_WAY:        return "The Appian Way";
+    case WonderType::CIRCUS_MAXIMUS:        return "Circus Maximus";
+    case WonderType::THE_COLOSSUS:          return "The Colossus";
+    case WonderType::THE_GREAT_LIBRARY:     return "The Great Library";
+    case WonderType::THE_GREAT_LIGHTHOUSE:  return "The Great Lighthouse";
+    case WonderType::THE_HANGING_GARDENS:   return "The Hanging Gardens";
+    case WonderType::THE_MAUSOLEUM:         return "The Mausoleum";
+    case WonderType::PIRAEUS:               return "Piraeus";
+    case WonderType::THE_PYRAMIDS:          return "The Pyramids";
+    case WonderType::THE_SPHINX:            return "The Sphinx";
+    case WonderType::THE_STATUE_OF_ZEUS:    return "The Statue of Zeus";
+    case WonderType::THE_TEMPLE_OF_ARTEMIS: return "The Temple of Artemis";
+    case WonderType::NONE:                  return "None";
+    default:                                return "Unknown";
+    }
+}
+
 std::string victoryTypeToString(VictoryType type)
 {
     switch (type) {

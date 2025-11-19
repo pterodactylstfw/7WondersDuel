@@ -57,12 +57,15 @@ void Player::addCoins(int amount)
 	coins += amount;
 }
 
-bool Player::removeCoins(int amount)
+void Player::removeCoins(int amount)
 {
 	if (coins < amount)
-		return false;
+	{
+		coins = 0;
+		return;
+	}
 	coins -= amount;
-	return true;
+
 }
 
 void Player::addMilitaryShields(int shields)
@@ -210,16 +213,19 @@ std::map<ResourceType, int> Player::getTotalResources() const
 	return resourceProduction.getTotalProduction();
 }
 
-int Player::getCardsOfType(const CardColor& color) const
+std::vector<const Card*> Player::getCardsOfType(const CardColor& color) const
 {
-	int nr = 0;
+	std::vector<const Card*> result;
+
 	for (const auto& card : constructedCards)
 	{
 		if (card && card->getColor() == color)
-			nr++;
+		{
+			result.push_back(card.get()); // raw pointer, no ownership transfer
+		}
 	}
 
-	return nr;
+	return result;
 }
 
 int Player::getConstructedWondersCount() const
@@ -274,3 +280,20 @@ std::vector<std::unique_ptr<Wonder>>& Player::getConstructedWonders()
 {
 	return constructedWonders;
 }
+
+void Player::removeCard(const Card& card)
+{
+	const std::string& cardName = card.getName();
+
+	for (auto it = constructedCards.begin(); it != constructedCards.end(); )
+	{
+		if ( it->get()->getName() == cardName)
+		{
+			it = constructedCards.erase(it);
+			return;
+		}
+		else
+			it++;
+	}
+}
+

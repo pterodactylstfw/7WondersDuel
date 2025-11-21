@@ -127,6 +127,28 @@ bool GameState::loadGame(std::string&& filename)
     }
 }
 
+const std::vector<std::unique_ptr<Card>>& GameState::getDiscardedCards() const
+{
+    return m_discardedCards;
+}
+
+void GameState::addToDiscardCards(std::unique_ptr<Card>&& card)
+{
+    if(card)
+        m_discardedCards.push_back(std::move(card));
+}
+
+const std::vector<std::unique_ptr<ProgressToken>>& GameState::getDiscardedTokens() const
+{
+    return m_discardedProgressTokens;
+}
+
+void GameState::addToDiscardTokens(std::unique_ptr<ProgressToken>&& token)
+{
+    if(token)
+        m_discardedProgressTokens.push_back(std::move(token));
+}
+
 GameState::~GameState() = default;
 
 template<typename T>

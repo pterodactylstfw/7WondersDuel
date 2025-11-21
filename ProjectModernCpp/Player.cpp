@@ -52,7 +52,7 @@ void Player::addResource(ResourceType type, int qty)
 	resourceProduction.addFixedResource(type, qty);
 }
 
-void Player::addResourceChoice(std::vector<ResourceType>& choices)
+void Player::addResourceChoice(std::vector<ResourceType> choices)
 {
 	resourceProduction.addChoice(choices);
 }
@@ -290,7 +290,7 @@ const std::string& Player::getName() const {
   return name;
 }
 
-void Player::removeCard(const Card& card)
+std::unique_ptr<Card> Player::removeCard(const Card& card)
 {
 	const std::string& cardName = card.getName();
 
@@ -298,12 +298,14 @@ void Player::removeCard(const Card& card)
 	{
 		if ( it->get()->getName() == cardName)
 		{
-			it = constructedCards.erase(it);
-			return;
+			auto removed = std::move(*it);
+			constructedCards.erase(it);
+			return removed;
 		}
 		else
 			it++;
 	}
+	return nullptr;
 }
 
 

@@ -42,7 +42,7 @@ public:
 	void addProgressToken(std::unique_ptr<ProgressToken>&& token);
 
 	void addResource(ResourceType type, int qty);
-	void addResourceChoice(std::vector<ResourceType>& choices);
+	void addResourceChoice(std::vector<ResourceType> choices);
 	void addCoins(int amount);
 	void removeCoins(int amount);
 	void addMilitaryShields(int shields);
@@ -71,5 +71,5 @@ public:
 	friend void to_json(json& j, const Player& player);
 	friend void from_json(const json& j, Player& player);
 
-	void removeCard(const Card& card);
+	std::unique_ptr<Card> removeCard(const Card& card);
 };

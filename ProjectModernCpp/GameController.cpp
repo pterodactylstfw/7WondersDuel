@@ -1,7 +1,7 @@
 #include "GameController.h"
 
 
-void GameController::applyWonderEffect(Player& player, Player& opponent, const Wonder& wonder)
+void GameController::applyWonderEffect(Player& player, Player& opponent, const Wonder& wonder, GameState& gameState)
 {
 	WonderType type = wonder.getWonderType();
 
@@ -42,8 +42,34 @@ void GameController::applyWonderEffect(Player& player, Player& opponent, const W
 			}
 
 			const Card* chosen = opponentCards[index - 1];
-			opponent.removeCard(*chosen);
-			//+ sa punem cartea in decartate
+			auto removedCard = opponent.removeCard(*chosen);
+
+			gameState.addToDiscardCards(std::move(removedCard));
+		
+			break;
+		}
+		case WonderType::THE_COLOSSUS:
+		{
+			player.addMilitaryShields(2);
+			player.addVictoryPoints(3);
+			break;
+		}
+		case WonderType::THE_GREAT_LIBRARY:
+		{
+			player.addVictoryPoints(4);
+			//+Randomly draw 3 Progress tokens from among those discarded at
+			//the beginning of the game.Choose one, play it, and return the other
+			//2 to the box.
+			break;
+		}
+		case WonderType::THE_GREAT_LIGHTHOUSE:
+		{
+			player.addVictoryPoints(4);
+			player.addResourceChoice({
+				ResourceType::WOOD,
+				ResourceType::STONE,
+				ResourceType::CLAY
+				});
 			break;
 		}
 	}

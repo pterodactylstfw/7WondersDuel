@@ -181,6 +181,17 @@ bool GameState::isGameOver() const
 
 void GameState::setGameOver(bool over) { m_gameOver = over; }
 
+int GameState::getAllConstructedWondersCount() const
+{
+    int total = 0;
+    for (const auto& player : m_players) {
+        if (player) {
+            total += player->getConstructedWondersCount();
+        }
+    }
+    return total;
+}
+
 const std::vector<CardNode>& GameState::getPyramid() const
 {
     return m_pyramid;

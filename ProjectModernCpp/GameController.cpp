@@ -42,6 +42,80 @@ void GameController::draftWondersAuto() {
 	m_gameState->switchPlayer();
 }
 
+bool GameController::handleConstructBuilding(int cardIndex)
+{
+	Player& currentPlayer = m_gameState->getCurrentPlayer();
+	Player& opponent = m_gameState->getOpponent();
+
+	const Card* cardPtr = m_gameState->getCardPtr(cardIndex);
+	if (!cardPtr) return false;
+
+	int costToPay = 0;
+	if (currentPlayer.hasChainForCard(*cardPtr))
+		costToPay = 0;
+
+	else {
+		costToPay = currentPlayer.calculateResourceCost(cardPtr->getCost(), opponent);
+		if (currentPlayer.getCoins() < costToPay)
+			return false; // fonduri insuficiente
+	}
+
+	if (costToPay)
+		currentPlayer.removeCoins(costToPay);
+
+	std::unique_ptr<Card> takenCard = m_gameState->takeCard(cardIndex);
+	// de impl: verif perechi stiintifice(efecte imediate)
+	currentPlayer.addCard(std::move(takenCard));
+
+	return true;
+}
+
+bool GameController::handleDiscardCard(int cardIndex) 
+{
+	Player& currentPlayer = m_gameState->getCurrentPlayer();
+
+	int yellowCards = static_cast<int>(currentPlayer.getCardsOfType(CardColor::YELLOW).size());
+	int coinsGained = GameConstants::DISCARD_COINS_BASE + yellowCards;
+
+	std::unique_ptr<Card> discardedCard = m_gameState->takeCard(cardIndex);
+	// de impl : carti decartate, necesar si pt applywondereffect al denisei
+
+	currentPlayer.addCoins(coinsGained);
+
+	return true;
+}
+
+bool GameController::handleConstructWonders(int cardIndex, int wonderIndex, bool& outPlayAgain)
+{
+	Player& currentPlayer = m_gameState->getCurrentPlayer();
+	Player& opponent = m_gameState->getOpponent();
+
+	auto& wonders = currentPlayer.getWonders();
+	if (wonderIndex < 0 || wonderIndex >= 4 || !wonders[wonderIndex]) return false;
+
+	Wonder& targetWonder = *wonders[wonderIndex];
+
+	if (targetWonder.isBuilt())
+		return false; // e deja construita
+
+	if (m_gameState->getAllConstructedWondersCount() >= GameConstants::MAX_WONDERS_TOTAL)
+		return false; //sunt construite mai mult de 7 minuni global
+
+	int costToPay = currentPlayer.calculateResourceCost(targetWonder.getCost(), opponent);
+	if (currentPlayer.getCoins() < costToPay)
+		return false;
+
+	if (costToPay > 0) currentPlayer.removeCoins(costToPay);
+
+	std::unique_ptr<Card> sacrificedCard = m_gameState->takeCard(cardIndex);
+
+	currentPlayer.getConstructedWonders().push_back(std::move(wonders[wonderIndex]));
+	// de mutat minunea in minuni realizate(daca facem) sau marcata ca realizata
+
+	applyWonderEffect(currentPlayer, opponent, targetWonder);
+	return true;
+}
+
 void GameController::prepareAge(int age) {
 	// generare deck carti
 	CardFactory cf;
@@ -77,36 +151,20 @@ bool GameController::executeAction(int cardIndex, PlayerAction action, int wonde
 	bool success = false;
 	bool playAgain = false;
 
-	if (action == PlayerAction::CONSTRUCT_BUILDING) {
-		int cost = 0; // logica cost
-		bool freeChain = currentPlayer.hasChainForCard(*cardPtr);
+	switch (action) {
+	case PlayerAction::CONSTRUCT_BUILDING:
+		success = handleConstructBuilding(cardIndex);
+		break;
 
-		if (!freeChain) {
-			cost = currentPlayer.calculateResourceCost(cardPtr->getCost(), opponent);
-		}
+	case PlayerAction::DISCARD_FOR_COINS:
+		success = handleDiscardCard(cardIndex);
+		break;
 
-		if (freeChain || currentPlayer.getCoins() >= cost) {
-			currentPlayer.removeCoins(cost);
-
-
-			auto cardObj = m_gameState->takeCard(cardIndex); // mut din storage -> inventar player
-			// cardObj->getEffect().apply(currentPlayer); // de implementat aplicare efect daca e nevoie
-			currentPlayer.addCard(std::move(cardObj));
-
-			m_gameState->removeCardFromPyramid(cardIndex);
-			success = true;
-		}
+	case PlayerAction::CONSTRUCT_WONDER:
+		success = handleConstructWonders(cardIndex, wonderIndex, playAgain);
+		break;
 	}
-	else if (action == PlayerAction::DISCARD_FOR_COINS) {
-		int coins = 2 + static_cast<int>(currentPlayer.getCardsOfType(CardColor::YELLOW).size()); // 2 monede + nr carti galbene
-		currentPlayer.addCoins(coins);
 
-		// Eliminăm cartea definitiv (o scoatem din storage și o lăsăm să moară)
-		m_gameState->takeCard(cardIndex);
-		m_gameState->removeCardFromPyramid(cardIndex);
-		success = true;
-	}
-	// de pus logica wonder aici???
 
 	if (success) {
 		bool anyCardLeft = false;

@@ -64,6 +64,8 @@ public:
 	bool isGameOver() const;
 	void setGameOver(bool over);
 
+	int getAllConstructedWondersCount() const;
+
 	const std::vector<CardNode>& getPyramid() const;
 
 	const std::optional<uint8_t>& getWinnerIndex() const;

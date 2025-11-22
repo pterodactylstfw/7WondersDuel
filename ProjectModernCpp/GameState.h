@@ -15,6 +15,15 @@
 
 using json = nlohmann::json;
 
+struct CardNode {
+	int m_index;// index in m_currentAgeCards
+	bool m_isFaceUp; // daca e cu fata in suseUp;
+	bool m_isRemoved; // daca a fost deja luataoved;
+	std::vector<int> m_blockedBy; // indecsii cartilor care blocheaza aceasta carteint> m_blockedBy;
+};
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(CardNode, m_index, m_isFaceUp, m_isRemoved, m_blockedBy)
+
 class GameState
 {
 private:	
@@ -30,7 +39,6 @@ private:
 	uint8_t m_currentAge;
 
 	std::array<std::unique_ptr<Card>, GameConstants::CARDS_PER_AGE> m_currentAgeCards;
-	std::array<bool, GameConstants::CARDS_PER_AGE> m_cardAvailability;
 
 	std::vector<std::unique_ptr<Wonder>> m_allWonders;
 	std::vector<std::unique_ptr<ProgressToken>> m_availableProgressToken;
@@ -41,7 +49,10 @@ private:
 
 	bool m_gameOver;
 	//std::optional<VictoryType> m_victoryType;
-	std::mt19937 m_rng;
+
+	std::vector<CardNode> m_pyramid;
+
+	void buildPyramidStructure(int age); // metoda interna pentru a construi piramida
 
 public:
 
@@ -51,13 +62,24 @@ public:
 
 	const Player& getCurrentPlayer() const;
 	const Player& getOpponent() const;
+	Player& getCurrentPlayer();
+	Player& getOpponent();
+
 	uint8_t getCurrentAge() const;
 	bool isGameOver() const;
-	const std::optional<uint8_t>& getWinnerIndex() const;
-	// VictoryType getVictoryType() const;
+	void setGameOver(bool over);
 
-	Player& getCurrentPlayer(); //pentru GameController
-	Player& getOpponent(); //pentru GameController
+	const std::vector<CardNode>& getPyramid() const;
+
+	const std::optional<uint8_t>& getWinnerIndex() const;
+
+	const Card* getCardPtr(int index) const; // pt verif costuri
+
+
+	void initializeAge(int age, std::vector<std::unique_ptr<Card>>& deck);
+	bool isCardAccessible(int index) const;
+	void removeCardFromPyramid(int index); // pick card
+	std::unique_ptr<Card> takeCard(int index); // transfer de detinator carte intre playeri
 
 	bool saveGame(std::string&& filename) const;
 	bool loadGame(std::string&& filename);

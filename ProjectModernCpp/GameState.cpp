@@ -27,12 +27,51 @@ template <typename T> struct adl_serializer<std::unique_ptr<T>> {
 
 NLOHMANN_JSON_NAMESPACE_END
 
+void GameState::buildPyramidStructure(int age) {
+    m_pyramid.clear();
+    m_pyramid.resize(20);
+
+    for (int i = 0; i < 20; ++i) {
+        m_pyramid[i].m_index = i;
+        m_pyramid[i].m_isRemoved = false;
+        m_pyramid[i].m_blockedBy.clear();
+    }
+
+    if (age == 1) {
+        // age I 
+        for (int i = 0; i <= 5; i++) m_pyramid[i].m_isFaceUp = true;
+        for (int i = 6; i <= 10; i++) m_pyramid[i].m_isFaceUp = false;
+        for (int i = 11; i <= 14; i++) m_pyramid[i].m_isFaceUp = true;
+        for (int i = 15; i <= 17; i++) m_pyramid[i].m_isFaceUp = false;
+        for (int i = 18; i <= 19; i++) m_pyramid[i].m_isFaceUp = true;
+
+        // Dependinte carti age I
+        m_pyramid[6].m_blockedBy = { 0, 1 };
+        m_pyramid[7].m_blockedBy = { 1, 2 };
+        m_pyramid[8].m_blockedBy = { 2, 3 };
+        m_pyramid[9].m_blockedBy = { 3, 4 };
+        m_pyramid[10].m_blockedBy = { 4, 5 };
+
+        m_pyramid[11].m_blockedBy = { 6, 7 };
+        m_pyramid[12].m_blockedBy = { 7, 8 };
+        m_pyramid[13].m_blockedBy = { 8, 9 };
+        m_pyramid[14].m_blockedBy = { 9, 10 };
+
+        m_pyramid[15].m_blockedBy = { 11, 12 };
+        m_pyramid[16].m_blockedBy = { 12, 13 };
+        m_pyramid[17].m_blockedBy = { 13, 14 };
+
+        m_pyramid[18].m_blockedBy = { 15, 16 };
+        m_pyramid[19].m_blockedBy = { 16, 17 };
+    }
+                            // de impl si pentru age 2 si 3
+}
+
 GameState::GameState():m_currentPlayerIndex(0),
 m_currentTurn(1),
 m_winnerIndex(std::nullopt),
 m_currentAge(1),
-m_gameOver(false),
-m_rng(std::random_device{}())
+m_gameOver(false)
 {
     m_players[0] = std::make_unique<Player>("Player 1");
     m_players[1] = std::make_unique<Player>("Player 2");
@@ -53,6 +92,16 @@ const Player& GameState::getOpponent() const
 	return *m_players[1 - m_currentPlayerIndex];
 }
 
+Player& GameState::getCurrentPlayer()
+{
+    return *m_players[m_currentPlayerIndex];
+}
+
+Player& GameState::getOpponent()
+{
+    return *m_players[1 - m_currentPlayerIndex];
+}
+
 uint8_t GameState::getCurrentAge() const
 {
 	return m_currentAge;
@@ -63,20 +112,75 @@ bool GameState::isGameOver() const
 	return m_gameOver;
 }
 
+void GameState::setGameOver(bool over) { m_gameOver = over; }
+
+const std::vector<CardNode>& GameState::getPyramid() const
+{
+    return m_pyramid;
+}
+
 const std::optional<uint8_t>& GameState::getWinnerIndex() const
 {
 	return m_winnerIndex;
 }
 
-Player& GameState::getCurrentPlayer()
+const Card* GameState::getCardPtr(int index) const
 {
-	return *m_players[m_currentPlayerIndex];
+    if (index >= 0 && index < m_currentAgeCards.size())
+        return m_currentAgeCards[index].get();
+    return nullptr;
 }
 
-Player& GameState::getOpponent()
+void GameState::initializeAge(int age, std::vector<std::unique_ptr<Card>>& deck)
 {
-	return *m_players[1 - m_currentPlayerIndex];
+    m_currentAge = age;
+
+    int i = 0;
+    for (auto& card : deck) {
+        if (i < 20 && card != nullptr) {
+            m_currentAgeCards[i] = std::move(card);
+            i++;
+        }
+    }
+
+    buildPyramidStructure(age);
 }
+
+bool GameState::isCardAccessible(int index) const
+{
+    if (index < 0 || index >= m_pyramid.size()) return false;
+    if (m_pyramid[index].m_isRemoved) return false;
+
+    for (int blocker : m_pyramid[index].m_blockedBy)
+        if (!m_pyramid[blocker].m_isRemoved)
+            return false;
+
+    return true;
+}
+
+void GameState::removeCardFromPyramid(int index)
+{
+    if (index < 0 || index >= 20) return;
+
+    m_pyramid[index].m_isRemoved = true;
+
+    for (auto& node : m_pyramid) {
+        if (!node.m_isRemoved && !node.m_isFaceUp) { // actualizare automata stare vizuala
+            if (isCardAccessible(node.m_index)) {
+                node.m_isFaceUp = true;
+            }
+        }
+    }
+}
+
+std::unique_ptr<Card> GameState::takeCard(int index)
+{
+    if (index >= 0 && index < m_currentAgeCards.size()) {
+        return std::move(m_currentAgeCards[index]);
+    }
+    return nullptr;
+}
+
 
 bool GameState::saveGame(std::string&& filename) const
 {
@@ -115,8 +219,6 @@ bool GameState::loadGame(std::string&& filename)
         file.close();
 
         from_json(j, *this);
-
-        m_rng = std::mt19937(std::random_device{}());
 
         return true;
     }
@@ -171,7 +273,6 @@ void to_json(json& j, const GameState& state)
         {"ageIIIDeck", state.m_ageIIIDeck},
         {"currentAge", state.m_currentAge},
         {"currentAgeCards", state.m_currentAgeCards},
-        {"cardAvailability", state.m_cardAvailability},
         {"allWonders", state.m_allWonders},
         {"availableProgressToken", state.m_availableProgressToken},
         {"gameOver", state.m_gameOver}
@@ -189,7 +290,6 @@ void from_json(const json& j, GameState& state)
     j.at("ageIIIDeck").get_to(state.m_ageIIIDeck);
     j.at("currentAge").get_to(state.m_currentAge);
     j.at("currentAgeCards").get_to(state.m_currentAgeCards);
-    j.at("cardAvailability").get_to(state.m_cardAvailability);
     j.at("allWonders").get_to(state.m_allWonders);
     j.at("availableProgressToken").get_to(state.m_availableProgressToken);
     j.at("gameOver").get_to(state.m_gameOver);

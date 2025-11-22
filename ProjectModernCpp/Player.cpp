@@ -235,7 +235,7 @@ std::vector<const Card*> Player::getCardsOfType(const CardColor& color) const
 
 int Player::getConstructedWondersCount() const
 {
-	return constructedWonders.size();
+	return static_cast<int>(constructedWonders.size());
 }
 
 int Player::getFinalScore(const Player& opponent) const

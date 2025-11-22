@@ -16,10 +16,8 @@ private:
 public:
 
 	ProgressToken() = default;
-
 	ProgressToken(ProgressTokenType type, const std::string& name,
 		const std::string& description, uint8_t victoryPoints);
-
 	ProgressToken(const ProgressToken&) = default;
 	ProgressToken& operator=(const ProgressToken&) = default;
 	ProgressToken(ProgressToken&&) noexcept = default;
@@ -34,14 +32,9 @@ public:
 
 	void setActive(bool active);
 
-	void displayInfo() const;
 	std::string toString() const;
-
 	auto operator<=>(const ProgressToken& other) const = default;
 	bool operator==(const ProgressToken& other) const = default;
-
-	static std::vector<ProgressToken> createAllTokens();
-	static ProgressToken createToken(ProgressTokenType type);
 	friend std::ostream& operator<<(std::ostream& os, const ProgressToken& token);
 
 	friend void to_json(json& j, const ProgressToken& token);

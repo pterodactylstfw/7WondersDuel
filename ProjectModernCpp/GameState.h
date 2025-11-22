@@ -7,6 +7,7 @@
 #include "Card.h"
 #include "Player.h"
 #include "Wonder.h"
+#include "ProgressToken.h"
 
 //class Player;
 //class Card;
@@ -40,7 +41,11 @@ private:
 	std::array<std::unique_ptr<Card>, GameConstants::CARDS_PER_AGE> m_currentAgeCards;
 
 	std::vector<std::unique_ptr<Wonder>> m_allWonders;
-	std::vector<std::unique_ptr<ProgressTokenType>> m_availableProgressToken;
+	std::vector<std::unique_ptr<ProgressToken>> m_availableProgressToken;
+
+	std::vector<std::unique_ptr<Card>> m_discardedCards;
+	std::vector<std::unique_ptr<ProgressToken>> m_discardedProgressTokens;
+
 
 	bool m_gameOver;
 	//std::optional<VictoryType> m_victoryType;
@@ -80,6 +85,12 @@ public:
 
 	bool saveGame(std::string&& filename) const;
 	bool loadGame(std::string&& filename);
+
+	const std::vector<std::unique_ptr<Card>>& getDiscardedCards() const;
+	void addToDiscardCards(std::unique_ptr<Card>&& card);
+
+	const std::vector<std::unique_ptr<ProgressToken>>& getDiscardedTokens() const;
+	void addToDiscardTokens(std::unique_ptr<ProgressToken>&& token);
 
 	friend void to_json(json& j, const GameState& state);
 	friend void from_json(const json& j, GameState& state);

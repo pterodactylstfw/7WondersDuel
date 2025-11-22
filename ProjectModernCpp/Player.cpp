@@ -27,7 +27,7 @@ template <typename T> struct adl_serializer<std::unique_ptr<T>> {
 
 NLOHMANN_JSON_NAMESPACE_END // pentru rezolvarea problemei cu serializarea pointerilor unique - dupa discutia de pe forum nlohmann
 
-Player::Player(const std::string& playerName) : 
+Player::Player(const std::string& playerName):
 	name(playerName), coins(GameConstants::STARTING_COINS), militaryShields(0), victoryPoints(0) { }
 
 void Player::addCard(std::unique_ptr<Card>&& card)
@@ -52,7 +52,7 @@ void Player::addResource(ResourceType type, int qty)
 	resourceProduction.addFixedResource(type, qty);
 }
 
-void Player::addResourceChoice(std::vector<ResourceType>& choices)
+void Player::addResourceChoice(std::vector<ResourceType> choices)
 {
 	resourceProduction.addChoice(choices);
 }
@@ -286,7 +286,11 @@ std::vector<std::unique_ptr<Wonder>>& Player::getConstructedWonders()
 	return constructedWonders;
 }
 
-void Player::removeCard(const Card& card)
+const std::string& Player::getName() const {
+  return name;
+}
+
+std::unique_ptr<Card> Player::removeCard(const Card& card)
 {
 	const std::string& cardName = card.getName();
 
@@ -294,11 +298,14 @@ void Player::removeCard(const Card& card)
 	{
 		if ( it->get()->getName() == cardName)
 		{
-			it = constructedCards.erase(it);
-			return;
+			auto removed = std::move(*it);
+			constructedCards.erase(it);
+			return removed;
 		}
 		else
 			it++;
 	}
+	return nullptr;
 }
+
 

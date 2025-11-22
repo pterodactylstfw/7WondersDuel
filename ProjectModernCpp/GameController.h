@@ -31,7 +31,7 @@ public:
 	void loadGame(const std::string& filename);
 	void saveGame(const std::string& filename) const;
 
-	void applyWonderEffect(Player& player, Player& opponent, const Wonder& wonder);
+	void applyWonderEffect(Player& player, Player& opponent, const Wonder& wonder, GameState& gameState);
 
 	~GameController() = default;
 };

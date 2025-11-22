@@ -234,26 +234,37 @@ Cost& Cost::operator+=(const Cost& other) {
 
 Cost Cost::applyGeneralDiscount(int amount, const std::vector<ResourceType>& preferredOrder) const {
     Cost result = *this;
-    int remaining = amount;
-
+    int remainingDiscount = amount;
     for (ResourceType type : preferredOrder) {
-        if (remaining <= 0) break;
+        if (remainingDiscount <= 0) break; 
 
         auto it = result.m_resourceCosts.find(type);
         if (it != result.m_resourceCosts.end()) {
-            int canDiscount = std::min(remaining, it->second);
+            int canDiscount = std::min(remainingDiscount, it->second);
             it->second -= canDiscount;
-            remaining -= canDiscount;
-
+            remainingDiscount -= canDiscount; 
             if (it->second == 0) {
                 result.m_resourceCosts.erase(it);
+            }
+        }
+    }
+    if (remainingDiscount > 0) {
+        for (auto it = result.m_resourceCosts.begin(); it != result.m_resourceCosts.end();) {
+            if (remainingDiscount <= 0) break;
+            int canDiscount = std::min(remainingDiscount, it->second);
+            it->second -= canDiscount;
+            remainingDiscount -= canDiscount;
+            if (it->second == 0) {
+                it = result.m_resourceCosts.erase(it);
+            }
+            else {
+                ++it; 
             }
         }
     }
 
     return result;
 }
-
 Cost Cost::applyArchitectureDiscount(int amount) const {
     return applyGeneralDiscount(amount);
 }

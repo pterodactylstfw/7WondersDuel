@@ -64,7 +64,74 @@ void GameState::buildPyramidStructure(int age) {
         m_pyramid[18].m_blockedBy = { 15, 16 };
         m_pyramid[19].m_blockedBy = { 16, 17 };
     }
-                            // de impl si pentru age 2 si 3
+    
+    if (age == 2) {
+        // age II
+        for (int i = 0; i <= 1; i++) m_pyramid[i].m_isFaceUp = true;
+        for (int i = 2; i <= 4; i++) m_pyramid[i].m_isFaceUp = false;
+        for (int i = 5; i <= 8; i++) m_pyramid[i].m_isFaceUp = true;
+        for (int i = 9; i <= 13; i++) m_pyramid[i].m_isFaceUp = false;
+        for (int i = 14; i <= 19; i++) m_pyramid[i].m_isFaceUp = true;
+
+        // Dependinte carti age II
+        m_pyramid[2].m_blockedBy = { 0 };
+        m_pyramid[3].m_blockedBy = { 0, 1 };
+        m_pyramid[4].m_blockedBy = { 1 };
+
+        m_pyramid[5].m_blockedBy = { 2 };
+        m_pyramid[6].m_blockedBy = { 2, 3 };
+        m_pyramid[7].m_blockedBy = { 3, 4 };
+        m_pyramid[8].m_blockedBy = { 4 };
+
+        m_pyramid[9].m_blockedBy = { 5 };
+        m_pyramid[10].m_blockedBy = { 5, 6 };
+        m_pyramid[11].m_blockedBy = { 6, 7 };
+        m_pyramid[12].m_blockedBy = { 7, 8 };
+        m_pyramid[13].m_blockedBy = { 8 };
+
+		m_pyramid[14].m_blockedBy = { 9 };
+		m_pyramid[15].m_blockedBy = { 9, 10 };
+        m_pyramid[16].m_blockedBy = { 10, 11 };
+        m_pyramid[17].m_blockedBy = { 11, 12 };
+        m_pyramid[18].m_blockedBy = { 12, 13 };
+		m_pyramid[19].m_blockedBy = { 13 };
+    }
+
+    if (age == 3) {
+        // age III
+        for (int i = 0; i <= 1; i++) m_pyramid[i].m_isFaceUp = true;
+        for (int i = 2; i <= 4; i++) m_pyramid[i].m_isFaceUp = false;
+        for (int i = 5; i <= 8; i++) m_pyramid[i].m_isFaceUp = true;
+        for (int i = 9; i <= 10; i++) m_pyramid[i].m_isFaceUp = false;
+        for (int i = 11; i <= 14; i++) m_pyramid[i].m_isFaceUp = true;
+		for (int i = 15; i <= 17; i++) m_pyramid[i].m_isFaceUp = false;
+		for (int i = 18; i <= 19; i++) m_pyramid[i].m_isFaceUp = true;
+
+        // Dependinte carti age III
+		m_pyramid[2].m_blockedBy = { 0 };
+		m_pyramid[3].m_blockedBy = { 0, 1 };
+        m_pyramid[4].m_blockedBy = { 1 };
+
+        m_pyramid[5].m_blockedBy = { 2 };
+        m_pyramid[6].m_blockedBy = { 2, 3 };
+        m_pyramid[7].m_blockedBy = { 3, 4 };
+        m_pyramid[8].m_blockedBy = { 4 };
+
+        m_pyramid[9].m_blockedBy = { 5, 6 };
+        m_pyramid[10].m_blockedBy = { 7, 8 };
+
+        m_pyramid[11].m_blockedBy = { 9 };
+        m_pyramid[12].m_blockedBy = { 9 };
+        m_pyramid[13].m_blockedBy = { 10 };
+        m_pyramid[14].m_blockedBy = { 10 };
+
+        m_pyramid[15].m_blockedBy = { 11, 12 };
+        m_pyramid[16].m_blockedBy = { 12, 13 };
+        m_pyramid[17].m_blockedBy = { 13, 14 };
+
+        m_pyramid[18].m_blockedBy = { 15, 16 };
+		m_pyramid[19].m_blockedBy = { 16, 17 };
+    }
 }
 
 GameState::GameState():m_currentPlayerIndex(0),

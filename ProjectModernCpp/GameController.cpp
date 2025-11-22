@@ -203,7 +203,7 @@ void GameController::loadGame(const std::string& filename) {
 	m_gameState->loadGame(std::string(filename));
 }
 
-void GameController::applyWonderEffect(Player& player, Player& opponent, const Wonder& wonder, GameState& gameState)
+void GameController::applyWonderEffect(Player& player, Player& opponent, const Wonder& wonder)
 {
 	WonderType type = wonder.getWonderType();
 
@@ -246,7 +246,8 @@ void GameController::applyWonderEffect(Player& player, Player& opponent, const W
 			const Card* chosen = opponentCards[index - 1];
 			auto removedCard = opponent.removeCard(*chosen);
 
-			gameState.addToDiscardCards(std::move(removedCard));
+			m_gameState->addToDiscardCards(std::move(removedCard)); // am sters param GameState pentru ca 
+															// poate fi accesat cu pointer direct
 		
 			break;
 		}

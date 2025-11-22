@@ -14,6 +14,10 @@ private:
 	void checkEndAge();
 	void draftWondersAuto();
 
+	bool handleConstructBuilding(int cardIndex);
+	bool handleDiscardCard(int cardIndex);
+	bool handleConstructWonders(int cardIndex, int wonderIndex, bool & outPlayAgain);
+
 public:
 	GameController() = default;
 

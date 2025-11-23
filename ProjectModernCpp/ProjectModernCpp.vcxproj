@@ -136,7 +136,7 @@
     <ClCompile Include="GameState.cpp" />
     <ClCompile Include="ProgressToken.cpp" />
     <ClCompile Include="ProgressTokenFactory.cpp" />
-    <ClCompile Include="ProjectModernCpp.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="ResourceProduction.cpp" />
     <ClCompile Include="Wonder.cpp" />
     <ClCompile Include="WonderFactory.cpp" />

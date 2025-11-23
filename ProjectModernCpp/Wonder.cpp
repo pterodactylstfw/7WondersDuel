@@ -16,12 +16,19 @@ const Cost& Wonder::getCost() const {
 	return m_cost;
 }
 
+const CardEffect& Wonder::getEffect() const {
+	return m_effect;
+}
+
 bool Wonder::isBuilt() const {
 	return m_isBuilt;
 }
 
-std::string Wonder::getDescription() const {
-	return m_effectDescription;
+std::string Wonder::toString() const {
+	return "Wonder: " + m_name + "\nCost: " + m_cost.toString() +
+		"\nEffect: " + m_effect.getDescription() +
+		"\nVictory Points: " + std::to_string(m_victoryPoints) +
+		"\nStatus: " + (m_isBuilt ? "Built" : "Not built") + "\n";
 }
 
 uint8_t Wonder::getVictoryPoints() const {
@@ -39,7 +46,6 @@ void to_json(json& j, const Wonder& wonder)
 		{"name", wonder.m_name},
 		{"cost", wonder.m_cost},
 		{"isBuilt", wonder.m_isBuilt},
-		{"effectDescription", wonder.m_effectDescription},
 		{"victoryPoints", wonder.m_victoryPoints},
 		{"effect", wonder.m_effect }
 	};
@@ -50,7 +56,6 @@ void from_json(const json& j, Wonder& wonder)
 	j.at("name").get_to(wonder.m_name);
 	j.at("cost").get_to(wonder.m_cost);
 	j.at("isBuilt").get_to(wonder.m_isBuilt);
-	j.at("effectDescription").get_to(wonder.m_effectDescription);
 	j.at("victoryPoints").get_to(wonder.m_victoryPoints);
 	j.at("effect").get_to(wonder.m_effect);
 }

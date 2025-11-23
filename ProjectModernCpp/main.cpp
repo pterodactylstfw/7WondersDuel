@@ -123,9 +123,7 @@ int main()
     auto wonders = wonderFactory.createWonders();
     std::cout << "Total minuni create: " << wonders.size() << "\n";
     if (!wonders.empty()) {
-        std::cout << "Wonder 1: " << wonders[0]->getName()
-            << " | VP: " << (int)wonders[0]->getVictoryPoints()
-            << " | Effect: " << wonders[0]->getDescription() << "\n";
+		std::cout << wonders[4]->toString() << "\n";
     }
 
     

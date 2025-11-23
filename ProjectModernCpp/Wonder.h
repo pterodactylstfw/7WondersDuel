@@ -14,7 +14,6 @@ private:
 	Cost m_cost;
 	bool m_isBuilt;
 	uint8_t m_victoryPoints;
-	std::string m_effectDescription;
 	CardEffect m_effect;
 	WonderType m_type;
 
@@ -44,8 +43,11 @@ public:
 
 	std::string_view getName() const;
 	const Cost& getCost() const;
+	const CardEffect& getEffect() const;
+
 	bool isBuilt() const;
-	std::string getDescription() const;
+	std::string toString() const;
+	
 	uint8_t getVictoryPoints() const;
 	WonderType getWonderType() const;
 

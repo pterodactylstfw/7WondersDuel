@@ -32,6 +32,12 @@ private:
 	std::optional<bool> m_copyGuild;
 	std::optional<std::string> m_customDescription;
 
+	std::optional<bool> m_strategyEffect;  
+	std::optional<bool> m_masonryEffect;      
+	std::optional<bool> m_architectureEffect; 
+	std::optional<bool> m_economyEffect;      
+	std::optional<bool> m_mathematicsEffect;  
+
 public:
 
 	CardEffect() = default;
@@ -39,17 +45,12 @@ public:
 	CardEffect& withVictoryPoints(int points) noexcept;
 	CardEffect& withShields(int shields) noexcept;
 	CardEffect& withBaseCoins(int coins) noexcept;
-
 	CardEffect& withScienceSymbol(ScientificSymbol symbol) noexcept;
-
 	CardEffect& withDiscount(ResourceType type, int amount);
-
 	CardEffect& withProduction(const ResourceProduction& prod);
 	CardEffect& withProduction(ResourceProduction&& prod);
-
 	CardEffect& withPointsPerWonder(int points) noexcept;
 	CardEffect& withPointsPerCardType(CardColor color, int points);
-
 	CardEffect& withCoinsPerWonder(int coins) noexcept;
 	CardEffect& withCoinsPerCardType(CardColor color, int coins);
 	CardEffect& withCustomDescription(const std::string& desc);
@@ -57,15 +58,14 @@ public:
 	CardEffect& grantsProgressToken() noexcept;
 	CardEffect& grantsGuildCopy() noexcept;
 	CardEffect& countsOpponentCards() noexcept;
-
+	CardEffect& withStrategyEffect() noexcept;
+	CardEffect& withMasonryEffect() noexcept;
+	CardEffect& withArchitectureEffect() noexcept;
+	CardEffect& withEconomyEffect() noexcept;
+	CardEffect& withMathematicsEffect() noexcept;
 
 	bool isEmpty() const;
-	
 	std::string getDescription() const;
-
-
-	friend void to_json(json& j, const CardEffect& cardEffect);
-	friend void from_json(const json& j, CardEffect& cardEffect);
 
 	std::optional<int> getVictoryPointsPerCard() const;
 	std::optional<int> getShields() const;
@@ -80,5 +80,14 @@ public:
 
 	std::optional<int> getPointsPerWonder() const;
 	const std::map<CardColor, int>& getPointsPerCardType() const;
+
+	bool hasStrategyEffect() const;
+	bool hasMasonryEffect() const;
+	bool hasArchitectureEffect() const;
+	bool hasEconomyEffect() const;
+	bool hasMathematicsEffect() const;
+
+	friend void to_json(json& j, const CardEffect& cardEffect);
+	friend void from_json(const json& j, CardEffect& cardEffect);
 };
 

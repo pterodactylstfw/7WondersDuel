@@ -17,6 +17,7 @@ std::unique_ptr<ProgressToken> ProgressTokenFactory::createToken(ProgressTokenTy
             type,
             "Architecture",
             CardEffect()
+            .withArchitectureEffect()
             .withCustomDescription("Any future Wonders built by you will cost 2 fewer resources.")
         );
 
@@ -25,6 +26,7 @@ std::unique_ptr<ProgressToken> ProgressTokenFactory::createToken(ProgressTokenTy
             type,
             "Economy",
             CardEffect()
+            .withEconomyEffect()
             .withCustomDescription("You gain the money spent by your opponent when they trade for resources.")
         );
 
@@ -41,6 +43,7 @@ std::unique_ptr<ProgressToken> ProgressTokenFactory::createToken(ProgressTokenTy
             type,
             "Masonry",
             CardEffect()
+            .withMasonryEffect()
             .withCustomDescription("Any future blue cards constructed by you will cost 2 fewer resources.")
         );
     case ProgressTokenType::MATHEMATICS:
@@ -48,6 +51,7 @@ std::unique_ptr<ProgressToken> ProgressTokenFactory::createToken(ProgressTokenTy
             type,
             "Mathematics",
             CardEffect()
+            .withMathematicsEffect()
             .withCustomDescription("At the end of the game, score 3 victory points for each Progress token in your possession.")
         );
 
@@ -65,6 +69,7 @@ std::unique_ptr<ProgressToken> ProgressTokenFactory::createToken(ProgressTokenTy
             type,
             "Strategy",
             CardEffect()
+            .withStrategyEffect()
             .withCustomDescription("Your new military Buildings (red cards) will benefit from 1 extra Shield.")
         );
 
@@ -73,6 +78,7 @@ std::unique_ptr<ProgressToken> ProgressTokenFactory::createToken(ProgressTokenTy
             type,
             "Theology",
             CardEffect()
+            .grantsPlayAgain()
             .withCustomDescription("All future Wonders constructed by you are treated as though they have the 'Play Again' effect.")
         );
 
@@ -84,7 +90,6 @@ std::unique_ptr<ProgressToken> ProgressTokenFactory::createToken(ProgressTokenTy
             .withBaseCoins(6)
             .withCustomDescription("Immediately take 6 coins. Linking gives 4 coins.")
         );
-
     default:
         return std::make_unique<ProgressToken>(
             ProgressTokenType::NONE,

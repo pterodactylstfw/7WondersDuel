@@ -67,6 +67,11 @@ CardEffect& CardEffect::withCoinsPerCardType(CardColor color, int coins)
     return *this;
 }
 
+CardEffect& CardEffect::withCustomDescription(const std::string& desc) {
+    m_customDescription = desc;
+    return *this;
+}
+
 CardEffect& CardEffect::grantsPlayAgain() noexcept
 {
     m_playAgain = true; 
@@ -110,63 +115,39 @@ bool CardEffect::isEmpty() const
 
 std::string CardEffect::getDescription() const
 {
+    if (m_customDescription.has_value() && !m_customDescription.value().empty()) {
+        return m_customDescription.value();
+    }
     if (isEmpty()) {
         return "Niciun efect special.";
     }
 
     std::stringstream ss;
 
-    if (m_victoryPoints.has_value()) 
-        ss << "Ofera " << m_victoryPoints.value() << " puncte de victorie. ";
-    
-    if (m_baseCoins.has_value()) 
+    if (m_victoryPoints.has_value())
+        ss << "Ofera " << m_victoryPoints.value() << " VP. ";
+
+    if (m_baseCoins.has_value())
         ss << "Ofera " << m_baseCoins.value() << " monede. ";
-    
-    if (m_shields.has_value()) 
-        ss << "Ofera " << m_shields.value() << " scuturi militare. ";
-    
-    if (!m_production.isEmpty()) 
+
+    if (m_shields.has_value())
+        ss << "Ofera " << m_shields.value() << " scuturi. ";
+
+    if (!m_production.isEmpty())
         ss << "Produce: " << m_production.getDescription() << ". ";
-    
-    if (m_scienceSymbol.has_value()) 
-        ss << "Ofera simbolul stiintific: " << scientificSymbolToString(m_scienceSymbol.value()) << ". ";
 
-    if(!m_discounts.empty()) {
+    if (m_scienceSymbol.has_value())
+        ss << "Simbol: " << scientificSymbolToString(m_scienceSymbol.value()) << ". ";
+
+    if (!m_discounts.empty()) {
         for (const auto& [type, amount] : m_discounts) {
-            ss << "Ofera reducere de " << amount << " la resursa " << resourceToString(type) << ". ";
-        }
-	}
-
-    if (m_coinsPerWonder.has_value()) 
-        ss << "Ofera " << m_coinsPerWonder.value() << " monede/minune construita. ";
-    
-    if (!m_coinsPerCardType.empty()) {
-        for (const auto& [color, coins] : m_coinsPerCardType) {
-            ss << "Ofera " << coins << " monede/carte de tip " << colorToString(color) << ". ";
+            ss << "Reducere " << amount << " la " << resourceToString(type) << ". ";
         }
     }
 
-    if (m_pointsPerWonder.has_value()) 
-        ss << "Ofera " << m_pointsPerWonder.value() << " puncte/minune construita la finalul jocului. ";
-    
-    if (!m_pointsPerCardType.empty()) {
-        for (const auto& [color, points] : m_pointsPerCardType) {
-            ss << "Ofera " << points << " puncte/carte de tip " << colorToString(color) << " la finalul jocului. ";
-        }
-    }
+    if (m_playAgain.has_value() && m_playAgain.value())
+        ss << "Joci din nou. ";
 
-    if (m_playAgain.has_value() && m_playAgain.value()) 
-        ss << "Permite jucatorului sa joace o noua tura imediat. ";
-    
-    if (m_grantsProgressToken.has_value() && m_grantsProgressToken.value()) 
-        ss << "Permite jucatorului sa aleaga un jeton de progres. ";
-    
-    if (m_copyGuild.has_value() && m_copyGuild.value()) 
-        ss << "Copiaza efectul unei carti de breasla (mov) din orasul unui oponent. ";
-
-    if(m_countOpponentCards.has_value() && m_countOpponentCards.value())
-		ss << "Numara cartile din orasul oponentului. ";
-    
     return ss.str();
 }
 
@@ -180,7 +161,8 @@ std::optional<T> get_optional(const json& j, const std::string& key) {
 
 void to_json(json& j, const CardEffect& cardEffect)
 {
-    j = json{ {"victoryPoints", cardEffect.m_victoryPoints},
+    j = json{
+        {"victoryPoints", cardEffect.m_victoryPoints},
         {"shields", cardEffect.m_shields},
         {"baseCoins", cardEffect.m_baseCoins},
         {"scienceSymbol", cardEffect.m_scienceSymbol},
@@ -193,7 +175,8 @@ void to_json(json& j, const CardEffect& cardEffect)
         {"playAgain", cardEffect.m_playAgain},
         {"grantsProgressToken", cardEffect.m_grantsProgressToken},
         {"countOpponentCards", cardEffect.m_countOpponentCards},
-        {"copyGuild", cardEffect.m_copyGuild}
+        {"copyGuild", cardEffect.m_copyGuild},
+        {"customDescription", cardEffect.m_customDescription} 
     };
 }
 

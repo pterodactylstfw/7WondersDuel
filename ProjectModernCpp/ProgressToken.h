@@ -10,14 +10,11 @@ class ProgressToken {
 private:
     ProgressTokenType m_tokenType;
     std::string m_name;
-    std::string m_description;
-    CardEffect m_effect;     
-    bool m_isActive;        
-
+    CardEffect m_effect;
+    bool m_isActive;
 public:
     ProgressToken() = default;
-    ProgressToken(ProgressTokenType type, const std::string& name,
-        const std::string& description, CardEffect effect);
+    ProgressToken(ProgressTokenType type, const std::string& name, CardEffect effect);
 
     ProgressToken(const ProgressToken&) = default;
     ProgressToken& operator=(const ProgressToken&) = default;
@@ -27,7 +24,7 @@ public:
 
     ProgressTokenType getType() const;
     std::string_view getName() const;
-    std::string_view getDescription() const;
+    std::string getDescription() const;
 
     uint8_t getVictoryPoints() const;
     bool isActive() const;

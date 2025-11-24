@@ -12,15 +12,12 @@ using json = nlohmann::json;
 class CardEffect
 {
 private:
-
 	std::optional<int> m_victoryPoints;
 	std::optional<int> m_shields;
 	std::optional<int> m_baseCoins;
-
 	std::optional<ScientificSymbol> m_scienceSymbol;
 
 	std::map<ResourceType, int> m_discounts;
-
 	ResourceProduction m_production;
 
 	std::optional<int> m_coinsPerWonder;
@@ -33,7 +30,7 @@ private:
 	std::optional<bool> m_grantsProgressToken;
 	std::optional<bool> m_countOpponentCards;
 	std::optional<bool> m_copyGuild;
-
+	std::optional<std::string> m_customDescription;
 
 public:
 
@@ -55,7 +52,7 @@ public:
 
 	CardEffect& withCoinsPerWonder(int coins) noexcept;
 	CardEffect& withCoinsPerCardType(CardColor color, int coins);
-
+	CardEffect& withCustomDescription(const std::string& desc);
 	CardEffect& grantsPlayAgain() noexcept;
 	CardEffect& grantsProgressToken() noexcept;
 	CardEffect& grantsGuildCopy() noexcept;
@@ -83,7 +80,5 @@ public:
 
 	std::optional<int> getPointsPerWonder() const;
 	const std::map<CardColor, int>& getPointsPerCardType() const;
-
-
 };
 

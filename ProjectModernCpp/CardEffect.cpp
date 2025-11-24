@@ -115,38 +115,56 @@ bool CardEffect::isEmpty() const
 
 std::string CardEffect::getDescription() const
 {
-    if (m_customDescription.has_value() && !m_customDescription.value().empty()) {
+   std::stringstream ss;
+
+   if (m_customDescription.has_value() && !m_customDescription.value().empty()) {
         return m_customDescription.value();
     }
+
     if (isEmpty()) {
-        return "Niciun efect special.";
+        return "No special effect.";
     }
-
-    std::stringstream ss;
-
+   
     if (m_victoryPoints.has_value())
-        ss << "Ofera " << m_victoryPoints.value() << " VP. ";
+        ss << "Grants " << m_victoryPoints.value() << " VP. ";
 
     if (m_baseCoins.has_value())
-        ss << "Ofera " << m_baseCoins.value() << " monede. ";
+        ss << "Grants " << m_baseCoins.value() << " coins. ";
 
     if (m_shields.has_value())
-        ss << "Ofera " << m_shields.value() << " scuturi. ";
+        ss << "Grants " << m_shields.value() << " shields. ";
 
     if (!m_production.isEmpty())
-        ss << "Produce: " << m_production.getDescription() << ". ";
+        ss << "Produces: " << m_production.getDescription() << ". ";
 
     if (m_scienceSymbol.has_value())
-        ss << "Simbol: " << scientificSymbolToString(m_scienceSymbol.value()) << ". ";
+        ss << "Science Symbol: " << scientificSymbolToString(m_scienceSymbol.value()) << ". ";
 
     if (!m_discounts.empty()) {
         for (const auto& [type, amount] : m_discounts) {
-            ss << "Reducere " << amount << " la " << resourceToString(type) << ". ";
+            ss << "Discount of " << amount << " on " << resourceToString(type) << ". ";
         }
     }
 
+    if (m_pointsPerWonder.has_value())
+        ss << "Grants " << m_pointsPerWonder.value() << " VP per constructed Wonder. ";
+
+    if (m_coinsPerWonder.has_value())
+        ss << "Grants " << m_coinsPerWonder.value() << " coins per constructed Wonder. ";
+
+    for (const auto& [color, points] : m_pointsPerCardType) {
+        ss << "Grants " << points << " VP per " << colorToString(color) << " card. ";
+    }
+
+    for (const auto& [color, coins] : m_coinsPerCardType) {
+        ss << "Grants " << coins << " coins per " << colorToString(color) << " card. ";
+    }
+
+    if (m_grantsProgressToken.has_value() && m_grantsProgressToken.value())
+        ss << "Choose a Progress Token. ";
+
     if (m_playAgain.has_value() && m_playAgain.value())
-        ss << "Joci din nou. ";
+        ss << "Play again. ";
 
     return ss.str();
 }
@@ -186,12 +204,15 @@ void from_json(const json& j, CardEffect& cardEffect)
     cardEffect.m_shields = get_optional<int>(j, "shields");
     cardEffect.m_baseCoins = get_optional<int>(j, "baseCoins");
     cardEffect.m_scienceSymbol = get_optional<ScientificSymbol>(j, "scienceSymbol");
+
     cardEffect.m_coinsPerWonder = get_optional<int>(j, "coinsPerWonder");
     cardEffect.m_pointsPerWonder = get_optional<int>(j, "pointsPerWonder");
+
     cardEffect.m_playAgain = get_optional<bool>(j, "playAgain");
     cardEffect.m_grantsProgressToken = get_optional<bool>(j, "grantsProgressToken");
     cardEffect.m_countOpponentCards = get_optional<bool>(j, "countOpponentCards");
-	cardEffect.m_copyGuild = get_optional<bool>(j, "copyGuild");    // am folosit functia template pentru a evita repetarea
+    cardEffect.m_copyGuild = get_optional<bool>(j, "copyGuild");
+    cardEffect.m_customDescription = get_optional<std::string>(j, "customDescription");
 
     cardEffect.m_discounts = j.value("discounts", std::map<ResourceType, int>{});
     cardEffect.m_production = j.value("production", ResourceProduction{});

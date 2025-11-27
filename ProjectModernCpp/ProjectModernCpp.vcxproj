@@ -129,6 +129,7 @@
     <ClCompile Include="CardEffect.cpp" />
     <ClCompile Include="Card.cpp" />
     <ClCompile Include="CardFactory.cpp" />
+    <ClCompile Include="ConsoleUI.cpp" />
     <ClCompile Include="Constants.cpp" />
     <ClCompile Include="Cost.cpp" />
     <ClCompile Include="GameController.cpp" />
@@ -147,6 +148,7 @@
     <ClInclude Include="CardEffect.h" />
     <ClInclude Include="Card.h" />
     <ClInclude Include="CardFactory.h" />
+    <ClInclude Include="ConsoleUI.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="Cost.h" />
     <ClInclude Include="GameController.h" />
@@ -156,6 +158,7 @@
     <ClInclude Include="ProgressToken.h" />
     <ClInclude Include="ProgressTokenFactory.h" />
     <ClInclude Include="ResourceProduction.h" />
+    <ClInclude Include="Utils.h" />
     <ClInclude Include="Wonder.h" />
     <ClInclude Include="WonderFactory.h" />
   </ItemGroup>

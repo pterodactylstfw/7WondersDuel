@@ -153,6 +153,10 @@ bool Player::canBuildCard(const Card& card, const Player& opponent) const
 	return false;
 }
 
+int Player::getVictoryPoints() const {
+	return victoryPoints;
+}
+
 void to_json(json& j, const Player& player)
 {
 	j = json{

@@ -10,8 +10,7 @@
 #include "Card.h"
 #include "ResourceProduction.h"
 #include "ProgressToken.h"
-
-using json = nlohmann::json;
+#include "JsonUtils.h"
 
 class Player
 {

@@ -1,8 +1,6 @@
 ﻿#pragma once
 #include<string>
-#include "../include/nlohmann/json.hpp"
-
-using json = nlohmann::json;
+#include "JsonUtils.h"
 
 namespace GameConstants {
 

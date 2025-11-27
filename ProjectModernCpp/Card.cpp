@@ -79,13 +79,6 @@ const std::optional<std::string>& Card::getProvidesChainTo() const
 }
 
 
-template<typename T>
-std::optional<T> get_optional(const json& j, const std::string& key) {
-	if (j.contains(key) && !j[key].is_null()) {
-		return std::optional<T>(j[key].get<T>());
-	}
-	return std::nullopt;
-}
 
 void to_json(json& j, const Card& card)
 {

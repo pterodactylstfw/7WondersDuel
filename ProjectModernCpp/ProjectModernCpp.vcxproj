@@ -132,6 +132,7 @@
     <ClCompile Include="Constants.cpp" />
     <ClCompile Include="Cost.cpp" />
     <ClCompile Include="GameController.cpp" />
+    <ClCompile Include="JsonUtils.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="GameState.cpp" />
     <ClCompile Include="ProgressToken.cpp" />
@@ -150,6 +151,7 @@
     <ClInclude Include="Cost.h" />
     <ClInclude Include="GameController.h" />
     <ClInclude Include="GameState.h" />
+    <ClInclude Include="JsonUtils.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="ProgressToken.h" />
     <ClInclude Include="ProgressTokenFactory.h" />

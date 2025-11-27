@@ -254,15 +254,6 @@ std::string CardEffect::getDescription() const
     return ss.str();
 }
 
-template<typename T>
-std::optional<T> get_optional(const json& j, const std::string& key)
-{
-    if (j.contains(key) && !j[key].is_null())
-    {
-        return std::optional<T>(j[key].get<T>());
-    }
-    return std::nullopt;
-}
 
 void to_json(json& j, const CardEffect& cardEffect)
 {

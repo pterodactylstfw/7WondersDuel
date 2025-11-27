@@ -6,8 +6,8 @@
 #include <optional>
 #include "Cost.h"
 #include "CardEffect.h"
+#include "JsonUtils.h"
 
-using json = nlohmann::json;
 
 class Card
 {

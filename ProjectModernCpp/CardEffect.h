@@ -7,7 +7,7 @@
 #include "Constants.h"
 #include "ResourceProduction.h"
 
-using json = nlohmann::json;
+#include "JsonUtils.h"
 
 class CardEffect
 {

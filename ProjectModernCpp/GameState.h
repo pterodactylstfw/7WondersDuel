@@ -8,12 +8,12 @@
 #include "Player.h"
 #include "Wonder.h"
 #include "ProgressToken.h"
+#include "JsonUtils.h"
 
 //class Player;
 //class Card;
 //class Wonder; de revizuit cu forward declarations
 
-using json = nlohmann::json;
 
 struct CardNode {
 	int m_index;// index in m_currentAgeCards

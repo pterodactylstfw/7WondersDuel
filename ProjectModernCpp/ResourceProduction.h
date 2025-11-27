@@ -3,8 +3,7 @@
 #include <vector>
 #include <map>
 #include "Constants.h"
-
-using json = nlohmann::json;
+#include "JsonUtils.h"
 
 class ResourceProduction
 {

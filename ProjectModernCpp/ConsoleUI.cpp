@@ -66,3 +66,35 @@ void ConsoleUI::displayPlayer(const Player& player) const
 	*/
 
 }
+
+int ConsoleUI::showMainMenu()
+{
+	std::cout << "\n=======================================\n";
+	std::cout << "                MAIN MENU\n";
+	std::cout << "=======================================\n";
+
+	std::cout << "1. Start new game\n";
+	std::cout << "2. Load game\n";
+
+	return Utils::getIntInput("Select an option: ");
+}
+
+int ConsoleUI::showActionMenu()
+{
+	std::cout << "1. Construct Building\n";
+	std::cout << "2. Discard to obtain coins\n";
+	std::cout << "3. Construct Wonder\n";
+
+	return Utils::getIntInput("Select an option: ");
+}
+
+void ConsoleUI::showVictoryScreen(const std::string& winnerName)
+{
+	system("cls");
+	std::cout << "\n=======================================\n";
+	std::cout << "           GAME OVER\n";
+	std::cout << "=======================================\n";
+	std::cout << ">>> The winner is: " << winnerName << " <<<\n";
+	std::cout << "Congratulations!\n";
+	std::cout << "=======================================\n";
+}

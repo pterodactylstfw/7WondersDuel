@@ -67,7 +67,7 @@ void ConsoleUI::displayPlayer(const Player& player) const
 
 }
 
-void ConsoleUI::displayPyramid() const
+void ConsoleUI::displayAccesibleCards() const
 {
 	const auto& pyramid = m_game.getGameState().getPyramid();
 	std::cout << "Pyramid Cards (Accessible): \n";

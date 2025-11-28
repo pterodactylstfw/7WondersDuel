@@ -67,10 +67,27 @@ void ConsoleUI::displayPlayer(const Player& player) const
 
 }
 
+void ConsoleUI::displayPyramid() const
+{
+	const auto& pyramid = m_game.getGameState().getPyramid();
+	std::cout << "Pyramid Cards (Accessible): \n";
+	for (const auto& node : pyramid)
+	{
+		if (!node.m_isRemoved && node.m_isFaceUp)
+		{
+			const auto* card = m_game.getGameState().getCardPtr(node.m_index);
+			if (card)
+			{
+				std::cout << " - [" << node.m_index << "] " << card->displayCardInfo() << "\n";
+			}
+		}
+	}
+}
+
 int ConsoleUI::showMainMenu()
 {
 	std::cout << "\n=======================================\n";
-	std::cout << "                MAIN MENU\n";
+	std::cout << "               MAIN MENU\n";
 	std::cout << "=======================================\n";
 
 	std::cout << "1. Start new game\n";

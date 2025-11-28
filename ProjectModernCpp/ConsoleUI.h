@@ -12,7 +12,7 @@ private:
 
 	void displayWonderBoard() const;
 
-	//void displayPyramid() const;
+	void displayPyramid() const;
 
 	int showMainMenu();
 	int showActionMenu();

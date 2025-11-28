@@ -52,7 +52,7 @@ public:
 	void applyEffect(); // To be defined later
 	std::string getEffectDescription() const; // To be defined later
 
-	void displayCardInfo() const;
+	std::string displayCardInfo() const;
 
 	friend void to_json(json& j, const Card& card);
 	friend void from_json(const json& j, Card& card);

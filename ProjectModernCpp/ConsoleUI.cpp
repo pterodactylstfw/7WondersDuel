@@ -115,3 +115,37 @@ void ConsoleUI::showVictoryScreen(const std::string& winnerName)
 	std::cout << "Congratulations!\n";
 	std::cout << "=======================================\n";
 }
+
+void ConsoleUI::run()
+{
+	int startOption = showMainMenu();
+	switch (startOption)
+	{
+	case 1:
+	{
+		std::cout << "Enter player 1 name: ";
+		std::string player1;
+		std::cin >> player1;
+		std::cin.ignore();
+
+		std::cout << "Enter player 2 name: ";
+		std::string player2;
+		std::cin >> player2;
+		std::cin.ignore();
+
+		m_game.startNewGame(player1, player2);
+		break;
+	}
+
+	case 2:
+	{
+		m_game.loadGame("test_savegame.json");
+		break;
+	}
+
+	default:
+		break;
+
+	}
+	// to continue
+}

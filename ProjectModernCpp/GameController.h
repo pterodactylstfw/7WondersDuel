@@ -4,6 +4,7 @@
 #include "Player.h"
 #include "CardFactory.h"
 #include "WonderFactory.h"
+#include "ProgressTokenFactory.h"
 
 class GameController
 {
@@ -13,6 +14,7 @@ private:
 	void prepareAge(int age);
 	void checkEndAge();
 	void draftWondersAuto();
+	void prepareProgressTokens();
 
 	bool handleConstructBuilding(int cardIndex);
 	bool handleDiscardCard(int cardIndex);

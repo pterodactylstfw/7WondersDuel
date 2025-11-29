@@ -282,6 +282,5 @@ int main()
         std::cout << "[FAIL] Piramida nu a fost construita (Size != 20). Verifica GameState::initializeAge!\n";
     }
 
-
     return 0;
 }

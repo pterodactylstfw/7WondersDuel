@@ -20,6 +20,11 @@ const CardEffect& Wonder::getEffect() const {
 	return m_effect;
 }
 
+std::string Wonder::getDescription() const
+{
+	return m_effect.getDescription();
+}
+
 bool Wonder::isBuilt() const {
 	return m_isBuilt;
 }

@@ -307,5 +307,3 @@ std::unique_ptr<Card> Player::removeCard(const Card& card)
 	}
 	return nullptr;
 }
-
-

@@ -46,7 +46,6 @@ private:
 	std::vector<std::unique_ptr<Card>> m_discardedCards;
 	std::vector<std::unique_ptr<ProgressToken>> m_discardedProgressTokens;
 
-
 	bool m_gameOver;
 	//std::optional<VictoryType> m_victoryType;
 
@@ -88,9 +87,11 @@ public:
 
 	const std::vector<std::unique_ptr<Card>>& getDiscardedCards() const;
 	void addToDiscardCards(std::unique_ptr<Card>&& card);
+	std::unique_ptr<Card> extractDiscardedCard(int index);
 
 	const std::vector<std::unique_ptr<ProgressToken>>& getDiscardedTokens() const;
 	void addToDiscardTokens(std::unique_ptr<ProgressToken>&& token);
+	std::unique_ptr<ProgressToken> extractDiscardedTokens(int index);
 
 	friend void to_json(json& j, const GameState& state);
 	friend void from_json(const json& j, GameState& state);

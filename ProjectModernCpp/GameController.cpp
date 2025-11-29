@@ -219,6 +219,7 @@ void GameController::applyWonderEffect(Player& player, Player& opponent, const W
 		case WonderType::CIRCUS_MAXIMUS:
 		{
 			player.addMilitaryShields(1);
+			player.addVictoryPoints(3);
 			auto opponentCards = opponent.getCardsOfType(CardColor::GREY);
 
 			if (opponentCards.empty()) {
@@ -242,13 +243,12 @@ void GameController::applyWonderEffect(Player& player, Player& opponent, const W
 				std::cout << "Invalid choice. Try again: \n";
 				std::cin >> index;
 			}
+			index--;
 
-			const Card* chosen = opponentCards[index - 1];
+			const Card* chosen = opponentCards[index];
 			auto removedCard = opponent.removeCard(*chosen);
 
-			m_gameState->addToDiscardCards(std::move(removedCard)); // am sters param GameState pentru ca 
-															// poate fi accesat cu pointer direct
-		
+			m_gameState->addToDiscardCards(std::move(removedCard));
 			break;
 		}
 		case WonderType::THE_COLOSSUS:
@@ -273,6 +273,103 @@ void GameController::applyWonderEffect(Player& player, Player& opponent, const W
 				ResourceType::STONE,
 				ResourceType::CLAY
 				});
+			break;
+		}
+		case WonderType::THE_HANGING_GARDENS:
+		{
+			player.addCoins(6);
+			//+ second turn
+			player.addVictoryPoints(3);
+			break;
+		}
+		case WonderType::THE_MAUSOLEUM:
+		{
+			const auto& discarded_cards = m_gameState->getDiscardedCards();
+			if (discarded_cards.empty())
+			{
+				std::cout << "The discard pile is empty\n";
+				break;
+			}
+
+			std::cout << "Choose a card to build for free\n";
+			int index = 1;
+			for (const auto& card : discarded_cards)
+			{
+				std::cout << index << "." << card->getName() << "\n";
+				index++;
+			}
+
+			std::cout << "Choose a card to build: \n";
+			std::cin >> index;
+
+			while (index < 1 || index > discarded_cards.size())
+			{
+				std::cout << "Invalid choice. Try again: \n";
+				std::cin >> index;
+			}
+			index--;
+
+			std::unique_ptr<Card> cardToBuild = m_gameState->extractDiscardedCard(index);
+			if (cardToBuild)
+			{
+				player.addCard(std::move(cardToBuild));
+			}
+			break;
+		}
+		case WonderType::PIRAEUS:
+		{
+			player.addResourceChoice({
+				ResourceType::PAPYRUS,
+				ResourceType::GLASS
+				});
+			//+second turn
+			player.addVictoryPoints(2);
+			break;
+		}
+		case WonderType::THE_PYRAMIDS:
+		{
+			player.addVictoryPoints(9);
+			break;
+		}
+		case WonderType::THE_SPHINX:
+		{
+			//+second turn
+			player.addVictoryPoints(6);
+			break;
+		}
+		case WonderType::THE_STATUE_OF_ZEUS:
+		{
+			player.addMilitaryShields(1);
+			player.addVictoryPoints(3);
+			auto opponentCards = opponent.getCardsOfType(CardColor::BROWN);
+
+			if (opponentCards.empty()) {
+				std::cout << "Opponent has no brown cards to destroy.\n";
+				break;
+			}
+
+			std::cout << "Your opponent's brown cards:\n";
+			int index = 1;
+			for (const Card* card : opponentCards)
+			{
+				std::cout << index << "." << card->getName() << "\n";
+				index++;
+			}
+
+			std::cout << "Choose a card to destroy: \n";
+			std::cin >> index;
+
+			while (index < 1 || index > opponentCards.size())
+			{
+				std::cout << "Invalid choice. Try again: \n";
+				std::cin >> index;
+			}
+			index--;
+
+			const Card* chosen = opponentCards[index];
+			auto removedCard = opponent.removeCard(*chosen);
+
+			m_gameState->addToDiscardCards(std::move(removedCard));
 			break;
 		}
 	}

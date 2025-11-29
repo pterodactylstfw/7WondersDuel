@@ -292,6 +292,20 @@ void GameState::addToDiscardCards(std::unique_ptr<Card>&& card)
         m_discardedCards.push_back(std::move(card));
 }
 
+std::unique_ptr<Card> GameState::extractDiscardedCard(int index)
+{
+    if (index >= m_discardedCards.size() || index<0)
+    {
+        return nullptr;
+    }
+
+    auto it = m_discardedCards.begin() + index;
+    std::unique_ptr<Card> extractedCard = std::move(*it);
+    m_discardedCards.erase(it);
+
+    return extractedCard;
+}
+
 const std::vector<std::unique_ptr<ProgressToken>>& GameState::getDiscardedTokens() const
 {
     return m_discardedProgressTokens;
@@ -301,6 +315,20 @@ void GameState::addToDiscardTokens(std::unique_ptr<ProgressToken>&& token)
 {
     if(token)
         m_discardedProgressTokens.push_back(std::move(token));
+}
+
+std::unique_ptr<ProgressToken> GameState::extractDiscardedTokens(int index)
+{
+    if (index >= m_discardedProgressTokens.size() || index < 0)
+    {
+        return nullptr;
+    }
+
+    auto it = m_discardedProgressTokens.begin() + index;
+    std::unique_ptr<ProgressToken> extractedToken = std::move(*it);
+    m_discardedProgressTokens.erase(it);
+
+    return extractedToken;
 }
 
 GameState::~GameState() = default;

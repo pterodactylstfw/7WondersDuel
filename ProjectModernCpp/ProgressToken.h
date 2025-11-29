@@ -3,8 +3,7 @@
 #include <string>
 #include <vector>
 #include "CardEffect.h"
-
-using json = nlohmann::json;
+#include "JsonUtils.h"
 
 class ProgressToken {
 private:

@@ -25,21 +25,23 @@ bool Card::canBuildFreeChainTo(const Card& nextCard) const
 	return (m_providesChainTo == nextCard.getName());
 }
 
-void Card::displayCardInfo() const
+std::string Card::displayCardInfo() const
 {
+	std::stringstream ss;
 	std::string colorStr = colorToString(m_color); // from Constants.h
 
-	std::cout << "Card Name: " << m_name << "\n";
-	std::cout << "Color: " << colorStr << "\n";
-	std::cout << "Age: " << static_cast<int>(m_age) << "\n";
-	std::cout << "Cost: " << m_cost.toString() << "\n";
-	std::cout << "Effect: " << m_effect.getDescription() << "\n";
+	ss << "Card Name: " << m_name << "\n";
+	ss << "Color: " << colorStr << "\n";
+	ss << "Age: " << static_cast<int>(m_age) << "\n";
+	ss << "Cost: " << m_cost.toString() << "\n";
+	ss << "Effect: " << m_effect.getDescription() << "\n";
 	if (m_freeChainFrom.has_value()) {
-		std::cout << "Can be built freely after: " << m_freeChainFrom.value() << "\n";
+		ss << "Can be built freely after: " << m_freeChainFrom.value() << "\n";
 	}
 	if (m_providesChainTo.has_value()) {
-		std::cout << "Provides free chain to: " << m_providesChainTo.value() << "\n";
+		ss << "Provides free chain to: " << m_providesChainTo.value() << "\n";
 	}
+	return ss.str();
 }
 
 
@@ -79,13 +81,6 @@ const std::optional<std::string>& Card::getProvidesChainTo() const
 }
 
 
-template<typename T>
-std::optional<T> get_optional(const json& j, const std::string& key) {
-	if (j.contains(key) && !j[key].is_null()) {
-		return std::optional<T>(j[key].get<T>());
-	}
-	return std::nullopt;
-}
 
 void to_json(json& j, const Card& card)
 {

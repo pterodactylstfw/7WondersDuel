@@ -4,8 +4,7 @@
 #include "Cost.h"
 #include "CardEffect.h"
 #include  "Constants.h"
-
-using json = nlohmann::json;
+#include "JsonUtils.h"
 
 class Wonder
 {

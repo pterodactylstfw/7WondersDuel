@@ -2,8 +2,7 @@
 #include "Constants.h"
 #include <map>
 #include <vector>
-
-using json = nlohmann::json;
+#include "JsonUtils.h"
 
 class Cost {
 private:

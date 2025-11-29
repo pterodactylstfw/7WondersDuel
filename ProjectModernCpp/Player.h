@@ -10,8 +10,7 @@
 #include "Card.h"
 #include "ResourceProduction.h"
 #include "ProgressToken.h"
-
-using json = nlohmann::json;
+#include "JsonUtils.h"
 
 class Player
 {
@@ -67,6 +66,7 @@ public:
 	std::array<std::unique_ptr<Wonder>, 4>& getWonders();
     std::vector<std::unique_ptr<Wonder>>& getConstructedWonders();
     const std::string& getName() const;
+	int getVictoryPoints() const;
 
 	friend void to_json(json& j, const Player& player);
 	friend void from_json(const json& j, Player& player);

@@ -219,6 +219,7 @@ void GameController::applyWonderEffect(Player& player, Player& opponent, const W
 		case WonderType::CIRCUS_MAXIMUS:
 		{
 			player.addMilitaryShields(1);
+			player.addVictoryPoints(3);
 			auto opponentCards = opponent.getCardsOfType(CardColor::GREY);
 
 			if (opponentCards.empty()) {
@@ -313,6 +314,62 @@ void GameController::applyWonderEffect(Player& player, Player& opponent, const W
 			{
 				player.addCard(std::move(cardToBuild));
 			}
+			break;
+		}
+		case WonderType::PIRAEUS:
+		{
+			player.addResourceChoice({
+				ResourceType::PAPYRUS,
+				ResourceType::GLASS
+				});
+			//+second turn
+			player.addVictoryPoints(2);
+			break;
+		}
+		case WonderType::THE_PYRAMIDS:
+		{
+			player.addVictoryPoints(9);
+			break;
+		}
+		case WonderType::THE_SPHINX:
+		{
+			//+second turn
+			player.addVictoryPoints(6);
+			break;
+		}
+		case WonderType::THE_STATUE_OF_ZEUS:
+		{
+			player.addMilitaryShields(1);
+			player.addVictoryPoints(3);
+			auto opponentCards = opponent.getCardsOfType(CardColor::BROWN);
+
+			if (opponentCards.empty()) {
+				std::cout << "Opponent has no brown cards to destroy.\n";
+				break;
+			}
+
+			std::cout << "Your opponent's brown cards:\n";
+			int index = 1;
+			for (const Card* card : opponentCards)
+			{
+				std::cout << index << "." << card->getName() << "\n";
+				index++;
+			}
+
+			std::cout << "Choose a card to destroy: \n";
+			std::cin >> index;
+
+			while (index < 1 || index > opponentCards.size())
+			{
+				std::cout << "Invalid choice. Try again: \n";
+				std::cin >> index;
+			}
+			index--;
+
+			const Card* chosen = opponentCards[index];
+			auto removedCard = opponent.removeCard(*chosen);
+
+			m_gameState->addToDiscardCards(std::move(removedCard));
 			break;
 		}
 	}

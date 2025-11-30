@@ -281,6 +281,12 @@ bool GameState::loadGame(std::string&& filename)
     }
 }
 
+void GameState::addToAvailableTokens(std::unique_ptr<ProgressToken>&& token)
+{
+    if (token)
+       m_availableProgressToken.push_back(std::move(token));
+}
+
 const std::vector<std::unique_ptr<Card>>& GameState::getDiscardedCards() const
 {
     return m_discardedCards;

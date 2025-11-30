@@ -137,6 +137,26 @@ void GameController::prepareAge(int age) {
 	m_gameState->initializeAge(age, deck); // trimite datele catre storage(state)
 }
 
+void GameController::prepareProgressTokens()
+{
+	ProgressTokenFactory ptf;
+	auto allTokens = ptf.createAllTokens();
+
+	std::random_device rd;
+	std::mt19937 g(rd());
+	std::shuffle(allTokens.begin(), allTokens.end(), g);
+
+	for (int i = 0; i < 5; i++) 
+	{
+		m_gameState->addToAvailableTokens(std::move(allTokens[i]));
+	}
+
+	for (int i = 5; i < 10; i++) 
+	{
+		m_gameState->addToDiscardTokens(std::move(allTokens[i]));
+	}
+}
+
 bool GameController::executeAction(int cardIndex, PlayerAction action, int wonderIndex) {
 	if (!m_gameState->isCardAccessible(cardIndex)) {
 		return false; // carte blocata/inexistenta

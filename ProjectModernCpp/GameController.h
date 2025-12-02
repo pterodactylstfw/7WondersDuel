@@ -16,6 +16,7 @@ private:
 	void draftWondersAuto();
 	void prepareProgressTokens();
 
+	void checkInstantVictory();
 	bool handleConstructBuilding(int cardIndex);
 	bool handleDiscardCard(int cardIndex);
 	bool handleConstructWonders(int cardIndex, int wonderIndex, bool & outPlayAgain);

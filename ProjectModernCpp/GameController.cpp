@@ -42,6 +42,23 @@ void GameController::draftWondersAuto() {
 	m_gameState->switchPlayer();
 }
 
+void GameController::checkInstantVictory()
+{
+	const Player& current = m_gameState->getCurrentPlayer();
+	const Player& opponent = m_gameState->getOpponent();
+
+	int diff = current.getMilitaryShields() - opponent.getMilitaryShields();
+	if (std::abs(diff) >= GameConstants::MILITARY_SUPREMACY_DISTANCE) {
+		m_gameState->setGameOver(true);
+		std::cout << "Military Victory! " << (diff > 0 ? current.getName() : opponent.getName()) << " wins!\n";
+		return;
+	}
+	if (current.hasScientificVictory()) {
+		m_gameState->setGameOver(true);
+		std::cout << "Scientific Victory! " << current.getName() << " wins!\n";
+	}
+}
+
 bool GameController::handleConstructBuilding(int cardIndex)
 {
 	Player& currentPlayer = m_gameState->getCurrentPlayer();

@@ -240,7 +240,7 @@ int Player::getFinalScore(const Player& opponent) const
 
 bool Player::hasScientificVictory() const
 {
-	return scientificSymbols.size() > GameConstants::SCIENTIFIC_SUPREMACY_SYMBOLS;
+	return scientificSymbols.size() >= GameConstants::SCIENTIFIC_SUPREMACY_SYMBOLS;
 }
 
 int Player::getMilitaryShields() const

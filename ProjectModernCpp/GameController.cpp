@@ -42,6 +42,27 @@ void GameController::draftWondersAuto() {
 	m_gameState->switchPlayer();
 }
 
+void GameController::checkMilitaryLooting(int previousShields, int currentShields)
+{
+	const int ZONE_1_THRESHOLD = GameConstants::MILITARY_ZONE_1; 
+	const int ZONE_2_THRESHOLD = GameConstants::MILITARY_ZONE_2; 
+
+	Player& opponent = m_gameState->getOpponent();
+
+	if (previousShields < ZONE_1_THRESHOLD && currentShields >= ZONE_1_THRESHOLD) {
+		// Aici ar trebui să verifici în GameState dacă tokenul mai există
+		// Deocamdată simplificat:
+		std::cout << "Military Advance! (Zone 1 crossed). Opponent loses 2 coins.\n";
+		opponent.removeCoins(2);
+		// TODO: m_gameState->removeMilitaryToken(0); 
+	}
+	if (previousShields < ZONE_2_THRESHOLD && currentShields >= ZONE_2_THRESHOLD) {
+		std::cout << "Military Advance! (Zone 2 crossed). Opponent loses 5 coins.\n";
+		opponent.removeCoins(5);
+		// TODO: m_gameState->removeMilitaryToken(1);
+	}
+}
+
 void GameController::checkInstantVictory()
 {
 	const Player& current = m_gameState->getCurrentPlayer();

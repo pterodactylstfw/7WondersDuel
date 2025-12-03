@@ -53,6 +53,8 @@ private:
 
 	void buildPyramidStructure(int age); // metoda interna pentru a construi piramida
 
+	std::array<bool, 2> m_militaryTokensDropped = { false, false }; 
+	bool m_pendingScientificReward = false; 
 public:
 
 	GameState();
@@ -95,6 +97,9 @@ public:
 	void addToDiscardTokens(std::unique_ptr<ProgressToken>&& token);
 	std::unique_ptr<ProgressToken> extractDiscardedTokens(int index);
 
+	bool removeMilitaryToken(int index); 
+	bool hasPendingScientificReward() const;
+	void setPendingScientificReward(bool pending);
 	friend void to_json(json& j, const GameState& state);
 	friend void from_json(const json& j, GameState& state);
 

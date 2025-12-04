@@ -258,6 +258,11 @@ std::array<std::unique_ptr<Wonder>, 4>& Player::getWonders()
 	return wonders;
 }
 
+const std::array<std::unique_ptr<Wonder>, 4>& Player::getWonders() const
+{
+	return wonders;
+}
+
 std::vector<std::unique_ptr<Wonder>>& Player::getConstructedWonders()
 {
 	return constructedWonders;

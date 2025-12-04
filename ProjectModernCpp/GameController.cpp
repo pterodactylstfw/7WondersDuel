@@ -50,21 +50,59 @@ bool GameController::handleConstructBuilding(int cardIndex)
 	const Card* cardPtr = m_gameState->getCardPtr(cardIndex);
 	if (!cardPtr) return false;
 
+	// plata cost carte
 	int costToPay = 0;
 	if (currentPlayer.hasChainForCard(*cardPtr))
 		costToPay = 0;
-
 	else {
 		costToPay = currentPlayer.calculateResourceCost(cardPtr->getCost(), opponent);
 		if (currentPlayer.getCoins() < costToPay)
 			return false; // fonduri insuficiente
 	}
 
-	if (costToPay)
+	if (costToPay > 0)
 		currentPlayer.removeCoins(costToPay);
 
+	//extrag efect inainte de a muta cartea
+	const CardEffect& effect = cardPtr->getEffect();
+
+	// aplicare efecte
+
+	
+	const ResourceProduction& prod = effect.getProduction();
+	if (!prod.isEmpty()) {
+		for (const auto& [type, qty] : prod.getFixedResources()) {
+			currentPlayer.addResource(type, qty);
+		}
+		if (prod.hasChoices()) {
+			for (const auto& choice : prod.getChoices()) {
+				std::vector<ResourceType> optionsCopy = choice;
+				currentPlayer.addResourceChoice(optionsCopy);
+			}
+		}
+	}
+
+	
+	if (auto shields = effect.getShields(); shields.has_value()) {
+		currentPlayer.addMilitaryShields(shields.value());
+		// de implementat verificare victorie militara
+		// if (checkMilitaryVictory()) 
+	}
+
+	if (auto vp = effect.getVictoryPointsPerCard(); vp.has_value()) {
+		currentPlayer.addVictoryPoints(vp.value());
+	}
+
+	if (auto symbol = effect.getScienceSymbol(); symbol.has_value()) {
+		currentPlayer.addScientificSymbol(symbol.value());
+		// de implementat verificare victorie stiintifica
+	}
+
+	if (auto coins = effect.getBaseCoins(); coins.has_value()) {
+		currentPlayer.addCoins(coins.value());
+	}
+
 	std::unique_ptr<Card> takenCard = m_gameState->takeCard(cardIndex);
-	// de impl: verif perechi stiintifice(efecte imediate)
 	currentPlayer.addCard(std::move(takenCard));
 
 	return true;

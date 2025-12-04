@@ -66,6 +66,7 @@ public:
 	std::array<std::unique_ptr<Wonder>, 4>& getWonders();
 	const std::array<std::unique_ptr<Wonder>, 4>& getWonders() const; 
     std::vector<std::unique_ptr<Wonder>>& getConstructedWonders();
+    const std::vector<std::unique_ptr<Wonder>>& getConstructedWonders() const;
     const std::string& getName() const;
 	int getVictoryPoints() const;
 

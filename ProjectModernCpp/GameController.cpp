@@ -9,8 +9,7 @@ bool GameController::isGameOver() const {
 }
 
 void GameController::startNewGame(const std::string& p1, const std::string& p2) {
-	m_gameState = std::make_unique<GameState>();
-	// de pus setare nume playeri folosind setterii din player
+	m_gameState = std::make_unique<GameState>(p1, p2);
 
 	draftWondersAuto();
 	prepareAge(1);

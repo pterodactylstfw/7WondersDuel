@@ -12,7 +12,6 @@ private:
 	std::string m_name;
 	Cost m_cost;
 	bool m_isBuilt;
-	uint8_t m_victoryPoints;
 	CardEffect m_effect;
 	WonderType m_type;
 
@@ -30,8 +29,8 @@ public:
 
 	Wonder& operator=(Wonder&& other) noexcept = default;
 
-	Wonder(WonderType type, Cost cost, uint8_t victoryPoints, CardEffect effect);
-	Wonder(WonderType type, Cost cost, uint8_t victoryPoints);
+	Wonder(const std::string& name, Cost cost, CardEffect effect);
+	Wonder(const std::string& name, Cost cost);
 
 	// for the next 2 functions, waiting for commits from my teammates:
 
@@ -47,7 +46,6 @@ public:
 	bool isBuilt() const;
 	std::string toString() const;
 	
-	uint8_t getVictoryPoints() const;
 	WonderType getWonderType() const;
 
 	friend void to_json(json& j, const Wonder& wonder);

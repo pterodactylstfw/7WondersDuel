@@ -11,7 +11,7 @@ bool GameController::isGameOver() const {
 void GameController::startNewGame(const std::string& p1, const std::string& p2) {
 	m_gameState = std::make_unique<GameState>(p1, p2);
 
-	draftWondersAuto();
+	selectWondersManual();
 	prepareAge(1);
 }
 
@@ -39,6 +39,82 @@ void GameController::draftWondersAuto() {
 		}
 	}
 	m_gameState->switchPlayer();
+}
+
+void GameController::selectWondersManual()
+{
+	WonderFactory wf;
+
+	auto allWonders = wf.createWonders();
+
+	std::random_device rd;
+	std::mt19937 g(rd());
+	std::shuffle(allWonders.begin(), allWonders.end(), g);
+
+	std::vector<std::unique_ptr<Wonder>> first4Wonders;
+	for (int i = 0; i < 4; ++i) {
+		if (!allWonders.empty()) {
+			first4Wonders.push_back(std::move(allWonders.back()));
+			allWonders.pop_back();
+		}
+	}
+	displayWondersForSelection(first4Wonders);
+
+	Player& player1 = m_gameState->getCurrentPlayer();
+	int player1Wonders = 0;
+	Player& player2 = m_gameState->getOpponent();
+	int player2Wonders = 0;
+
+	int choice = Utils::getIntInput(player1.getName() + ", select a Wonder: ");
+	player1.addWonder(std::move(first4Wonders[choice - 1]), player1Wonders++);
+	first4Wonders.erase(first4Wonders.begin() + (choice - 1));
+
+	for (int i = 0; i < 2; i++)
+	{
+		displayWondersForSelection(first4Wonders);
+		choice = Utils::getIntInput(player2.getName() + ", select a Wonder: ");
+		player2.addWonder(std::move(first4Wonders[choice - 1]), player2Wonders++);
+		first4Wonders.erase(first4Wonders.begin() + (choice - 1));
+	}
+
+	std::cout << player1.getName() << ", you get the last wonder";
+	player1.addWonder(std::move(first4Wonders[0]), player1Wonders++);
+	first4Wonders.erase(first4Wonders.begin());
+
+	for (int i = 0; i < 4; ++i) {
+		if (!allWonders.empty()) {
+			first4Wonders.push_back(std::move(allWonders.back()));
+			allWonders.pop_back();
+		}
+	}
+	displayWondersForSelection(first4Wonders);
+
+	choice = Utils::getIntInput(player2.getName() + ", select a Wonder: ");
+	player2.addWonder(std::move(first4Wonders[choice - 1]), player2Wonders++);
+	first4Wonders.erase(first4Wonders.begin() + (choice - 1));
+
+	for (int i = 0; i < 2; i++)
+	{
+		displayWondersForSelection(first4Wonders);
+		choice = Utils::getIntInput(player1.getName() + ", select a Wonder: ");
+		player1.addWonder(std::move(first4Wonders[choice - 1]), player1Wonders++);
+		first4Wonders.erase(first4Wonders.begin() + (choice - 1));
+	}
+
+	std::cout << player2.getName() << ", you get the last wonder";
+	player2.addWonder(std::move(first4Wonders[0]), player2Wonders++);
+	first4Wonders.erase(first4Wonders.begin());
+
+}
+
+void GameController::displayWondersForSelection(const std::vector<std::unique_ptr<Wonder>>& wonders) const
+{
+	std::cout << "\n--- AVAILABLE WONDERS ---\n";
+	for (size_t i = 0; i < wonders.size(); ++i)
+	{
+		std::cout << "[" << i + 1 << "] " << wonders[i]->toString() << "\n";
+	}
+	std::cout << "-------------------------\n";
 }
 
 bool GameController::handleConstructBuilding(int cardIndex)

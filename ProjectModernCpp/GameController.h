@@ -4,6 +4,7 @@
 #include "Player.h"
 #include "CardFactory.h"
 #include "WonderFactory.h"
+#include "Utils.h"
 
 class GameController
 {
@@ -13,6 +14,8 @@ private:
 	void prepareAge(int age);
 	void checkEndAge();
 	void draftWondersAuto();
+	void selectWondersManual();
+	void displayWondersForSelection(const std::vector<std::unique_ptr<Wonder>>& wonders) const;
 
 	bool handleConstructBuilding(int cardIndex);
 	bool handleDiscardCard(int cardIndex);

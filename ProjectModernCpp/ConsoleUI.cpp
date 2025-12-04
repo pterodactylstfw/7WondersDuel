@@ -22,6 +22,8 @@ void ConsoleUI::displayGameState() const
 	std::cout << ">>> OPPONENT: "<<opponent.getName()<<"\n";
 	displayPlayer(opponent);
 
+	displayMilitaryTrack();
+
 	// Piramida
 	std::cout << "\n            --- CARDS PYRAMID ---\n";
 	displayPyramid();
@@ -109,6 +111,39 @@ void ConsoleUI::displayPyramid() const
 		std::cout << "   (No accessible cards right now.)\n";
 	}
 	std::cout << "\n";
+}
+
+void ConsoleUI::displayMilitaryTrack() const
+{
+	const auto& state = m_game.getGameState();
+	const auto& me = state.getCurrentPlayer();
+	const auto& opp = state.getOpponent();
+
+	int balance = me.getMilitaryShields() - opp.getMilitaryShields();
+
+	if (balance > 9) balance = 9;
+	if (balance < -9) balance = -9;
+
+	std::cout << "\n   >>> MILITARY TRACK <<<\n";
+
+	std::cout << "   " << me.getName() << " (LOSE) ";
+
+	for (int i = -9; i <= 9; ++i)
+	{
+		if (i == balance) {
+			std::cout << "[x]";
+		}
+		else if (i == 0) {
+			std::cout << "[0]";
+		}
+		else {
+			std::cout << "[ ]";
+		}
+	}
+
+	std::cout << " " << opp.getName() << " (WIN) \n";
+
+	std::cout << "   Current Balance: " << balance << "\n";
 }
 
 void ConsoleUI::displayAccesibleCards() const

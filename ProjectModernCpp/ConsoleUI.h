@@ -14,6 +14,8 @@ private:
 
 	void displayPyramid() const;
 
+	void displayMilitaryTrack() const;
+
 	void displayAccesibleCards() const;
 
 	int showMainMenu();

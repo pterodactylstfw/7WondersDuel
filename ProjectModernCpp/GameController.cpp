@@ -10,14 +10,13 @@ bool GameController::isGameOver() const {
 
 void GameController::startNewGame(const std::string& p1, const std::string& p2) {
 	m_gameState = std::make_unique<GameState>(p1, p2);
-
 	selectWondersManual();
+	prepareProgressTokens();
 	prepareAge(1);
 }
 
 void GameController::draftWondersAuto() {
 	WonderFactory wf;
-
 	auto allWonders = wf.createWonders();
 
 	std::random_device rd;
@@ -117,6 +116,49 @@ void GameController::displayWondersForSelection(const std::vector<std::unique_pt
 	std::cout << "-------------------------\n";
 }
 
+void GameController::checkMilitaryLooting(int previousShields, int currentShields)
+{
+	const int ZONE_1 = GameConstants::MILITARY_ZONE_1;
+	const int ZONE_2 = GameConstants::MILITARY_ZONE_2;
+
+	Player& opponent = m_gameState->getOpponent();
+
+	if (previousShields < ZONE_1 && currentShields >= ZONE_1) {
+		if (m_gameState->removeMilitaryToken(0)) {
+			opponent.removeCoins(2);
+			std::cout << "--- MILITARY ATTACK! Opponent lost 2 coins (Zone 1) ---\n";
+		}
+	}
+	if (previousShields < ZONE_2 && currentShields >= ZONE_2) {
+		if (m_gameState->removeMilitaryToken(1)) {
+			opponent.removeCoins(5);
+			std::cout << "--- MILITARY ATTACK! Opponent lost 5 coins (Zone 2) ---\n";
+		}
+	}
+}
+
+void GameController::checkInstantVictory()
+{
+	const Player& current = m_gameState->getCurrentPlayer();
+	const Player& opponent = m_gameState->getOpponent();
+
+	int diff = current.getMilitaryShields() - opponent.getMilitaryShields();
+	if (std::abs(diff) >= GameConstants::MILITARY_SUPREMACY_DISTANCE) {
+		m_gameState->setGameOver(true);
+		if (diff > 0) m_gameState->setWinner(m_gameState->getCurrentPlayerIndex());
+		else m_gameState->setWinner(1 - m_gameState->getCurrentPlayerIndex());
+
+		std::cout << "\n--- MILITARY VICTORY ---\n";
+		return;
+	}
+	if (current.hasScientificVictory()) {
+		m_gameState->setGameOver(true);
+		m_gameState->setWinner(m_gameState->getCurrentPlayerIndex());
+		std::cout << "\n--- SCIENTIFIC VICTORY ---\n";
+		return;
+	}
+}
+
 bool GameController::handleConstructBuilding(int cardIndex)
 {
 	Player& currentPlayer = m_gameState->getCurrentPlayer();
@@ -131,8 +173,10 @@ bool GameController::handleConstructBuilding(int cardIndex)
 		costToPay = 0;
 	else {
 		costToPay = currentPlayer.calculateResourceCost(cardPtr->getCost(), opponent);
-		if (currentPlayer.getCoins() < costToPay)
-			return false; // fonduri insuficiente
+		if (currentPlayer.getCoins() < costToPay) {
+			std::cout << "[!] Insufficient coins to build this card.\n";
+			return false;
+		}
 	}
 
 	if (costToPay > 0)
@@ -176,14 +220,34 @@ bool GameController::handleConstructBuilding(int cardIndex)
 	if (auto coins = effect.getBaseCoins(); coins.has_value()) {
 		currentPlayer.addCoins(coins.value());
 	}
-
+  
+	int oldShields = currentPlayer.getMilitaryShields();
 	std::unique_ptr<Card> takenCard = m_gameState->takeCard(cardIndex);
+
+	if (takenCard->getColor() == CardColor::RED) {
+		if (currentPlayer.hasProgressToken(ProgressTokenType::STRATEGY)) {
+			currentPlayer.addMilitaryShields(1);
+			std::cout << "Strategy Token active: +1 Extra Shield!\n";
+		}
+	}
+	if (takenCard->getEffect().getScienceSymbol().has_value()) {
+		ScientificSymbol sym = takenCard->getEffect().getScienceSymbol().value();
+		if (currentPlayer.addScientificSymbol(sym)) {
+			m_gameState->setPendingScientificReward(true);
+			std::cout << "--- SCIENCE PAIR! You earned a Progress Token! ---\n";
+		}
+	}
+
 	currentPlayer.addCard(std::move(takenCard));
+	int newShields = currentPlayer.getMilitaryShields();
+	if (newShields > oldShields) {
+		checkMilitaryLooting(oldShields, newShields);
+	}
 
 	return true;
 }
 
-bool GameController::handleDiscardCard(int cardIndex) 
+bool GameController::handleDiscardCard(int cardIndex)
 {
 	Player& currentPlayer = m_gameState->getCurrentPlayer();
 
@@ -191,9 +255,10 @@ bool GameController::handleDiscardCard(int cardIndex)
 	int coinsGained = GameConstants::DISCARD_COINS_BASE + yellowCards;
 
 	std::unique_ptr<Card> discardedCard = m_gameState->takeCard(cardIndex);
-	// de impl : carti decartate, necesar si pt applywondereffect al denisei
+	m_gameState->addToDiscardCards(std::move(discardedCard));
 
 	currentPlayer.addCoins(coinsGained);
+	std::cout << "Discarded card for " << coinsGained << " coins.\n";
 
 	return true;
 }
@@ -208,24 +273,45 @@ bool GameController::handleConstructWonders(int cardIndex, int wonderIndex, bool
 
 	Wonder& targetWonder = *wonders[wonderIndex];
 
-	if (targetWonder.isBuilt())
-		return false; // e deja construita
+	if (targetWonder.isBuilt()) {
+		std::cout << "Wonder already built!\n";
+		return false;
+	}
 
-	if (m_gameState->getAllConstructedWondersCount() >= GameConstants::MAX_WONDERS_TOTAL)
-		return false; //sunt construite mai mult de 7 minuni global
+	if (m_gameState->getAllConstructedWondersCount() >= GameConstants::MAX_WONDERS_TOTAL) {
+		std::cout << "Max 7 wonders built globally!\n";
+		return false;
+	}
 
 	int costToPay = currentPlayer.calculateResourceCost(targetWonder.getCost(), opponent);
-	if (currentPlayer.getCoins() < costToPay)
+	if (currentPlayer.getCoins() < costToPay) {
+		std::cout << "[!] Insufficient coins for Wonder.\n";
 		return false;
+	}
 
 	if (costToPay > 0) currentPlayer.removeCoins(costToPay);
 
 	std::unique_ptr<Card> sacrificedCard = m_gameState->takeCard(cardIndex);
+	m_gameState->addToDiscardCards(std::move(sacrificedCard));
 
 	currentPlayer.getConstructedWonders().push_back(std::move(wonders[wonderIndex]));
 	// de mutat minunea in minuni realizate(daca facem) sau marcata ca realizata
 
+	bool hasTheology = currentPlayer.hasProgressToken(ProgressTokenType::THEOLOGY);
+	bool wonderReplay = targetWonder.getEffect().getDescription().find("Play a second turn") != std::string::npos;
+
+	if (hasTheology || wonderReplay) {
+		outPlayAgain = true;
+		std::cout << ">>> Play Again granted!\n";
+	}
+	int oldShields = currentPlayer.getMilitaryShields();
 	applyWonderEffect(currentPlayer, opponent, targetWonder);
+	int newShields = currentPlayer.getMilitaryShields();
+
+	if (newShields > oldShields) {
+		checkMilitaryLooting(oldShields, newShields);
+	}
+
 	return true;
 }
 
@@ -236,7 +322,13 @@ void GameController::prepareAge(int age) {
 
 	if (age == 1) deck = cf.createAgeIDeck();
 	else if (age == 2) deck = cf.createAgeIIDeck();
-	else deck = cf.createAgeIIIDeck();
+	else if (age == 3) {
+		deck = cf.createAgeIIIDeck();
+		//in age 3 avem si guilds
+		auto guilds = cf.createGuildDeck();
+		std::shuffle(guilds.begin(), guilds.end(), std::mt19937{ std::random_device{}() });
+		for (int i = 0; i < 3; ++i) deck.push_back(std::move(guilds[i]));
+	}
 
 	std::random_device rd;
 	std::mt19937 g(rd());
@@ -250,8 +342,29 @@ void GameController::prepareAge(int age) {
 	m_gameState->initializeAge(age, deck); // trimite datele catre storage(state)
 }
 
+void GameController::prepareProgressTokens()
+{
+	ProgressTokenFactory ptf;
+	auto allTokens = ptf.createAllTokens();
+
+	std::random_device rd;
+	std::mt19937 g(rd());
+	std::shuffle(allTokens.begin(), allTokens.end(), g);
+
+	for (int i = 0; i < 5; i++)
+	{
+		m_gameState->addToAvailableTokens(std::move(allTokens[i]));
+	}
+
+	for (int i = 5; i < 10; i++)
+	{
+		m_gameState->addToDiscardTokens(std::move(allTokens[i]));
+	}
+}
+
 bool GameController::executeAction(int cardIndex, PlayerAction action, int wonderIndex) {
 	if (!m_gameState->isCardAccessible(cardIndex)) {
+		std::cout << "[!] Card is blocked or invalid.\n";
 		return false; // carte blocata/inexistenta
 	}
 
@@ -280,6 +393,11 @@ bool GameController::executeAction(int cardIndex, PlayerAction action, int wonde
 
 
 	if (success) {
+		checkInstantVictory();
+		if (m_gameState->isGameOver()) return true;
+
+		m_gameState->removeCardFromPyramid(cardIndex);
+
 		bool anyCardLeft = false;
 		for (const auto& node : m_gameState->getPyramid()) {
 			if (!node.m_isRemoved) { anyCardLeft = true; break; }
@@ -343,6 +461,7 @@ void GameController::applyWonderEffect(Player& player, Player& opponent, const W
 		case WonderType::CIRCUS_MAXIMUS:
 		{
 			player.addMilitaryShields(1);
+			player.addVictoryPoints(3);
 			auto opponentCards = opponent.getCardsOfType(CardColor::GREY);
 
 			if (opponentCards.empty()) {
@@ -366,13 +485,12 @@ void GameController::applyWonderEffect(Player& player, Player& opponent, const W
 				std::cout << "Invalid choice. Try again: \n";
 				std::cin >> index;
 			}
+			index--;
 
-			const Card* chosen = opponentCards[index - 1];
+			const Card* chosen = opponentCards[index];
 			auto removedCard = opponent.removeCard(*chosen);
 
-			m_gameState->addToDiscardCards(std::move(removedCard)); // am sters param GameState pentru ca 
-															// poate fi accesat cu pointer direct
-		
+			m_gameState->addToDiscardCards(std::move(removedCard));
 			break;
 		}
 		case WonderType::THE_COLOSSUS:
@@ -387,6 +505,7 @@ void GameController::applyWonderEffect(Player& player, Player& opponent, const W
 			//+Randomly draw 3 Progress tokens from among those discarded at
 			//the beginning of the game.Choose one, play it, and return the other
 			//2 to the box.
+			m_gameState->setPendingScientificReward(true);
 			break;
 		}
 		case WonderType::THE_GREAT_LIGHTHOUSE:
@@ -397,6 +516,103 @@ void GameController::applyWonderEffect(Player& player, Player& opponent, const W
 				ResourceType::STONE,
 				ResourceType::CLAY
 				});
+			break;
+		}
+		case WonderType::THE_HANGING_GARDENS:
+		{
+			player.addCoins(6);
+			//+ second turn
+			player.addVictoryPoints(3);
+			break;
+		}
+		case WonderType::THE_MAUSOLEUM:
+		{
+			const auto& discarded_cards = m_gameState->getDiscardedCards();
+			if (discarded_cards.empty())
+			{
+				std::cout << "The discard pile is empty\n";
+				break;
+			}
+
+			std::cout << "Choose a card to build for free\n";
+			int index = 1;
+			for (const auto& card : discarded_cards)
+			{
+				std::cout << index << "." << card->getName() << "\n";
+				index++;
+			}
+
+			std::cout << "Choose a card to build: \n";
+			std::cin >> index;
+
+			while (index < 1 || index > discarded_cards.size())
+			{
+				std::cout << "Invalid choice. Try again: \n";
+				std::cin >> index;
+			}
+			index--;
+
+			std::unique_ptr<Card> cardToBuild = m_gameState->extractDiscardedCard(index);
+			if (cardToBuild)
+			{
+				player.addCard(std::move(cardToBuild));
+			}
+			break;
+		}
+		case WonderType::PIRAEUS:
+		{
+			player.addResourceChoice({
+				ResourceType::PAPYRUS,
+				ResourceType::GLASS
+				});
+			//+second turn
+			player.addVictoryPoints(2);
+			break;
+		}
+		case WonderType::THE_PYRAMIDS:
+		{
+			player.addVictoryPoints(9);
+			break;
+		}
+		case WonderType::THE_SPHINX:
+		{
+			//+second turn
+			player.addVictoryPoints(6);
+			break;
+		}
+		case WonderType::THE_STATUE_OF_ZEUS:
+		{
+			player.addMilitaryShields(1);
+			player.addVictoryPoints(3);
+			auto opponentCards = opponent.getCardsOfType(CardColor::BROWN);
+
+			if (opponentCards.empty()) {
+				std::cout << "Opponent has no brown cards to destroy.\n";
+				break;
+			}
+
+			std::cout << "Your opponent's brown cards:\n";
+			int index = 1;
+			for (const Card* card : opponentCards)
+			{
+				std::cout << index << "." << card->getName() << "\n";
+				index++;
+			}
+
+			std::cout << "Choose a card to destroy: \n";
+			std::cin >> index;
+
+			while (index < 1 || index > opponentCards.size())
+			{
+				std::cout << "Invalid choice. Try again: \n";
+				std::cin >> index;
+			}
+			index--;
+
+			const Card* chosen = opponentCards[index];
+			auto removedCard = opponent.removeCard(*chosen);
+
+			m_gameState->addToDiscardCards(std::move(removedCard));
 			break;
 		}
 	}

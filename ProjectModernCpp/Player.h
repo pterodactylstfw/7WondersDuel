@@ -44,7 +44,7 @@ public:
 	void addCoins(int amount);
 	void removeCoins(int amount);
 	void addMilitaryShields(int shields);
-	void addScientificSymbol(ScientificSymbol symbol);
+	bool addScientificSymbol(ScientificSymbol symbol);
 	void addVictoryPoints(int points);
 
 	bool canAfford(const Cost& cost, const Player& opponent) const;
@@ -74,4 +74,5 @@ public:
 	friend void from_json(const json& j, Player& player);
 
 	std::unique_ptr<Card> removeCard(const Card& card);
+	bool hasProgressToken(ProgressTokenType type) const;
 };

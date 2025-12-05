@@ -306,6 +306,12 @@ bool GameState::loadGame(std::string&& filename)
     }
 }
 
+void GameState::addToAvailableTokens(std::unique_ptr<ProgressToken>&& token)
+{
+    if (token)
+       m_availableProgressToken.push_back(std::move(token));
+}
+
 const std::vector<std::unique_ptr<Card>>& GameState::getDiscardedCards() const
 {
     return m_discardedCards;
@@ -315,6 +321,20 @@ void GameState::addToDiscardCards(std::unique_ptr<Card>&& card)
 {
     if(card)
         m_discardedCards.push_back(std::move(card));
+}
+
+std::unique_ptr<Card> GameState::extractDiscardedCard(int index)
+{
+    if (index >= m_discardedCards.size() || index<0)
+    {
+        return nullptr;
+    }
+
+    auto it = m_discardedCards.begin() + index;
+    std::unique_ptr<Card> extractedCard = std::move(*it);
+    m_discardedCards.erase(it);
+
+    return extractedCard;
 }
 
 const std::vector<std::unique_ptr<ProgressToken>>& GameState::getDiscardedTokens() const
@@ -328,9 +348,50 @@ void GameState::addToDiscardTokens(std::unique_ptr<ProgressToken>&& token)
         m_discardedProgressTokens.push_back(std::move(token));
 }
 
+std::unique_ptr<ProgressToken> GameState::extractDiscardedTokens(int index)
+{
+    if (index >= m_discardedProgressTokens.size() || index < 0)
+    {
+        return nullptr;
+    }
+
+    auto it = m_discardedProgressTokens.begin() + index;
+    std::unique_ptr<ProgressToken> extractedToken = std::move(*it);
+    m_discardedProgressTokens.erase(it);
+
+    return extractedToken;
+}
+
 GameState::~GameState() = default;
 
+bool GameState::removeMilitaryToken(int index)
+{
+    if (index < 0 || index > 1) return false;
+    if (!m_militaryTokensDropped[index]) {
+        m_militaryTokensDropped[index] = true; 
+        return true; 
+    }
+    return false;
+}
 
+bool GameState::hasPendingScientificReward() const
+{
+    return m_pendingScientificReward;
+}
+
+void GameState::setPendingScientificReward(bool pending)
+{
+    m_pendingScientificReward = pending;
+}
+
+uint8_t GameState::getCurrentPlayerIndex() const
+{
+    return m_currentPlayerIndex;
+}
+void GameState::setWinner(uint8_t index)
+{
+    m_winnerIndex = index;
+}
 void to_json(json& j, const GameState& state)
 {
     j = nlohmann::json{
@@ -346,7 +407,9 @@ void to_json(json& j, const GameState& state)
         {"pyramid", state.m_pyramid},
         {"allWonders", state.m_allWonders},
         {"availableProgressToken", state.m_availableProgressToken},
-        {"gameOver", state.m_gameOver}
+        {"gameOver", state.m_gameOver},
+        {"militaryTokensDropped", state.m_militaryTokensDropped},
+        {"pendingScientificReward", state.m_pendingScientificReward}
     };
 }
 
@@ -365,5 +428,7 @@ void from_json(const json& j, GameState& state)
     j.at("allWonders").get_to(state.m_allWonders);
     j.at("availableProgressToken").get_to(state.m_availableProgressToken);
     j.at("gameOver").get_to(state.m_gameOver);
+    state.m_militaryTokensDropped = j.value("militaryTokensDropped", std::array<bool, 2>{false, false});
+    state.m_pendingScientificReward = j.value("pendingScientificReward", false);
 }
 	

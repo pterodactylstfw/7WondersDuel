@@ -51,9 +51,11 @@ void Player::addMilitaryShields(int shields)
 	m_militaryShields += shields;
 }
 
-void Player::addScientificSymbol(ScientificSymbol symbol)
+bool Player::addScientificSymbol(ScientificSymbol symbol)
 {
 	m_scientificSymbols[symbol] += 1;
+	return (m_scientificSymbols[symbol] == 2);
+
 }
 
 void Player::addVictoryPoints(int points)
@@ -222,25 +224,52 @@ int Player::getConstructedWondersCount() const
 
 int Player::getFinalScore(const Player& opponent) const
 {
-	//+ military victory points ce urmeaza sa fie discutat
-	int nr = 0;
+	int score = 0;
 
-	for (const auto& card : m_constructedCards)
-	{
-		const auto& vp = card->getEffect().getVictoryPointsPerCard();
-		if (vp.has_value())
-			nr += vp.value();
+	score += m_victoryPoints;
+
+	for (const auto& card : m_constructedCards) {
+		if (card->getEffect().getVictoryPointsPerCard().has_value()) {
+			score += card->getEffect().getVictoryPointsPerCard().value();
+		}
 	}
 
 	for (const auto& wonder : m_constructedWonders)
 	{
-		nr += wonder->getEffect().getVictoryPointsPerCard().value();
+		if (wonder->getEffect().getVictoryPointsPerCard().has_value()) {
+			score += wonder->getEffect().getVictoryPointsPerCard().value();
+		}
+	}
+	score += m_coins / 3;
+
+	if (hasProgressToken(ProgressTokenType::MATHEMATICS)) {
+		score += (3 * static_cast<int>(m_progressTokens.size()));
 	}
 
-	//+ victory points from progress token cand am clasa
+	for (const auto& card : m_constructedCards)
+	{
+		if (card->getColor() == CardColor::PURPLE)
+		{
+			const auto& effect = card->getEffect();
 
-	nr += m_coins / 3;
-	return nr;
+			for (auto const& [color, points] : effect.getPointsPerCardType())
+			{
+				int myCount = (int)getCardsOfType(color).size();
+				int oppCount = (int)opponent.getCardsOfType(color).size();
+				
+				score += std::max(myCount, oppCount) * points;
+			}
+
+			if (effect.getPointsPerWonder().has_value())
+			{
+				int myWonders = getConstructedWondersCount();
+				int oppWonders = opponent.getConstructedWondersCount();
+				score += std::max(myWonders, oppWonders) * effect.getPointsPerWonder().value();
+			}
+		}
+	}
+
+	return score;
 }
 
 bool Player::hasScientificVictory() const
@@ -310,4 +339,9 @@ std::unique_ptr<Card> Player::removeCard(const Card& card)
 	return nullptr;
 }
 
-
+bool Player::hasProgressToken(ProgressTokenType type) const {
+	for (const auto& token : progressTokens) {
+		if (token->getType() == type) return true;
+	}
+	return false;
+}

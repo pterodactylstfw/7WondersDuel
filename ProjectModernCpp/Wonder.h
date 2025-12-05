@@ -42,6 +42,7 @@ public:
 	std::string_view getName() const;
 	const Cost& getCost() const;
 	const CardEffect& getEffect() const;
+	std::string getDescription() const;
 
 	bool isBuilt() const;
 	std::string toString() const;

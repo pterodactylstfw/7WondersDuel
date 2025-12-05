@@ -5,6 +5,8 @@
 #include "CardFactory.h"
 #include "WonderFactory.h"
 #include "Utils.h"
+#include "ProgressTokenFactory.h"
+
 
 class GameController
 {
@@ -16,7 +18,11 @@ private:
 	void draftWondersAuto();
 	void selectWondersManual();
 	void displayWondersForSelection(const std::vector<std::unique_ptr<Wonder>>& wonders) const;
+	void prepareProgressTokens();
 
+
+	void checkMilitaryLooting(int previousShields, int currentShields);
+	void checkInstantVictory();
 	bool handleConstructBuilding(int cardIndex);
 	bool handleDiscardCard(int cardIndex);
 	bool handleConstructWonders(int cardIndex, int wonderIndex, bool & outPlayAgain);

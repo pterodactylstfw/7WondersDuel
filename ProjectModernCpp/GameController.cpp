@@ -65,14 +65,14 @@ void GameController::selectWondersManual()
 	Player& player2 = m_gameState->getOpponent();
 	int player2Wonders = 0;
 
-	int choice = Utils::getIntInput(player1.getName() + ", select a Wonder: ");
+	int choice = Utils::getIntRange(1, static_cast<int>(first4Wonders.size()), player1.getName() + ", select a Wonder: ");
 	player1.addWonder(std::move(first4Wonders[choice - 1]), player1Wonders++);
 	first4Wonders.erase(first4Wonders.begin() + (choice - 1));
 
 	for (int i = 0; i < 2; i++)
 	{
 		displayWondersForSelection(first4Wonders);
-		choice = Utils::getIntInput(player2.getName() + ", select a Wonder: ");
+		choice = Utils::getIntRange(1, static_cast<int>(first4Wonders.size()), player2.getName() + ", select a Wonder: ");
 		player2.addWonder(std::move(first4Wonders[choice - 1]), player2Wonders++);
 		first4Wonders.erase(first4Wonders.begin() + (choice - 1));
 	}
@@ -89,14 +89,14 @@ void GameController::selectWondersManual()
 	}
 	displayWondersForSelection(first4Wonders);
 
-	choice = Utils::getIntInput(player2.getName() + ", select a Wonder: ");
+	choice = Utils::getIntRange(1, static_cast<int>(first4Wonders.size()), player2.getName() + ", select a Wonder: ");
 	player2.addWonder(std::move(first4Wonders[choice - 1]), player2Wonders++);
 	first4Wonders.erase(first4Wonders.begin() + (choice - 1));
 
 	for (int i = 0; i < 2; i++)
 	{
 		displayWondersForSelection(first4Wonders);
-		choice = Utils::getIntInput(player1.getName() + ", select a Wonder: ");
+		choice = Utils::getIntRange(1, static_cast<int>(first4Wonders.size()), player1.getName() + ", select a Wonder: ");
 		player1.addWonder(std::move(first4Wonders[choice - 1]), player1Wonders++);
 		first4Wonders.erase(first4Wonders.begin() + (choice - 1));
 	}
@@ -312,8 +312,19 @@ void GameController::checkEndAge() {
 void GameController::saveGame(const std::string& filename) const {
 	m_gameState->saveGame(std::string(filename));
 }
+
 void GameController::loadGame(const std::string& filename) {
-	m_gameState->loadGame(std::string(filename));
+	if (!m_gameState) {
+		m_gameState = std::make_unique<GameState>(); // init daca e null,
+													//fix crash load la cold start
+	}
+
+	if (!m_gameState->loadGame(std::string(filename))) {
+
+		m_gameState.reset(); // sterg daca load esueaza
+
+		throw std::runtime_error("Failed to load game file.");
+	}
 }
 
 void GameController::applyWonderEffect(Player& player, Player& opponent, const Wonder& wonder)

@@ -9,10 +9,9 @@ bool GameController::isGameOver() const {
 }
 
 void GameController::startNewGame(const std::string& p1, const std::string& p2) {
-	m_gameState = std::make_unique<GameState>();
-	// de pus setare nume playeri folosind setterii din player
+	m_gameState = std::make_unique<GameState>(p1, p2);
+	selectWondersManual();
 	prepareProgressTokens();
-	draftWondersAuto();
 	prepareAge(1);
 }
 
@@ -41,10 +40,86 @@ void GameController::draftWondersAuto() {
 	m_gameState->switchPlayer();
 }
 
+void GameController::selectWondersManual()
+{
+	WonderFactory wf;
+
+	auto allWonders = wf.createWonders();
+
+	std::random_device rd;
+	std::mt19937 g(rd());
+	std::shuffle(allWonders.begin(), allWonders.end(), g);
+
+	std::vector<std::unique_ptr<Wonder>> first4Wonders;
+	for (int i = 0; i < 4; ++i) {
+		if (!allWonders.empty()) {
+			first4Wonders.push_back(std::move(allWonders.back()));
+			allWonders.pop_back();
+		}
+	}
+	displayWondersForSelection(first4Wonders);
+
+	Player& player1 = m_gameState->getCurrentPlayer();
+	int player1Wonders = 0;
+	Player& player2 = m_gameState->getOpponent();
+	int player2Wonders = 0;
+
+	int choice = Utils::getIntRange(1, static_cast<int>(first4Wonders.size()), player1.getName() + ", select a Wonder: ");
+	player1.addWonder(std::move(first4Wonders[choice - 1]), player1Wonders++);
+	first4Wonders.erase(first4Wonders.begin() + (choice - 1));
+
+	for (int i = 0; i < 2; i++)
+	{
+		displayWondersForSelection(first4Wonders);
+		choice = Utils::getIntRange(1, static_cast<int>(first4Wonders.size()), player2.getName() + ", select a Wonder: ");
+		player2.addWonder(std::move(first4Wonders[choice - 1]), player2Wonders++);
+		first4Wonders.erase(first4Wonders.begin() + (choice - 1));
+	}
+
+	std::cout << player1.getName() << ", you get the last wonder";
+	player1.addWonder(std::move(first4Wonders[0]), player1Wonders++);
+	first4Wonders.erase(first4Wonders.begin());
+
+	for (int i = 0; i < 4; ++i) {
+		if (!allWonders.empty()) {
+			first4Wonders.push_back(std::move(allWonders.back()));
+			allWonders.pop_back();
+		}
+	}
+	displayWondersForSelection(first4Wonders);
+
+	choice = Utils::getIntRange(1, static_cast<int>(first4Wonders.size()), player2.getName() + ", select a Wonder: ");
+	player2.addWonder(std::move(first4Wonders[choice - 1]), player2Wonders++);
+	first4Wonders.erase(first4Wonders.begin() + (choice - 1));
+
+	for (int i = 0; i < 2; i++)
+	{
+		displayWondersForSelection(first4Wonders);
+		choice = Utils::getIntRange(1, static_cast<int>(first4Wonders.size()), player1.getName() + ", select a Wonder: ");
+		player1.addWonder(std::move(first4Wonders[choice - 1]), player1Wonders++);
+		first4Wonders.erase(first4Wonders.begin() + (choice - 1));
+	}
+
+	std::cout << player2.getName() << ", you get the last wonder";
+	player2.addWonder(std::move(first4Wonders[0]), player2Wonders++);
+	first4Wonders.erase(first4Wonders.begin());
+
+}
+
+void GameController::displayWondersForSelection(const std::vector<std::unique_ptr<Wonder>>& wonders) const
+{
+	std::cout << "\n--- AVAILABLE WONDERS ---\n";
+	for (size_t i = 0; i < wonders.size(); ++i)
+	{
+		std::cout << "[" << i + 1 << "] " << wonders[i]->toString() << "\n";
+	}
+	std::cout << "-------------------------\n";
+}
+
 void GameController::checkMilitaryLooting(int previousShields, int currentShields)
 {
-	const int ZONE_1 = GameConstants::MILITARY_ZONE_1; 
-	const int ZONE_2 = GameConstants::MILITARY_ZONE_2; 
+	const int ZONE_1 = GameConstants::MILITARY_ZONE_1;
+	const int ZONE_2 = GameConstants::MILITARY_ZONE_2;
 
 	Player& opponent = m_gameState->getOpponent();
 
@@ -92,10 +167,10 @@ bool GameController::handleConstructBuilding(int cardIndex)
 	const Card* cardPtr = m_gameState->getCardPtr(cardIndex);
 	if (!cardPtr) return false;
 
+	// plata cost carte
 	int costToPay = 0;
 	if (currentPlayer.hasChainForCard(*cardPtr))
 		costToPay = 0;
-
 	else {
 		costToPay = currentPlayer.calculateResourceCost(cardPtr->getCost(), opponent);
 		if (currentPlayer.getCoins() < costToPay) {
@@ -104,9 +179,48 @@ bool GameController::handleConstructBuilding(int cardIndex)
 		}
 	}
 
-	if (costToPay)
+	if (costToPay > 0)
 		currentPlayer.removeCoins(costToPay);
 
+	//extrag efect inainte de a muta cartea
+	const CardEffect& effect = cardPtr->getEffect();
+
+	// aplicare efecte
+
+	
+	const ResourceProduction& prod = effect.getProduction();
+	if (!prod.isEmpty()) {
+		for (const auto& [type, qty] : prod.getFixedResources()) {
+			currentPlayer.addResource(type, qty);
+		}
+		if (prod.hasChoices()) {
+			for (const auto& choice : prod.getChoices()) {
+				std::vector<ResourceType> optionsCopy = choice;
+				currentPlayer.addResourceChoice(optionsCopy);
+			}
+		}
+	}
+
+	
+	if (auto shields = effect.getShields(); shields.has_value()) {
+		currentPlayer.addMilitaryShields(shields.value());
+		// de implementat verificare victorie militara
+		// if (checkMilitaryVictory()) 
+	}
+
+	if (auto vp = effect.getVictoryPointsPerCard(); vp.has_value()) {
+		currentPlayer.addVictoryPoints(vp.value());
+	}
+
+	if (auto symbol = effect.getScienceSymbol(); symbol.has_value()) {
+		currentPlayer.addScientificSymbol(symbol.value());
+		// de implementat verificare victorie stiintifica
+	}
+
+	if (auto coins = effect.getBaseCoins(); coins.has_value()) {
+		currentPlayer.addCoins(coins.value());
+	}
+  
 	int oldShields = currentPlayer.getMilitaryShields();
 	std::unique_ptr<Card> takenCard = m_gameState->takeCard(cardIndex);
 
@@ -123,6 +237,7 @@ bool GameController::handleConstructBuilding(int cardIndex)
 			std::cout << "--- SCIENCE PAIR! You earned a Progress Token! ---\n";
 		}
 	}
+
 	currentPlayer.addCard(std::move(takenCard));
 	int newShields = currentPlayer.getMilitaryShields();
 	if (newShields > oldShields) {
@@ -132,7 +247,7 @@ bool GameController::handleConstructBuilding(int cardIndex)
 	return true;
 }
 
-bool GameController::handleDiscardCard(int cardIndex) 
+bool GameController::handleDiscardCard(int cardIndex)
 {
 	Player& currentPlayer = m_gameState->getCurrentPlayer();
 
@@ -236,12 +351,12 @@ void GameController::prepareProgressTokens()
 	std::mt19937 g(rd());
 	std::shuffle(allTokens.begin(), allTokens.end(), g);
 
-	for (int i = 0; i < 5; i++) 
+	for (int i = 0; i < 5; i++)
 	{
 		m_gameState->addToAvailableTokens(std::move(allTokens[i]));
 	}
 
-	for (int i = 5; i < 10; i++) 
+	for (int i = 5; i < 10; i++)
 	{
 		m_gameState->addToDiscardTokens(std::move(allTokens[i]));
 	}
@@ -315,8 +430,19 @@ void GameController::checkEndAge() {
 void GameController::saveGame(const std::string& filename) const {
 	m_gameState->saveGame(std::string(filename));
 }
+
 void GameController::loadGame(const std::string& filename) {
-	m_gameState->loadGame(std::string(filename));
+	if (!m_gameState) {
+		m_gameState = std::make_unique<GameState>(); // init daca e null,
+													//fix crash load la cold start
+	}
+
+	if (!m_gameState->loadGame(std::string(filename))) {
+
+		m_gameState.reset(); // sterg daca load esueaza
+
+		throw std::runtime_error("Failed to load game file.");
+	}
 }
 
 void GameController::applyWonderEffect(Player& player, Player& opponent, const Wonder& wonder)

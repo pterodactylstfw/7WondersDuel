@@ -99,7 +99,8 @@ void to_json(json& j, const Card& card)
 void from_json(const json& j, Card& card)
 {
 	j.at("name").get_to(card.m_name);
-	card.m_color = static_cast<CardColor>(j.at("color").get<int>());
+	//card.m_color = static_cast<CardColor>(j.at("color").get<int>());
+	j.at("color").get_to(card.m_color);
 	j.at("age").get_to(card.m_age);
 	j.at("cost").get_to(card.m_cost);
 	j.at("effect").get_to(card.m_effect);

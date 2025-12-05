@@ -56,6 +56,7 @@ private:
 public:
 
 	GameState();
+	GameState(const std::string& p1Name, const std::string& p2Name);
 
 	void switchPlayer();
 

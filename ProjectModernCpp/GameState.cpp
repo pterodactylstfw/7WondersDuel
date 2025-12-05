@@ -118,6 +118,18 @@ m_gameOver(false)
     m_players[1] = std::make_unique<Player>("Player 2");
 }
 
+GameState::GameState(const std::string& p1Name, const std::string& p2Name)
+    : m_currentPlayerIndex(0),
+    m_currentTurn(1),
+    m_winnerIndex(std::nullopt),
+    m_currentAge(1),
+    m_gameOver(false)
+{
+
+    m_players[0] = std::make_unique<Player>(p1Name);
+    m_players[1] = std::make_unique<Player>(p2Name);
+}
+
 void GameState::switchPlayer()
 { 
 	m_currentPlayerIndex = 1 - m_currentPlayerIndex;
@@ -217,16 +229,29 @@ void GameState::removeCardFromPyramid(int index)
     m_pyramid[index].m_isRemoved = true;
 
     for (auto& node : m_pyramid) {
-        if (!node.m_isRemoved && !node.m_isFaceUp) { // actualizare automata stare vizuala
-            if (isCardAccessible(node.m_index)) {
-                node.m_isFaceUp = true;
+		if (node.m_isRemoved) continue; // sarim cartile deja eliminate
+
+        // e blocata?
+        bool isBlocked = false;
+        for (int blockerIndex : node.m_blockedBy) {
+			// o carte care blocheaza inca nu a fost eliminata
+            if (!m_pyramid[blockerIndex].m_isRemoved) {
+                isBlocked = true;
+                break;
             }
+        }
+
+		// o intorc daca nu e blocata
+        if (!isBlocked) {
+            node.m_isFaceUp = true;
         }
     }
 }
 
 std::unique_ptr<Card> GameState::takeCard(int index)
 {
+    removeCardFromPyramid(index);
+
     if (index >= 0 && index < m_currentAgeCards.size()) {
         return std::move(m_currentAgeCards[index]);
     }
@@ -379,6 +404,7 @@ void to_json(json& j, const GameState& state)
         {"ageIIIDeck", state.m_ageIIIDeck},
         {"currentAge", state.m_currentAge},
         {"currentAgeCards", state.m_currentAgeCards},
+        {"pyramid", state.m_pyramid},
         {"allWonders", state.m_allWonders},
         {"availableProgressToken", state.m_availableProgressToken},
         {"gameOver", state.m_gameOver},
@@ -398,6 +424,7 @@ void from_json(const json& j, GameState& state)
     j.at("ageIIIDeck").get_to(state.m_ageIIIDeck);
     j.at("currentAge").get_to(state.m_currentAge);
     j.at("currentAgeCards").get_to(state.m_currentAgeCards);
+    j.at("pyramid").get_to(state.m_pyramid);
     j.at("allWonders").get_to(state.m_allWonders);
     j.at("availableProgressToken").get_to(state.m_availableProgressToken);
     j.at("gameOver").get_to(state.m_gameOver);

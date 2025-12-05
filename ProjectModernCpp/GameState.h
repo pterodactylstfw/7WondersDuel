@@ -50,10 +50,8 @@ private:
 	//std::optional<VictoryType> m_victoryType;
 
 	std::vector<CardNode> m_pyramid;
-
-	void buildPyramidStructure(int age); // metoda interna pentru a construi piramida
-
-	std::array<bool, 2> m_militaryTokensDropped = { false, false }; 
+	void buildPyramidStructure(int age);
+	std::array<bool, 2> m_militaryTokensDropped = { false, false };
 	bool m_pendingScientificReward = false; 
 public:
 
@@ -65,6 +63,8 @@ public:
 	const Player& getOpponent() const;
 	Player& getCurrentPlayer();
 	Player& getOpponent();
+	uint8_t getCurrentPlayerIndex() const;
+	void setWinner(uint8_t index);
 
 	uint8_t getCurrentAge() const;
 	bool isGameOver() const;
@@ -100,6 +100,7 @@ public:
 	bool removeMilitaryToken(int index); 
 	bool hasPendingScientificReward() const;
 	void setPendingScientificReward(bool pending);
+
 	friend void to_json(json& j, const GameState& state);
 	friend void from_json(const json& j, GameState& state);
 

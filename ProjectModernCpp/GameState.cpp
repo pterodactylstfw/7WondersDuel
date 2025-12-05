@@ -339,7 +339,34 @@ std::unique_ptr<ProgressToken> GameState::extractDiscardedTokens(int index)
 
 GameState::~GameState() = default;
 
+bool GameState::removeMilitaryToken(int index)
+{
+    if (index < 0 || index > 1) return false;
+    if (!m_militaryTokensDropped[index]) {
+        m_militaryTokensDropped[index] = true; 
+        return true; 
+    }
+    return false;
+}
 
+bool GameState::hasPendingScientificReward() const
+{
+    return m_pendingScientificReward;
+}
+
+void GameState::setPendingScientificReward(bool pending)
+{
+    m_pendingScientificReward = pending;
+}
+
+uint8_t GameState::getCurrentPlayerIndex() const
+{
+    return m_currentPlayerIndex;
+}
+void GameState::setWinner(uint8_t index)
+{
+    m_winnerIndex = index;
+}
 void to_json(json& j, const GameState& state)
 {
     j = nlohmann::json{
@@ -354,7 +381,9 @@ void to_json(json& j, const GameState& state)
         {"currentAgeCards", state.m_currentAgeCards},
         {"allWonders", state.m_allWonders},
         {"availableProgressToken", state.m_availableProgressToken},
-        {"gameOver", state.m_gameOver}
+        {"gameOver", state.m_gameOver},
+        {"militaryTokensDropped", state.m_militaryTokensDropped},
+        {"pendingScientificReward", state.m_pendingScientificReward}
     };
 }
 
@@ -372,5 +401,7 @@ void from_json(const json& j, GameState& state)
     j.at("allWonders").get_to(state.m_allWonders);
     j.at("availableProgressToken").get_to(state.m_availableProgressToken);
     j.at("gameOver").get_to(state.m_gameOver);
+    state.m_militaryTokensDropped = j.value("militaryTokensDropped", std::array<bool, 2>{false, false});
+    state.m_pendingScientificReward = j.value("pendingScientificReward", false);
 }
 	

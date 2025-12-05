@@ -77,7 +77,7 @@ std::vector<std::unique_ptr<Wonder>> WonderFactory::createWonders()
 		.withResourceCost(ResourceType::GLASS, 1)
 		.withResourceCost(ResourceType::WOOD, 2),
 		3,
-		CardEffect().withBaseCoins(3)
+		CardEffect().withBaseCoins(6)
 		.grantsPlayAgain()
 		.withCustomDescription("You take 6 coins from the bank.\n"
 							   "Immediately play a second turn.\n"
@@ -136,9 +136,11 @@ std::vector<std::unique_ptr<Wonder>> WonderFactory::createWonders()
 	Wonders.push_back(std::make_unique<Wonder>(
 		WonderType::THE_STATUE_OF_ZEUS,
 		Cost().withResourceCost(ResourceType::PAPYRUS, 1)
-		.withResourceCost(ResourceType::STONE, 3),
-		9,
-		CardEffect().withCustomDescription("Place in the discard pile a brown card of your choice constructed by your opponent.\n"
+		.withResourceCost(ResourceType::STONE, 2),
+		3,
+		CardEffect()
+		.withShields(1)
+		.withCustomDescription("Place in the discard pile a brown card of your choice constructed by your opponent.\n"
 		                                   "This Wonder is worth 1 Shield.\n"
 		                                   "This Wonder is worth 3 victory points.\n")
 	));

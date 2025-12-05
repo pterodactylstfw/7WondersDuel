@@ -51,9 +51,10 @@ void Player::addMilitaryShields(int shields)
 	militaryShields += shields;
 }
 
-void Player::addScientificSymbol(ScientificSymbol symbol)
+bool Player::addScientificSymbol(ScientificSymbol symbol)
 {
 	scientificSymbols[symbol] += 1;
+	return (scientificSymbols[symbol] == 2);
 }
 
 void Player::addVictoryPoints(int points)
@@ -217,25 +218,41 @@ int Player::getConstructedWondersCount() const
 
 int Player::getFinalScore(const Player& opponent) const
 {
-	//+ military victory points ce urmeaza sa fie discutat
-	int nr = 0;
-
+	int score = 0;
+	score += victoryPoints;
+	for (const auto& card : constructedCards) {
+		if (card->getEffect().getVictoryPointsPerCard().has_value()) {
+			score += card->getEffect().getVictoryPointsPerCard().value();
+		}
+	}
+	score += coins / 3;
+	if (hasProgressToken(ProgressTokenType::MATHEMATICS)) {
+		score += (3 * progressTokens.size());
+	}
 	for (const auto& card : constructedCards)
 	{
-		const auto& vp = card->getEffect().getVictoryPointsPerCard();
-		if (vp.has_value())
-			nr += vp.value();
+		if (card->getColor() == CardColor::PURPLE)
+		{
+			const auto& effect = card->getEffect();
+
+			for (auto const& [color, points] : effect.getPointsPerCardType())
+			{
+				int myCount = (int)getCardsOfType(color).size();
+				int oppCount = (int)opponent.getCardsOfType(color).size();
+
+				score += std::max(myCount, oppCount) * points;
+			}
+
+			if (effect.getPointsPerWonder().has_value())
+			{
+				int myWonders = getConstructedWondersCount();
+				int oppWonders = opponent.getConstructedWondersCount();
+				score += std::max(myWonders, oppWonders) * effect.getPointsPerWonder().value();
+			}
+		}
 	}
 
-	for (const auto& wonder : constructedWonders)
-	{
-		nr += wonder->getVictoryPoints();
-	}
-
-	//+ victory points from progress token cand am clasa
-
-	nr += coins / 3;
-	return nr;
+	return score;
 }
 
 bool Player::hasScientificVictory() const
@@ -283,4 +300,11 @@ std::unique_ptr<Card> Player::removeCard(const Card& card)
 			it++;
 	}
 	return nullptr;
+}
+
+bool Player::hasProgressToken(ProgressTokenType type) const {
+	for (const auto& token : progressTokens) {
+		if (token->getType() == type) return true;
+	}
+	return false;
 }

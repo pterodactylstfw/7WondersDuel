@@ -15,19 +15,19 @@
 class Player
 {
 private:
-	std::string name;
-	int coins;
-	int militaryShields;
-	int victoryPoints;
+	std::string m_name;
+	int m_coins;
+	int m_militaryShields;
+	int m_victoryPoints;
 
-	std::map<ScientificSymbol, int> scientificSymbols;
-	std::vector< std::unique_ptr<Card>> constructedCards;
-	std::array<std::unique_ptr<Wonder>,4> wonders;
-	std::vector< std::unique_ptr<Wonder>> constructedWonders;
-	std::vector< std::unique_ptr<ProgressToken>> progressTokens;
+	std::map<ScientificSymbol, int> m_scientificSymbols;
+	std::vector< std::unique_ptr<Card>> m_constructedCards;
+	std::array<std::unique_ptr<Wonder>,4> m_wonders;
+	std::vector<std::unique_ptr<Wonder>> m_constructedWonders;
+	std::vector<std::unique_ptr<ProgressToken>> m_progressTokens;
 
-	ResourceProduction resourceProduction;
-	std::map<ResourceType, int> tradeDiscounts;
+	ResourceProduction m_resourceProduction;
+	std::map<ResourceType, int> m_tradeDiscounts;
 
 public:
 
@@ -37,7 +37,6 @@ public:
 
 	void addCard(std::unique_ptr<Card>&& card);
 	void addWonder(std::unique_ptr<Wonder>&& wonder, int index);
-	//void constructWonder(int index, State_GameState& state);
 	void addProgressToken(std::unique_ptr<ProgressToken>&& token);
 
 	void addResource(ResourceType type, int qty);
@@ -47,8 +46,6 @@ public:
 	void addMilitaryShields(int shields);
 	void addScientificSymbol(ScientificSymbol symbol);
 	void addVictoryPoints(int points);
-	//void setDiscountRaw(int discount);
-	//void setDiscountManufactured(int discount);
 
 	bool canAfford(const Cost& cost, const Player& opponent) const;
 	int calculateResourceCost(const Cost& cost, const Player& opponent) const;
@@ -56,6 +53,7 @@ public:
 	bool canBuildCard(const Card& card, const Player& opponent) const;
 
 	std::map<ResourceType, int> getTotalResources() const;
+	std::string_view getResourceDescription() const;
 	std::vector<const Card*> getCardsOfType(const CardColor& color) const;
 	int getConstructedWondersCount() const;
 	int getFinalScore(const Player& opponent) const; 
@@ -67,6 +65,8 @@ public:
 	const std::array<std::unique_ptr<Wonder>, 4>& getWonders() const; 
     std::vector<std::unique_ptr<Wonder>>& getConstructedWonders();
     const std::vector<std::unique_ptr<Wonder>>& getConstructedWonders() const;
+	std::vector<std::unique_ptr<ProgressToken>>& getProgressTokens();
+	const std::vector<std::unique_ptr<ProgressToken>>& getProgressTokens() const;
     const std::string& getName() const;
 	int getVictoryPoints() const;
 

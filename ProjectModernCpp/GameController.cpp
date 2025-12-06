@@ -502,9 +502,40 @@ void GameController::applyWonderEffect(Player& player, Player& opponent, const W
 		case WonderType::THE_GREAT_LIBRARY:
 		{
 			player.addVictoryPoints(4);
-			//+Randomly draw 3 Progress tokens from among those discarded at
-			//the beginning of the game.Choose one, play it, and return the other
-			//2 to the box.
+			auto& discardedTokens = m_gameState->getDiscardedTokens();
+
+			if (discardedTokens.empty())
+			{
+				std::cout << "No discarded Progress tokens available. \n";
+				break;
+			}
+
+			std::random_device rd;
+			std::mt19937 g(rd());
+			std::shuffle(discardedTokens.begin(), discardedTokens.end(), g);
+
+			std::cout << "The Progress tokens choosen:";
+
+			int options = std::min(3, (int)discardedTokens.size());
+
+			for (int i = 0; i < options; i++)
+			{
+				std::cout << i + 1 << "." << discardedTokens[i]->getDescription() << "\n";
+			}
+
+			std::cout << "Choose a Progres token to build:";
+			int index;
+			std::cin >> index;
+			while (index < 1 || index > options)
+			{
+				std::cout << "Invalid choice. Try again: \n";
+				std::cin >> index;
+			}
+			index--;
+
+			auto token = m_gameState->extractDiscardedTokens(index);
+			player.addProgressToken(std::move(token));
+
 			m_gameState->setPendingScientificReward(true);
 			break;
 		}

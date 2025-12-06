@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include "GameState.h"
 #include "Player.h"
 #include "CardFactory.h"

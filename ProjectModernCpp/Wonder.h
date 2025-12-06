@@ -13,41 +13,27 @@ private:
 	Cost m_cost;
 	bool m_isBuilt;
 	CardEffect m_effect;
-	WonderType m_type;
 
 public:
 
 	Wonder() = default;
 
-	Wonder(std::string&& name, Cost& cost);
-	
 	Wonder(const Wonder& other) = default;
-
 	Wonder& operator=(const Wonder& other) = default;
 
 	Wonder(Wonder&& other) noexcept = default;
-
 	Wonder& operator=(Wonder&& other) noexcept = default;
 
 	Wonder(const std::string& name, Cost cost, CardEffect effect);
 	Wonder(const std::string& name, Cost cost);
 
-	// for the next 2 functions, waiting for commits from my teammates:
-
-	// void constructWonder(Player& owner, Player& opponent, GameState& state);
-
-	// virtual void applyEffect(Player& owner, Player& opponent, GameState & state);
-
-
-	std::string_view getName() const;
+	std::string getName() const;
 	const Cost& getCost() const;
 	const CardEffect& getEffect() const;
 	std::string getDescription() const;
 
 	bool isBuilt() const;
 	std::string toString() const;
-	
-	WonderType getWonderType() const;
 
 	friend void to_json(json& j, const Wonder& wonder);
 	friend void from_json(const json& j, Wonder& wonder);

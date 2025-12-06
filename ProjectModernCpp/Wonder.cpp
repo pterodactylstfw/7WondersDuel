@@ -8,19 +8,7 @@ Wonder::Wonder(const std::string& name, Cost cost)
 	: m_name(name), m_cost(std::move(cost)), m_isBuilt(false)
 { }
 
-Wonder::Wonder(WonderType type, Cost cost, uint8_t victoryPoints, CardEffect effect)
-	: m_type(type) , m_cost(std::move(cost)), m_isBuilt(false), 
-	  m_victoryPoints(victoryPoints), m_effect(std::move(effect)) {
-	m_name = wonderTypeToString(type);
-}
-
-Wonder::Wonder(WonderType type, Cost cost, uint8_t victoryPoints)
-	: m_type(type), m_cost(std::move(cost)), m_isBuilt(false),
-	m_victoryPoints(victoryPoints) {
-m_name = wonderTypeToString(type);}
-
-
-std::string_view Wonder::getName() const {
+std::string Wonder::getName() const {
 	return m_name;
 }
 
@@ -61,11 +49,6 @@ std::string Wonder::toString() const {
 	ss << "Status: " << (m_isBuilt ? "Built" : "Not built") << "\n";
 	
 	return ss.str();
-}
-
-WonderType Wonder::getWonderType() const
-{
-	return m_type;
 }
 
 void to_json(json& j, const Wonder& wonder)

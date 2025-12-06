@@ -8,29 +8,29 @@ std::vector<std::unique_ptr<Wonder>> WonderFactory::createWonders()
 	Wonders.push_back(std::make_unique<Wonder>(
 		"THE APPIAN WAY",
 		Cost().withResourceCost(ResourceType::PAPYRUS, 1)
-		.withResourceCost(ResourceType::CLAY, 2)
-		.withResourceCost(ResourceType::STONE, 2),
+			  .withResourceCost(ResourceType::CLAY, 2)
+			  .withResourceCost(ResourceType::STONE, 2),
 		CardEffect().withBaseCoins(3)
-		.grantsPlayAgain()
-		.withVictoryPoints(3)
-		.withCustomDescription("You take 3 coins from the bank. Your opponent loses 3 coins.\n"
+					.grantsPlayAgain()
+					.withVictoryPoints(3)
+					.opponentLosesCoins(3)
+					.withCustomDescription("You take 3 coins from the bank. Your opponent loses 3 coins.\n"
 			                   "Immediately play a second turn.\n" 
 			                   "This Wonder is worth 3 victory points\n")
-		//+ opponent pierde 3 monede
 	));
 
 	Wonders.push_back(std::make_unique<Wonder>(
 		"THE CIRCUS MAXIMUS",
 		Cost().withResourceCost(ResourceType::GLASS, 1)
-		.withResourceCost(ResourceType::WOOD, 1)
-		.withResourceCost(ResourceType::STONE, 2),
+			  .withResourceCost(ResourceType::WOOD, 1)
+			  .withResourceCost(ResourceType::STONE, 2),
 		CardEffect().withShields(1)
-		.withVictoryPoints(3)
-		.withCustomDescription("Place in the discard pile a grey card of your choice constructed by your opponent.\n"
+					.withVictoryPoints(3)
+					.opponentlosesCard(CardColor::GREY)
+					.withCustomDescription("Place in the discard pile a grey card of your choice constructed by your opponent.\n"
 								"This Wonder is worth 1 Shield.\n"
 								"This Wonder is worth 3 victory points.\n")
 
-		//+ Place in the discard pile a grey card of your choice constructed by your opponent.
 	));
 
 	Wonders.push_back(std::make_unique<Wonder>(
@@ -49,12 +49,10 @@ std::vector<std::unique_ptr<Wonder>> WonderFactory::createWonders()
 		Cost().withResourceCost(ResourceType::PAPYRUS, 1)
 		.withResourceCost(ResourceType::GLASS, 1)
 		.withResourceCost(ResourceType::WOOD, 3),
-		CardEffect().withVictoryPoints(4),
-		4,
-		CardEffect(). withCustomDescription("Randomly draw 3 Progress tokens from those discarded. Choose one, play it, and return the other\n"
+		CardEffect().withVictoryPoints(4)
+					.grantsProgressToken()
+					.withCustomDescription("Randomly draw 3 Progress tokens from those discarded. Choose one, play it, and return the other\n"
 		                                    "This Wonder is worth 4 victory points.\n")
-		//+ Randomly draw 3 Progress tokens from among those discarded at the beginning of the game.Choose one, play it, 
-		// and return the other 2 to the box.
 	));
 
 	Wonders.push_back(std::make_unique<Wonder>(
@@ -79,13 +77,9 @@ std::vector<std::unique_ptr<Wonder>> WonderFactory::createWonders()
 		Cost().withResourceCost(ResourceType::PAPYRUS, 1)
 		.withResourceCost(ResourceType::GLASS, 1)
 		.withResourceCost(ResourceType::WOOD, 2),
-
-		CardEffect().withBaseCoins(3)
-		.grantsPlayAgain()
-		.withVictoryPoints(3),
-		3,
 		CardEffect().withBaseCoins(6)
 		.grantsPlayAgain()
+		.withVictoryPoints(3)
 		.withCustomDescription("You take 6 coins from the bank.\n"
 							   "Immediately play a second turn.\n"
 			                   "This Wonder is worth 3 victory points.\n")
@@ -96,12 +90,10 @@ std::vector<std::unique_ptr<Wonder>> WonderFactory::createWonders()
 		Cost().withResourceCost(ResourceType::PAPYRUS, 1)
 		.withResourceCost(ResourceType::GLASS, 2)
 		.withResourceCost(ResourceType::CLAY, 2),
-		CardEffect().withVictoryPoints(2),
-		2,
-		CardEffect().withCustomDescription("Take all of the cards which have been discarded and construct one for free.\n"
+		CardEffect().withVictoryPoints(2)
+		.grantsDiscardedCard()
+		.withCustomDescription("Take all of the cards which have been discarded and construct one for free.\n"
 		                                   "This Wonder is worth 2 victory points.\n")
-		//+Take all of the cards which have been discarded since the beginning
-		//of the game and immediately construct one of your choice for free.
 	));
 
 	Wonders.push_back(std::make_unique<Wonder>(
@@ -126,9 +118,8 @@ std::vector<std::unique_ptr<Wonder>> WonderFactory::createWonders()
 		"THE PYRAMIDS",
 		Cost().withResourceCost(ResourceType::PAPYRUS, 1)
 		.withResourceCost(ResourceType::STONE, 3),
-		CardEffect().withVictoryPoints(9),
-		9,
-		CardEffect().withCustomDescription("This Wonder is worth 9 victory points.\n")
+		CardEffect().withVictoryPoints(9)
+		.withCustomDescription("This Wonder is worth 9 victory points.\n")
 	));
 
 	Wonders.push_back(std::make_unique<Wonder>(
@@ -137,22 +128,20 @@ std::vector<std::unique_ptr<Wonder>> WonderFactory::createWonders()
 		.withResourceCost(ResourceType::CLAY, 1)
 		.withResourceCost(ResourceType::STONE, 1),
 		CardEffect().withVictoryPoints(6)
-		.grantsPlayAgain(),
-		6,
-		CardEffect().grantsPlayAgain()
+		.grantsPlayAgain()
 		.withCustomDescription("Immediately play a second turn.\n"
 		                       "This Wonder is worth 6 victory points.\n")
 	));
 
 	Wonders.push_back(std::make_unique<Wonder>(
 		"THE STATUE OF ZEUS",
-		Cost().withResourceCost(ResourceType::PAPYRUS, 1)
-		.withResourceCost(ResourceType::STONE, 3),
-		CardEffect().withVictoryPoints(9)
-		.withResourceCost(ResourceType::STONE, 2),
-		3,
-		CardEffect()
-		.withShields(1)
+		Cost().withResourceCost(ResourceType::PAPYRUS, 2)
+		.withResourceCost(ResourceType::STONE, 1)
+		.withResourceCost(ResourceType::CLAY, 1)
+		.withResourceCost(ResourceType::WOOD, 1),
+		CardEffect().withShields(1)
+		.withVictoryPoints(3)
+		.opponentlosesCard(CardColor::BROWN)
 		.withCustomDescription("Place in the discard pile a brown card of your choice constructed by your opponent.\n"
 		                                   "This Wonder is worth 1 Shield.\n"
 		                                   "This Wonder is worth 3 victory points.\n")

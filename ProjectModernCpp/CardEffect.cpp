@@ -97,6 +97,24 @@ CardEffect& CardEffect::countsOpponentCards() noexcept
     return *this;
 }
 
+CardEffect& CardEffect::opponentLosesCoins(int coins) noexcept
+{
+    m_opponentLosesCoins = coins;
+    return *this;
+}
+
+CardEffect& CardEffect::opponentlosesCard(CardColor color) noexcept
+{
+    m_opponentLosesCard = color;
+    return *this;
+}
+
+CardEffect& CardEffect::grantsDiscardedCard() noexcept
+{
+    m_grantsDiscardedCard = true;
+    return *this;
+}
+
 CardEffect& CardEffect::withStrategyEffect() noexcept
 {
     m_strategyEffect = true;

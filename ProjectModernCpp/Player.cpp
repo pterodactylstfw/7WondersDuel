@@ -340,7 +340,7 @@ std::unique_ptr<Card> Player::removeCard(const Card& card)
 }
 
 bool Player::hasProgressToken(ProgressTokenType type) const {
-	for (const auto& token : progressTokens) {
+	for (const auto& token : m_progressTokens) {
 		if (token->getType() == type) return true;
 	}
 	return false;

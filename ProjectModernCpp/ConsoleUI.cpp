@@ -261,6 +261,19 @@ void ConsoleUI::handlePlayCard()
 	}
 
 	if (success) {
+		if (m_game.isGameOver())
+		{
+			const auto& state = m_game.getGameState();
+			const auto& winner = state.getWinnerIndex();
+			if (state.getCurrentPlayerIndex() == winner.value())
+			{
+				showVictoryScreen(state.getCurrentPlayer().getName());
+			}
+			else
+			{
+				showVictoryScreen(state.getOpponent().getName());
+			}
+		}
 		std::cout << "\n>>> SUCCESS! Action completed. <<<\n";
 	}
 	else {

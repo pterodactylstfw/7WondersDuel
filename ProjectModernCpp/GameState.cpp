@@ -306,15 +306,35 @@ bool GameState::loadGame(std::string&& filename)
     }
 }
 
+const std::vector<std::unique_ptr<ProgressToken>>& GameState::getAvailableTokens() const
+{
+    return m_availableProgressToken;
+}
+
 void GameState::addToAvailableTokens(std::unique_ptr<ProgressToken>&& token)
 {
     if (token)
        m_availableProgressToken.push_back(std::move(token));
 }
 
+
 std::vector<std::unique_ptr<Card>>& GameState::getDiscardedCards()
 {
     return m_discardedCards;
+}
+
+std::unique_ptr<ProgressToken> GameState::removeAvailableTokens(int index)
+{
+    if (index >= m_availableProgressToken.size() || index < 0)
+    {
+        return nullptr;
+    }
+
+    auto it = m_availableProgressToken.begin() + index;
+    std::unique_ptr<ProgressToken> extractedToken = std::move(*it);
+    m_availableProgressToken.erase(it);
+
+    return extractedToken;
 }
 
 const std::vector<std::unique_ptr<Card>>& GameState::getDiscardedCards() const

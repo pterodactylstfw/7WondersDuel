@@ -27,7 +27,7 @@ public:
 
     uint8_t getVictoryPoints() const;
     bool isActive() const;
-    const CardEffect& getEffect() const; 
+    CardEffect& getEffect(); 
     void setActive(bool active);
 
     std::string toString() const;

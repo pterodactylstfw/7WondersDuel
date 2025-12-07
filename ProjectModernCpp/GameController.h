@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include "GameState.h"
 #include "Player.h"
 #include "CardFactory.h"
@@ -43,6 +44,8 @@ public:
 
 	void loadGame(const std::string& filename);
 	void saveGame(const std::string& filename) const;
+  
+	void applyProgressTokenEffect(Player& player, Player& opponent, ProgressToken& token);
 
 	~GameController() = default;
 };

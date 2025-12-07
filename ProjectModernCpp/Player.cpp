@@ -229,12 +229,13 @@ int Player::getFinalScore(const Player& opponent) const
 		}
 	}
 
-	for (const auto& wonder : m_constructedWonders)
+	/*for (const auto& wonder : m_constructedWonders)
 	{
 		if (wonder->getEffect().getVictoryPointsPerCard().has_value()) {
 			score += wonder->getEffect().getVictoryPointsPerCard().value();
 		}
-	}
+	}*/
+
 	score += m_coins / 3;
 
 	if (hasProgressToken(ProgressTokenType::MATHEMATICS)) {

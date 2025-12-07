@@ -90,7 +90,9 @@ public:
 	bool saveGame(std::string&& filename) const;
 	bool loadGame(std::string&& filename);
 
+	const std::vector<std::unique_ptr<ProgressToken>>& getAvailableTokens() const;
 	void addToAvailableTokens(std::unique_ptr<ProgressToken>&& token);
+	std::unique_ptr<ProgressToken> removeAvailableTokens(int index);
 
 	std::vector<std::unique_ptr<Card>>& getDiscardedCards();
 	const std::vector<std::unique_ptr<Card>>& getDiscardedCards() const;
@@ -100,6 +102,7 @@ public:
 
 	std::vector<std::unique_ptr<ProgressToken>>& getDiscardedTokens();
 	const std::vector<std::unique_ptr<ProgressToken>>& getDiscardedTokens() const;
+
 	void addToDiscardTokens(std::unique_ptr<ProgressToken>&& token);
 	std::unique_ptr<ProgressToken> extractDiscardedTokens(int index);
 

@@ -530,3 +530,63 @@ void GameController::loadGame(const std::string& filename) {
 	}
 }
 
+void GameController::applyProgressTokenEffect(Player& player, Player& opponent, ProgressToken& token)
+{
+	ProgressTokenType type = token.getType();
+
+	switch (type)
+	{
+		case ProgressTokenType::AGRICULTURE:
+		{
+			player.addCoins(6);
+			player.addVictoryPoints(4);
+			break;
+		}
+		case ProgressTokenType::ARCHITECTURE:
+		{
+			token.getEffect().withArchitectureEffect();
+			break;
+		}
+		case ProgressTokenType::ECONOMY:
+		{
+			token.getEffect().withEconomyEffect();
+			break;
+		}
+		case ProgressTokenType::LAW:
+		{
+			player.addScientificSymbol(ScientificSymbol::SCALES);
+			break;
+		}
+		case ProgressTokenType::MASONRY:
+		{
+			token.getEffect().withMasonryEffect();
+			break;
+		}
+		case ProgressTokenType::MATHEMATICS:
+		{
+			token.getEffect().withMathematicsEffect();
+			break;
+		}
+		case ProgressTokenType::PHILOSOPHY:
+		{
+			player.addVictoryPoints(7);
+			break;
+		}
+		case ProgressTokenType::STRATEGY:
+		{
+			token.getEffect().withStrategyEffect();
+			break;
+		}
+		case ProgressTokenType::THEOLOGY:
+		{
+			token.getEffect().withTheologyEffect();
+			break;
+		}
+		case ProgressTokenType::URBANISM:
+		{
+			player.addCoins(6);
+			token.getEffect().withUrbanismEffect();
+			break;
+		}
+	}
+}

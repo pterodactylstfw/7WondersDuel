@@ -1,4 +1,4 @@
-	#include "WonderFactory.h"
+#include "WonderFactory.h"
 
 std::vector<std::unique_ptr<Wonder>> WonderFactory::createWonders()
 {
@@ -30,7 +30,6 @@ std::vector<std::unique_ptr<Wonder>> WonderFactory::createWonders()
 					.withCustomDescription("Place in the discard pile a grey card of your choice constructed by your opponent.\n"
 								"This Wonder is worth 1 Shield.\n"
 								"This Wonder is worth 3 victory points.\n")
-
 	));
 
 	Wonders.push_back(std::make_unique<Wonder>(
@@ -39,9 +38,8 @@ std::vector<std::unique_ptr<Wonder>> WonderFactory::createWonders()
 		.withResourceCost(ResourceType::CLAY, 3),
 		CardEffect().withShields(2)
 		.withVictoryPoints(3)
-		.withCustomDescription("This Wonder is worth 2 Shields.\n"
-		                       "This Wonder is worth 3 victory points.\n")
-
+		.withCustomDescription("This Wonder is worth 2 Shields\n"
+			"This Wonder is worth 3 victory points\n")
 	));
 
 	Wonders.push_back(std::make_unique<Wonder>(
@@ -60,16 +58,14 @@ std::vector<std::unique_ptr<Wonder>> WonderFactory::createWonders()
 		Cost().withResourceCost(ResourceType::PAPYRUS, 2)
 		.withResourceCost(ResourceType::STONE, 1)
 		.withResourceCost(ResourceType::WOOD, 1),
-		CardEffect().withProduction(ResourceProduction().addChoice(
-			{
-			ResourceType::STONE,
-			ResourceType::CLAY,
-			ResourceType::WOOD
-			}
-		))
+		CardEffect().withProduction(ResourceProduction().addChoice({
+						ResourceType::STONE,
+						ResourceType::CLAY,
+						ResourceType::WOOD
+			}))
 		.withVictoryPoints(4)
-		.withCustomDescription("This Wonder produces one unit of: Stone, Clay, or Wood.\n"
-		                       "This Wonder is worth 4 victory points.\n")
+		.withCustomDescription("This Wonder produces one unit of: Stone, Clay, or Wood\n"
+			"This Wonder is worth 4 victory points\n")
 	));
 
 	Wonders.push_back(std::make_unique<Wonder>(
@@ -101,17 +97,15 @@ std::vector<std::unique_ptr<Wonder>> WonderFactory::createWonders()
 		Cost().withResourceCost(ResourceType::CLAY, 1)
 		.withResourceCost(ResourceType::STONE, 1)
 		.withResourceCost(ResourceType::WOOD, 2),
-		CardEffect().withProduction(ResourceProduction().addChoice(
-			{
-			ResourceType::PAPYRUS,
-			ResourceType::GLASS
-			}
-		))
+		CardEffect().withProduction(ResourceProduction().addChoice({
+						ResourceType::PAPYRUS,
+						ResourceType::GLASS
+			}))
 		.grantsPlayAgain()
 		.withVictoryPoints(2)
-		.withCustomDescription("This Wonder produces one unit of: Papyrus or Glass.\n"
-		                       "Immediately play a second turn.\n"
-							   "This Wonder is worth 2 victory points.\n")
+		.withCustomDescription("This Wonder produces one unit of: Papyrus or Glass\n"
+			"Immediately play a second turn\n"
+			"This Wonder is worth 2 victory points\n")
 	));
 
 	Wonders.push_back(std::make_unique<Wonder>(
@@ -155,8 +149,8 @@ std::vector<std::unique_ptr<Wonder>> WonderFactory::createWonders()
 		.withResourceCost(ResourceType::WOOD, 1),
 		CardEffect().withBaseCoins(12)
 		.grantsPlayAgain()
-		.withCustomDescription("Immediately take 12 coins from the Bank.\n"
-		                       "Immediately play a second turn.\n")
+		.withCustomDescription("Immediately take 12 coins from the Bank\n"
+			"Immediately play a second turn\n")
 	));
 
 	return Wonders;

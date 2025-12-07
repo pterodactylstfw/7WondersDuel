@@ -22,7 +22,7 @@ uint8_t ProgressToken::getVictoryPoints() const {
 	return static_cast<uint8_t>(m_effect.getVictoryPointsPerCard().value_or(0));
 }
 
-const CardEffect& ProgressToken::getEffect() const {
+CardEffect& ProgressToken::getEffect() {
 	return m_effect;
 }
 

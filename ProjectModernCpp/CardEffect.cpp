@@ -27,7 +27,7 @@ CardEffect& CardEffect::withScienceSymbol(ScientificSymbol symbol) noexcept
 
 CardEffect& CardEffect::withDiscount(ResourceType type, int amount)
 {
-    m_discounts[type] += amount;
+    m_discounts.emplace(type, amount);
     return *this;
 }
 
@@ -67,6 +67,12 @@ CardEffect& CardEffect::withCoinsPerCardType(CardColor color, int coins)
     return *this;
 }
 
+CardEffect& CardEffect::withPointPerCoins(int points, int coins) noexcept
+{
+    m_pointsPerCoins = std::make_pair(points, coins);
+    return *this;
+}
+
 CardEffect& CardEffect::withCustomDescription(const std::string& desc)
 {
     m_customDescription = desc;
@@ -88,12 +94,6 @@ CardEffect& CardEffect::grantsProgressToken() noexcept
 CardEffect& CardEffect::grantsGuildCopy() noexcept
 {
     m_copyGuild = true;
-    return *this;
-}
-
-CardEffect& CardEffect::countsOpponentCards() noexcept
-{
-    m_countOpponentCards = true;
     return *this;
 }
 
@@ -180,6 +180,7 @@ bool CardEffect::isEmpty() const
         m_coinsPerCardType.empty() &&
         m_pointsPerWonder == 0 &&
         m_pointsPerCardType.empty() &&
+        m_pointsPerCoins.has_value() &&
         !m_playAgain &&
         !m_strategyEffect && !m_masonryEffect && !m_architectureEffect && !m_economyEffect && !m_mathematicsEffect &&
         !m_countOpponentCards &&
@@ -189,10 +190,13 @@ bool CardEffect::isEmpty() const
         m_victoryPoints == 0 &&
         m_shields == 0 &&
         m_baseCoins == 0 &&
-        m_discounts.empty();
+        !m_discounts.empty() &&
+        !m_opponentLosesCoins &&
+        !m_opponentLosesCard &&
+        !m_grantsDiscardedCard;
 }
 
-std::string CardEffect::getDescription() const
+std::string CardEffect::getDescription() const // pentru aceasta functie am pus doar efectele cartilor normale, pentru ca guild cards, wonders si progress tokens au custom description
 {
     if (m_customDescription.has_value() && !m_customDescription.value().empty())
     {
@@ -221,11 +225,6 @@ std::string CardEffect::getDescription() const
         ss << "Grants " << m_shields.value() << " shields. ";
     }
 
-    if (!m_production.isEmpty())
-    {
-        ss << "Produces: " << m_production.getDescription() << ". ";
-    }
-
     if (m_scienceSymbol.has_value())
     {
         ss << "Science Symbol: " << scientificSymbolToString(m_scienceSymbol.value()) << ". ";
@@ -233,15 +232,15 @@ std::string CardEffect::getDescription() const
 
     if (!m_discounts.empty())
     {
-        for (const auto& [type, amount] : m_discounts)
+        for (const auto& discount : m_discounts)
         {
-            ss << "Discount of " << amount << " on " << resourceToString(type) << ". ";
+            ss << "Discount of " << discount.second << " on " << resourceToString(discount.first) << ". ";
         }
     }
 
-    if (m_pointsPerWonder.has_value())
+    if (!m_production.isEmpty())
     {
-        ss << "Grants " << m_pointsPerWonder.value() << " VP per constructed Wonder. ";
+        ss << "Resource Production: " << m_production.getDescription();
     }
 
     if (m_coinsPerWonder.has_value())
@@ -257,16 +256,6 @@ std::string CardEffect::getDescription() const
     for (const auto& [color, coins] : m_coinsPerCardType)
     {
         ss << "Grants " << coins << " coins per " << colorToString(color) << " card. ";
-    }
-
-    if (m_grantsProgressToken.has_value() && m_grantsProgressToken.value())
-    {
-        ss << "Choose a Progress Token. ";
-    }
-
-    if (m_playAgain.has_value() && m_playAgain.value())
-    {
-        ss << "Play again. ";
     }
 
     return ss.str();
@@ -319,7 +308,7 @@ void from_json(const json& j, CardEffect& cardEffect)
     cardEffect.m_economyEffect = get_optional<bool>(j, "economyEffect");
     cardEffect.m_mathematicsEffect = get_optional<bool>(j, "mathematicsEffect");
 
-    cardEffect.m_discounts = j.value("discounts", std::map<ResourceType, int>{});
+    cardEffect.m_discounts = j.value("discounrs", std::map<ResourceType, int>{});
     cardEffect.m_production = j.value("production", ResourceProduction{});
     cardEffect.m_coinsPerCardType = j.value("coinsPerCardType", std::map<CardColor, int>{});
     cardEffect.m_pointsPerCardType = j.value("pointsPerCardType", std::map<CardColor, int>{});
@@ -373,4 +362,39 @@ std::optional<int> CardEffect::getPointsPerWonder() const
 const std::map<CardColor, int>& CardEffect::getPointsPerCardType() const
 {
     return m_pointsPerCardType;
+}
+
+std::optional<std::pair<int, int>> CardEffect::getPointsPerCoins() const
+{
+    return m_pointsPerCoins;
+}
+
+bool CardEffect::getGrantsPlayAgain() const
+{
+    return m_playAgain ? true: false;
+}
+
+bool CardEffect::getGrantsProgressToken() const
+{
+    return m_grantsProgressToken ? true : false;
+}
+
+bool CardEffect::getGrantsGuildCopy() const
+{
+    return m_copyGuild ? true : false;
+}
+
+std::optional<int> CardEffect::getOpponentLosesCoins() const
+{
+    return m_opponentLosesCoins;
+}
+
+std::optional<CardColor> CardEffect::getOpponentLosesCard() const
+{
+    return m_opponentLosesCard;
+}
+
+bool CardEffect::getGrantsDiscardedCard() const
+{
+    return m_grantsDiscardedCard ? true : false;
 }

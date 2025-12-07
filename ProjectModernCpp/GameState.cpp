@@ -312,6 +312,11 @@ void GameState::addToAvailableTokens(std::unique_ptr<ProgressToken>&& token)
        m_availableProgressToken.push_back(std::move(token));
 }
 
+std::vector<std::unique_ptr<Card>>& GameState::getDiscardedCards()
+{
+    return m_discardedCards;
+}
+
 const std::vector<std::unique_ptr<Card>>& GameState::getDiscardedCards() const
 {
     return m_discardedCards;
@@ -335,6 +340,11 @@ std::unique_ptr<Card> GameState::extractDiscardedCard(int index)
     m_discardedCards.erase(it);
 
     return extractedCard;
+}
+
+std::vector<std::unique_ptr<ProgressToken>>& GameState::getDiscardedTokens()
+{
+    return m_discardedProgressTokens;
 }
 
 const std::vector<std::unique_ptr<ProgressToken>>& GameState::getDiscardedTokens() const
@@ -392,6 +402,15 @@ void GameState::setWinner(uint8_t index)
 {
     m_winnerIndex = index;
 }
+Player& GameState::getPlayerWithMostCardsPerColor(const CardColor& color)
+{
+    Player& player1 = getCurrentPlayer();
+    Player& player2 = getOpponent();
+    if (player1.getCardPerColor(color) > player2.getCardPerColor(color))
+        return player1;
+    return player2;
+}
+
 void to_json(json& j, const GameState& state)
 {
     j = nlohmann::json{

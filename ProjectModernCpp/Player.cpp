@@ -20,14 +20,9 @@ void Player::addProgressToken(std::unique_ptr<ProgressToken>&& token)
 }
 
 
-void Player::addResource(ResourceType type, int qty)
+void Player::addResourceProduction(ResourceProduction resourceProduction)
 {
-	m_resourceProduction.addFixedResource(type, qty);
-}
-
-void Player::addResourceChoice(std::vector<ResourceType> choices)
-{
-	m_resourceProduction.addChoice(choices);
+	m_resourceProduction = resourceProduction;
 }
 
 void Player::addCoins(int amount)
@@ -61,6 +56,11 @@ bool Player::addScientificSymbol(ScientificSymbol symbol)
 void Player::addVictoryPoints(int points)
 {
 	m_victoryPoints += points;
+}
+
+void Player::addTradeDiscount(ResourceType type, int amount)
+{
+	m_tradeDiscounts.emplace(type, amount);
 }
 
 bool Player::canAfford(const Cost& cost, const Player& opponent) const
@@ -202,18 +202,13 @@ std::string_view Player::getResourceDescription() const
 	return m_resourceProduction.getDescription();
 }
 
-std::vector<const Card*> Player::getCardsOfType(const CardColor& color) const
+std::vector<std::reference_wrapper<const Card>> Player::getCardsOfType(const CardColor& color) const
 {
-	std::vector<const Card*> result;
-
-	for (const auto& card : m_constructedCards)
-	{
-		if (card && card->getColor() == color)
-		{
-			result.push_back(card.get()); // raw pointer, no ownership transfer
-		}
+	std::vector<std::reference_wrapper<const Card>> result;
+	for (const auto& cardPtr : m_constructedCards) {
+		if (cardPtr && cardPtr->getColor() == color)
+			result.push_back(std::cref(*cardPtr));
 	}
-
 	return result;
 }
 
@@ -285,6 +280,20 @@ int Player::getMilitaryShields() const
 int Player::getCoins() const
 {
 	return m_coins;
+}
+
+std::vector<std::unique_ptr<Card>>& Player::getConstructedCards()
+{
+	return m_constructedCards;
+}
+
+int Player::getCardPerColor(const CardColor& color)
+{
+	int count = 0;
+	for (const auto& card : m_constructedCards)
+		if (card->getColor() == color)
+			count++;
+	return count;
 }
 
 std::array<std::unique_ptr<Wonder>, 4>& Player::getWonders()

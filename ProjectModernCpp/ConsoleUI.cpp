@@ -318,8 +318,8 @@ void ConsoleUI::displayCityDetails() {
 		auto cards = player.getCardsOfType(color);
 		if (!cards.empty()) {
 			std::cout << "   " << label << ": ";
-			for (const auto* c : cards) {
-				std::cout << c->getName() << ", ";
+			for (const auto& c : cards) {
+				std::cout << c.get().getName() << ", ";
 			}
 			std::cout << "\n";
 		}

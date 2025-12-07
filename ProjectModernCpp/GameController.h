@@ -15,14 +15,18 @@ private:
 
 	void prepareAge(int age);
 	void checkEndAge();
+
 	void draftWondersAuto();
 	void selectWondersManual();
 	void displayWondersForSelection(const std::vector<std::unique_ptr<Wonder>>& wonders) const;
-	void prepareProgressTokens();
 
+	void prepareProgressTokens();
 
 	void checkMilitaryLooting(int previousShields, int currentShields);
 	void checkInstantVictory();
+
+	void applyEffect(Card& card);
+
 	bool handleConstructBuilding(int cardIndex);
 	bool handleDiscardCard(int cardIndex);
 	bool handleConstructWonders(int cardIndex, int wonderIndex, bool & outPlayAgain);
@@ -39,8 +43,6 @@ public:
 
 	void loadGame(const std::string& filename);
 	void saveGame(const std::string& filename) const;
-
-	void applyWonderEffect(Player& player, Player& opponent, const Wonder& wonder);
 
 	~GameController() = default;
 };

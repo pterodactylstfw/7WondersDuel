@@ -159,6 +159,123 @@ void GameController::checkInstantVictory()
 	}
 }
 
+void GameController::applyEffect(Card& card)
+{
+	const CardEffect& effect = card.getEffect();
+	Player& player = m_gameState->getCurrentPlayer();
+	Player& opponent = m_gameState->getOpponent();
+
+	if (effect.getVictoryPointsPerCard().has_value())
+		player.addVictoryPoints(effect.getVictoryPointsPerCard().value());
+
+	if (effect.getShields().has_value())
+		player.addMilitaryShields(effect.getShields().value());
+
+	if (effect.getBaseCoins().has_value())
+		player.addCoins(effect.getBaseCoins().value());
+
+	if (effect.getScienceSymbol().has_value())
+		player.addScientificSymbol(effect.getScienceSymbol().value());
+
+	if (!effect.getDiscounts().empty())
+	{
+		for (const auto& discount : effect.getDiscounts())
+			player.addTradeDiscount(discount.first, discount.second);
+	}
+
+	if (!effect.getProduction().isEmpty())
+		player.addResourceProduction(effect.getProduction());
+	
+	if (!effect.getCoinsPerCardType().empty()) {
+		if (card.getColor() == CardColor::PURPLE) {
+			for (const auto& pair: effect.getCoinsPerCardType()) {
+				Player& playerWithMostCards = m_gameState->getPlayerWithMostCardsPerColor(pair.first);
+				int coinsToAdd = playerWithMostCards.getCardPerColor(pair.first) * pair.second;
+				player.addCoins(coinsToAdd);
+			}
+		}
+		else {
+			for (const auto& pair : effect.getCoinsPerCardType()) {
+				int coinsToAdd = player.getCardPerColor(pair.first) * pair.second;
+				player.addCoins(coinsToAdd);
+			}
+		}
+		// sunt 2 tipuri de aplicari: in functie de cate carti are jucatorul curent(carte normala) sau
+		// in functie de cine are cele mai multe carti de acea culoare (guild)
+	}
+
+	if (effect.getGrantsPlayAgain())
+		m_gameState->switchPlayer(); // nu sunt sigura daca e bine
+
+	if (effect.getGrantsProgressToken())
+	{
+		auto& discardedTokens = m_gameState->getDiscardedTokens();
+
+		std::random_device rd;
+		std::mt19937 g(rd());
+		std::shuffle(discardedTokens.begin(), discardedTokens.end(), g);
+
+		for (int i = 0; i < 3; i++)
+			std::cout << '[' << i + 1 << '] ' << discardedTokens[i]->toString();
+		int choice = Utils::getIntInput("Choose one Progress Token from the discarded pile: ");
+		choice--;
+		player.addProgressToken(std::move(discardedTokens[choice]));
+		discardedTokens.erase(discardedTokens.begin() + choice);
+
+		// playerul trebuie sa aleaga din cele din decartate (care au ramas de la inceput in "cutie") una din 3
+	}
+
+	if (effect.getGrantsGuildCopy())
+	{
+		// de implementat - s-ar putea sa nu fie nevoie de asta
+	}
+
+	if (effect.getOpponentLosesCoins().has_value())
+	{
+		opponent.removeCoins(effect.getOpponentLosesCoins().value());
+	}
+
+	if (effect.getOpponentLosesCard().has_value())
+	{
+		auto cardsOfColor = opponent.getCardsOfType(effect.getOpponentLosesCard().value());
+		if (cardsOfColor.empty()) {
+			std::cout << "The opponent doesn't have a card of this color.\n";
+		}
+		else {
+			for (int i = 0; i < cardsOfColor.size(); i++)
+				std::cout << '[' << i + 1 << '] ' << cardsOfColor[i].get().displayCardInfo();
+
+			int choice = Utils::getIntInput("Select a card to be removed from your opponent's city: ");
+			choice--;
+
+			auto removedCard = opponent.removeCard(cardsOfColor[choice].get());
+			if (removedCard != nullptr)
+				m_gameState->addToDiscardCards(std::move(removedCard));
+		}
+	}
+
+	if (effect.getGrantsDiscardedCard())
+	{
+		auto& discardedCards = m_gameState->getDiscardedCards();
+		if (discardedCards.empty()) {
+			std::cout << "The discarded pile is empty.\n";
+		}
+		else {
+			for (int i = 0; i < discardedCards.size(); i++)
+				std::cout << '[' << i + 1 << '] ' << discardedCards[i]->displayCardInfo();
+
+			int choice = Utils::getIntInput("Choose a card from the discarded pile: ");
+			choice--;
+
+			player.addCard(m_gameState->extractDiscardedCard(choice));
+			discardedCards.erase(discardedCards.begin() + choice);
+		}
+	}
+
+	// cand construim o minune trebuie sa vedem daca avem o carte care ne ofera banuti 
+	// la finalul jocului trebuie sa vefiricam daca jucatorii au carti care le ofera vp pe carte/minune/set de banuti
+}
+
 bool GameController::handleConstructBuilding(int cardIndex)
 {
 	Player& currentPlayer = m_gameState->getCurrentPlayer();
@@ -187,39 +304,6 @@ bool GameController::handleConstructBuilding(int cardIndex)
 
 	// aplicare efecte
 
-	
-	const ResourceProduction& prod = effect.getProduction();
-	if (!prod.isEmpty()) {
-		for (const auto& [type, qty] : prod.getFixedResources()) {
-			currentPlayer.addResource(type, qty);
-		}
-		if (prod.hasChoices()) {
-			for (const auto& choice : prod.getChoices()) {
-				std::vector<ResourceType> optionsCopy = choice;
-				currentPlayer.addResourceChoice(optionsCopy);
-			}
-		}
-	}
-
-	
-	if (auto shields = effect.getShields(); shields.has_value()) {
-		currentPlayer.addMilitaryShields(shields.value());
-		// de implementat verificare victorie militara
-		// if (checkMilitaryVictory()) 
-	}
-
-	if (auto vp = effect.getVictoryPointsPerCard(); vp.has_value()) {
-		currentPlayer.addVictoryPoints(vp.value());
-	}
-
-	if (auto symbol = effect.getScienceSymbol(); symbol.has_value()) {
-		currentPlayer.addScientificSymbol(symbol.value());
-		// de implementat verificare victorie stiintifica
-	}
-
-	if (auto coins = effect.getBaseCoins(); coins.has_value()) {
-		currentPlayer.addCoins(coins.value());
-	}
   
 	int oldShields = currentPlayer.getMilitaryShields();
 	std::unique_ptr<Card> takenCard = m_gameState->takeCard(cardIndex);
@@ -305,13 +389,14 @@ bool GameController::handleConstructWonders(int cardIndex, int wonderIndex, bool
 		std::cout << ">>> Play Again granted!\n";
 	}
 	int oldShields = currentPlayer.getMilitaryShields();
-	applyWonderEffect(currentPlayer, opponent, targetWonder);
+	//applyWonderEffect(currentPlayer, opponent, targetWonder);
 	int newShields = currentPlayer.getMilitaryShields();
 
 	if (newShields > oldShields) {
 		checkMilitaryLooting(oldShields, newShields);
 	}
 
+	// + trebuie sa verificam daca avem o carte care ne ofera bani pentru minune
 	return true;
 }
 
@@ -442,210 +527,6 @@ void GameController::loadGame(const std::string& filename) {
 		m_gameState.reset(); // sterg daca load esueaza
 
 		throw std::runtime_error("Failed to load game file.");
-	}
-}
-
-void GameController::applyWonderEffect(Player& player, Player& opponent, const Wonder& wonder)
-{
-	WonderType type = wonder.getWonderType();
-
-	switch (type)
-	{
-		case WonderType::THE_APPIAN_WAY:
-		{
-			player.addCoins(3);
-			opponent.removeCoins(3);
-			//+ play again player
-			break;
-		}
-		case WonderType::CIRCUS_MAXIMUS:
-		{
-			player.addMilitaryShields(1);
-			player.addVictoryPoints(3);
-			auto opponentCards = opponent.getCardsOfType(CardColor::GREY);
-
-			if (opponentCards.empty()) {
-				std::cout << "Opponent has no grey cards to destroy.\n";
-				break;
-			}
-
-			std::cout << "Your opponent's grey cards:\n";
-			int index = 1;
-			for (const Card* card : opponentCards)
-			{
-				std::cout << index<<"."<< card->getName() << "\n";
-				index++;
-			}
-
-			std::cout << "Choose a card to destroy: \n";
-			std::cin >> index;
-
-			while (index < 1 || index > opponentCards.size())
-			{
-				std::cout << "Invalid choice. Try again: \n";
-				std::cin >> index;
-			}
-			index--;
-
-			const Card* chosen = opponentCards[index];
-			auto removedCard = opponent.removeCard(*chosen);
-
-			m_gameState->addToDiscardCards(std::move(removedCard));
-			break;
-		}
-		case WonderType::THE_COLOSSUS:
-		{
-			player.addMilitaryShields(2);
-			player.addVictoryPoints(3);
-			break;
-		}
-		case WonderType::THE_GREAT_LIBRARY:
-		{
-			player.addVictoryPoints(4);
-			auto& discardedTokens = m_gameState->getDiscardedTokens();
-
-			if (discardedTokens.empty())
-			{
-				std::cout << "No discarded Progress tokens available. \n";
-				break;
-			}
-
-			std::random_device rd;
-			std::mt19937 g(rd());
-			std::shuffle(discardedTokens.begin(), discardedTokens.end(), g);
-
-			std::cout << "The Progress tokens choosen:";
-
-			int options = std::min(3, (int)discardedTokens.size());
-
-			for (int i = 0; i < options; i++)
-			{
-				std::cout << i + 1 << "." << discardedTokens[i]->getDescription() << "\n";
-			}
-
-			std::cout << "Choose a Progres token to build:";
-			int index;
-			std::cin >> index;
-			while (index < 1 || index > options)
-			{
-				std::cout << "Invalid choice. Try again: \n";
-				std::cin >> index;
-			}
-			index--;
-
-			auto token = m_gameState->extractDiscardedTokens(index);
-			player.addProgressToken(std::move(token));
-
-			m_gameState->setPendingScientificReward(true);
-			break;
-		}
-		case WonderType::THE_GREAT_LIGHTHOUSE:
-		{
-			player.addVictoryPoints(4);
-			player.addResourceChoice({
-				ResourceType::WOOD,
-				ResourceType::STONE,
-				ResourceType::CLAY
-				});
-			break;
-		}
-		case WonderType::THE_HANGING_GARDENS:
-		{
-			player.addCoins(6);
-			//+ second turn
-			player.addVictoryPoints(3);
-			break;
-		}
-		case WonderType::THE_MAUSOLEUM:
-		{
-			const auto& discarded_cards = m_gameState->getDiscardedCards();
-			if (discarded_cards.empty())
-			{
-				std::cout << "The discard pile is empty\n";
-				break;
-			}
-
-			std::cout << "Choose a card to build for free\n";
-			int index = 1;
-			for (const auto& card : discarded_cards)
-			{
-				std::cout << index << "." << card->getName() << "\n";
-				index++;
-			}
-
-			std::cout << "Choose a card to build: \n";
-			std::cin >> index;
-
-			while (index < 1 || index > discarded_cards.size())
-			{
-				std::cout << "Invalid choice. Try again: \n";
-				std::cin >> index;
-			}
-			index--;
-
-			std::unique_ptr<Card> cardToBuild = m_gameState->extractDiscardedCard(index);
-			if (cardToBuild)
-			{
-				player.addCard(std::move(cardToBuild));
-			}
-			break;
-		}
-		case WonderType::PIRAEUS:
-		{
-			player.addResourceChoice({
-				ResourceType::PAPYRUS,
-				ResourceType::GLASS
-				});
-			//+second turn
-			player.addVictoryPoints(2);
-			break;
-		}
-		case WonderType::THE_PYRAMIDS:
-		{
-			player.addVictoryPoints(9);
-			break;
-		}
-		case WonderType::THE_SPHINX:
-		{
-			//+second turn
-			player.addVictoryPoints(6);
-			break;
-		}
-		case WonderType::THE_STATUE_OF_ZEUS:
-		{
-			player.addMilitaryShields(1);
-			player.addVictoryPoints(3);
-			auto opponentCards = opponent.getCardsOfType(CardColor::BROWN);
-
-			if (opponentCards.empty()) {
-				std::cout << "Opponent has no brown cards to destroy.\n";
-				break;
-			}
-
-			std::cout << "Your opponent's brown cards:\n";
-			int index = 1;
-			for (const Card* card : opponentCards)
-			{
-				std::cout << index << "." << card->getName() << "\n";
-				index++;
-			}
-
-			std::cout << "Choose a card to destroy: \n";
-			std::cin >> index;
-
-			while (index < 1 || index > opponentCards.size())
-			{
-				std::cout << "Invalid choice. Try again: \n";
-				std::cin >> index;
-			}
-			index--;
-
-			const Card* chosen = opponentCards[index];
-			auto removedCard = opponent.removeCard(*chosen);
-
-			m_gameState->addToDiscardCards(std::move(removedCard));
-			break;
-		}
 	}
 }
 

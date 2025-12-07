@@ -39,13 +39,13 @@ public:
 	void addWonder(std::unique_ptr<Wonder>&& wonder, int index);
 	void addProgressToken(std::unique_ptr<ProgressToken>&& token);
 
-	void addResource(ResourceType type, int qty);
-	void addResourceChoice(std::vector<ResourceType> choices);
+	void addResourceProduction(ResourceProduction resourceProduction);
 	void addCoins(int amount);
 	void removeCoins(int amount);
 	void addMilitaryShields(int shields);
 	bool addScientificSymbol(ScientificSymbol symbol);
 	void addVictoryPoints(int points);
+	void addTradeDiscount(ResourceType type, int amount);
 
 	bool canAfford(const Cost& cost, const Player& opponent) const;
 	int calculateResourceCost(const Cost& cost, const Player& opponent) const;
@@ -54,20 +54,28 @@ public:
 
 	std::map<ResourceType, int> getTotalResources() const;
 	std::string_view getResourceDescription() const;
-	std::vector<const Card*> getCardsOfType(const CardColor& color) const;
+
+	std::vector<std::reference_wrapper<const Card>> getCardsOfType(const CardColor& color) const;
+
 	int getConstructedWondersCount() const;
 	int getFinalScore(const Player& opponent) const; 
 
 	bool hasScientificVictory() const;
 	int getMilitaryShields() const;
 	int getCoins() const;
+
+	std::vector<std::unique_ptr<Card>>& getConstructedCards();
+	int getCardPerColor(const CardColor& color);
+	
 	std::array<std::unique_ptr<Wonder>, 4>& getWonders();
-	const std::array<std::unique_ptr<Wonder>, 4>& getWonders() const; 
-    std::vector<std::unique_ptr<Wonder>>& getConstructedWonders();
-    const std::vector<std::unique_ptr<Wonder>>& getConstructedWonders() const;
+	const std::array<std::unique_ptr<Wonder>, 4>& getWonders() const;
+
+	std::vector<std::unique_ptr<Wonder>>& getConstructedWonders();
+	const std::vector<std::unique_ptr<Wonder>>& getConstructedWonders() const;
+
 	std::vector<std::unique_ptr<ProgressToken>>& getProgressTokens();
 	const std::vector<std::unique_ptr<ProgressToken>>& getProgressTokens() const;
-    const std::string& getName() const;
+	const std::string& getName() const;
 	int getVictoryPoints() const;
 
 	friend void to_json(json& j, const Player& player);

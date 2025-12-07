@@ -67,6 +67,8 @@ public:
 	uint8_t getCurrentPlayerIndex() const;
 	void setWinner(uint8_t index);
 
+    Player& getPlayerWithMostCardsPerColor(const CardColor& color);
+
 	uint8_t getCurrentAge() const;
 	bool isGameOver() const;
 	void setGameOver(bool over);
@@ -92,11 +94,15 @@ public:
 	void addToAvailableTokens(std::unique_ptr<ProgressToken>&& token);
 	std::unique_ptr<ProgressToken> removeAvailableTokens(int index);
 
+	std::vector<std::unique_ptr<Card>>& getDiscardedCards();
 	const std::vector<std::unique_ptr<Card>>& getDiscardedCards() const;
+
 	void addToDiscardCards(std::unique_ptr<Card>&& card);
 	std::unique_ptr<Card> extractDiscardedCard(int index);
 
 	std::vector<std::unique_ptr<ProgressToken>>& getDiscardedTokens();
+	const std::vector<std::unique_ptr<ProgressToken>>& getDiscardedTokens() const;
+
 	void addToDiscardTokens(std::unique_ptr<ProgressToken>&& token);
 	std::unique_ptr<ProgressToken> extractDiscardedTokens(int index);
 

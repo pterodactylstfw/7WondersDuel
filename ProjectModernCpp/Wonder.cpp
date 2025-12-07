@@ -8,9 +8,7 @@ Wonder::Wonder(const std::string& name, Cost cost)
 	: m_name(name), m_cost(std::move(cost)), m_isBuilt(false)
 { }
 
-
-
-std::string_view Wonder::getName() const {
+std::string Wonder::getName() const {
 	return m_name;
 }
 
@@ -51,11 +49,6 @@ std::string Wonder::toString() const {
 	ss << "Status: " << (m_isBuilt ? "Built" : "Not built") << "\n";
 	
 	return ss.str();
-}
-
-WonderType Wonder::getWonderType() const
-{
-	return m_type;
 }
 
 void to_json(json& j, const Wonder& wonder)

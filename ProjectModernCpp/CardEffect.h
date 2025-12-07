@@ -26,13 +26,20 @@ private:
 	std::optional<int> m_pointsPerWonder;
 	std::map<CardColor, int> m_pointsPerCardType;
 
+	std::optional<std::pair<int, int>> m_pointsPerCoins;
+
 	std::optional<bool> m_playAgain;
 	std::optional<bool> m_grantsProgressToken;
 	std::optional<bool> m_countOpponentCards;
 	std::optional<bool> m_copyGuild;
+
 	std::optional<std::string> m_customDescription;
 
-	std::optional<bool> m_strategyEffect;  
+	std::optional<int> m_opponentLosesCoins;
+	std::optional<CardColor> m_opponentLosesCard;
+	std::optional<bool> m_grantsDiscardedCard;
+
+	std::optional<bool> m_strategyEffect;
 	std::optional<bool> m_masonryEffect;      
 	std::optional<bool> m_architectureEffect; 
 	std::optional<bool> m_economyEffect;      
@@ -48,18 +55,31 @@ public:
 	CardEffect& withShields(int shields) noexcept;
 	CardEffect& withBaseCoins(int coins) noexcept;
 	CardEffect& withScienceSymbol(ScientificSymbol symbol) noexcept;
+
 	CardEffect& withDiscount(ResourceType type, int amount);
+
 	CardEffect& withProduction(const ResourceProduction& prod);
 	CardEffect& withProduction(ResourceProduction&& prod);
+
 	CardEffect& withPointsPerWonder(int points) noexcept;
 	CardEffect& withPointsPerCardType(CardColor color, int points);
+
 	CardEffect& withCoinsPerWonder(int coins) noexcept;
 	CardEffect& withCoinsPerCardType(CardColor color, int coins);
+
+	CardEffect& withPointPerCoins(int points, int coins) noexcept;
+
 	CardEffect& withCustomDescription(const std::string& desc);
+
 	CardEffect& grantsPlayAgain() noexcept;
 	CardEffect& grantsProgressToken() noexcept;
 	CardEffect& grantsGuildCopy() noexcept;
-	CardEffect& countsOpponentCards() noexcept;
+
+	CardEffect& opponentLosesCoins(int coins) noexcept;
+	CardEffect& opponentlosesCard(CardColor color) noexcept;
+
+	CardEffect& grantsDiscardedCard() noexcept;
+
 	CardEffect& withStrategyEffect() noexcept;
 	CardEffect& withMasonryEffect() noexcept;
 	CardEffect& withArchitectureEffect() noexcept;
@@ -84,6 +104,17 @@ public:
 
 	std::optional<int> getPointsPerWonder() const;
 	const std::map<CardColor, int>& getPointsPerCardType() const;
+
+	std::optional<std::pair<int, int>> getPointsPerCoins() const;
+
+	bool getGrantsPlayAgain() const;
+	bool getGrantsProgressToken() const;
+	bool getGrantsGuildCopy() const;
+
+	std::optional<int> getOpponentLosesCoins() const;
+	std::optional<CardColor> getOpponentLosesCard() const;
+	
+	bool getGrantsDiscardedCard() const;
 
 	bool hasStrategyEffect() const;
 	bool hasMasonryEffect() const;

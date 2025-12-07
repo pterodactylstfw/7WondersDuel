@@ -575,6 +575,8 @@ std::vector<std::unique_ptr<Card>> CardFactory::createGuildDeck()
 			  .withResourceCost(ResourceType::PAPYRUS, 1),
 		CardEffect().withCoinsPerCardType(CardColor::YELLOW, 1)
 					.withPointsPerCardType(CardColor::YELLOW, 1)
+					.withCustomDescription("At the time it is constructed, the card grants you 1 coin for each yellow card in the city which has the most yellow cards.\n"
+						"At the end of the game, this card is worth 1 victory point for each yellow card in the city which has the most yellow cards.\n")
 	));
 
 	guildDeck.push_back(std::make_unique<Card>(
@@ -587,6 +589,8 @@ std::vector<std::unique_ptr<Card>> CardFactory::createGuildDeck()
 					.withCoinsPerCardType(CardColor::GREY, 1)
 					.withPointsPerCardType(CardColor::BROWN, 1)
 					.withPointsPerCardType(CardColor::GREY, 1)
+					.withCustomDescription("At the time it is constructed, this card grants you 1 coin for each brown and each grey card in the city which has the most brown and grey cards.\n"
+							"At the end of the game, this card is worth 1 victory point for each brown and grey card in the city which has the most brown and grey cards.\n")
 	));
 
 	guildDeck.push_back(std::make_unique<Card>(
@@ -596,6 +600,7 @@ std::vector<std::unique_ptr<Card>> CardFactory::createGuildDeck()
 			  .withResourceCost(ResourceType::WOOD, 1)
 			  .withResourceCost(ResourceType::GLASS, 1),
 		CardEffect().withPointsPerWonder(2)
+					.withCustomDescription("At the end of the game, this card is worth 2 victory points for each Wonder constructed in the city which has the most wonders.\n")
 	));
 
 	guildDeck.push_back(std::make_unique<Card>(
@@ -605,6 +610,8 @@ std::vector<std::unique_ptr<Card>> CardFactory::createGuildDeck()
 			  .withResourceCost(ResourceType::PAPYRUS, 1),
 		CardEffect().withCoinsPerCardType(CardColor::BLUE, 1)
 					.withPointsPerCardType(CardColor::BLUE, 1)
+					.withCustomDescription("At the time it is constructed, this card grants you 1 coin for each blue card in the city which has the most blue cards.\n"
+						"At the end of the game, this card is worth 1 victory point for each blue card in the city which has the most blue cards.\n")
 	));
 
 	guildDeck.push_back(std::make_unique<Card>(
@@ -613,13 +620,16 @@ std::vector<std::unique_ptr<Card>> CardFactory::createGuildDeck()
 			  .withResourceCost(ResourceType::WOOD, 2),
 		CardEffect().withCoinsPerCardType(CardColor::GREEN, 1)
 					.withPointsPerCardType(CardColor::GREEN, 1)
+					.withCustomDescription("At the time it is constructed, this card earns you 1 coin for each green card in the city which has the most green cards.\n"
+						"At the end of the game, this card is worth 1 victory point for each green card in the city which has the most green cards.\n")
 	));
 
 	guildDeck.push_back(std::make_unique<Card>(
 		"Moneylenders Guild", CardColor::PURPLE, 3,
 		Cost().withResourceCost(ResourceType::STONE, 2)
 			  .withResourceCost(ResourceType::WOOD, 2),
-		CardEffect() // TO ADD
+		CardEffect().withPointPerCoins(1, 3)
+					.withCustomDescription("At the end of the game, this card is worth 1 victory point for each set of 3 coins in the richest city.\n")
 	));
 
 	guildDeck.push_back(std::make_unique<Card>(
@@ -629,6 +639,8 @@ std::vector<std::unique_ptr<Card>> CardFactory::createGuildDeck()
 			  .withResourceCost(ResourceType::PAPYRUS, 1),
 		CardEffect().withCoinsPerCardType(CardColor::RED, 1)
 					.withPointsPerCardType(CardColor::RED, 1)
+					.withCustomDescription("At the time it is constructed, this card grants you 1 coin for each red card in the city which has the most red cards.\n"
+						"At the end of the game, this card is worth 1 victory point for each red card in the city which has the most red cards.\n")
 	));
 
 	return guildDeck;

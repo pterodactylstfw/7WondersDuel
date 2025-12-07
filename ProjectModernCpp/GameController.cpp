@@ -648,3 +648,23 @@ void GameController::applyWonderEffect(Player& player, Player& opponent, const W
 		}
 	}
 }
+
+void GameController::applyProgressTokenEffect(Player& player, Player& opponent, ProgressToken& token)
+{
+	ProgressTokenType type = token.getType();
+
+	switch (type)
+	{
+		case ProgressTokenType::AGRICULTURE:
+		{
+			player.addCoins(6);
+			player.addVictoryPoints(4);
+			break;
+		}
+		case ProgressTokenType::ARCHITECTURE:
+		{
+			token.getEffect().withArchitectureEffect();
+			break;
+		}
+	}
+}

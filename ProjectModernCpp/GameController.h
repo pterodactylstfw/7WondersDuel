@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include "GameState.h"
 #include "Player.h"
 #include "CardFactory.h"
@@ -41,6 +42,7 @@ public:
 	void saveGame(const std::string& filename) const;
 
 	void applyWonderEffect(Player& player, Player& opponent, const Wonder& wonder);
+	void applyProgressTokenEffect(Player& player, Player& opponent, ProgressToken& token);
 
 	~GameController() = default;
 };

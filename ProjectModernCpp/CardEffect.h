@@ -36,7 +36,9 @@ private:
 	std::optional<bool> m_masonryEffect;      
 	std::optional<bool> m_architectureEffect; 
 	std::optional<bool> m_economyEffect;      
-	std::optional<bool> m_mathematicsEffect;  
+	std::optional<bool> m_mathematicsEffect;
+	std::optional<bool> m_theologyEffect;
+	std::optional<bool> m_urbanismEffect;
 
 public:
 
@@ -63,6 +65,8 @@ public:
 	CardEffect& withArchitectureEffect() noexcept;
 	CardEffect& withEconomyEffect() noexcept;
 	CardEffect& withMathematicsEffect() noexcept;
+	CardEffect& withTheologyEffect() noexcept;
+	CardEffect& withUrbanismEffect() noexcept;
 
 	bool isEmpty() const;
 	std::string getDescription() const;
@@ -86,6 +90,8 @@ public:
 	bool hasArchitectureEffect() const;
 	bool hasEconomyEffect() const;
 	bool hasMathematicsEffect() const;
+	bool hasTheologyEffect() const;
+	bool hasUrbanismEffect() const;
 
 	friend void to_json(json& j, const CardEffect& cardEffect);
 	friend void from_json(const json& j, CardEffect& cardEffect);

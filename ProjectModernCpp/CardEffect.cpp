@@ -127,6 +127,18 @@ CardEffect& CardEffect::withMathematicsEffect() noexcept
     return *this;
 }
 
+CardEffect& CardEffect::withTheologyEffect() noexcept
+{
+    m_theologyEffect = true;
+    return *this;
+}
+
+CardEffect& CardEffect::withUrbanismEffect() noexcept
+{
+    m_urbanismEffect = true;
+    return *this;
+}
+
 
 bool CardEffect::hasStrategyEffect() const
 {
@@ -153,6 +165,15 @@ bool CardEffect::hasMathematicsEffect() const
     return m_mathematicsEffect.value_or(false);
 }
 
+bool CardEffect::hasTheologyEffect() const
+{
+    return m_theologyEffect.value_or(false);
+}
+
+bool CardEffect::hasUrbanismEffect() const
+{
+    return m_urbanismEffect.value_or(false);
+}
 
 bool CardEffect::isEmpty() const
 {

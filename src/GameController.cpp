@@ -159,9 +159,8 @@ void GameController::checkInstantVictory()
 	}
 }
 
-void GameController::applyEffect(Card& card)
+void GameController::applyEffect(const CardEffect& effect)
 {
-	const CardEffect& effect = card.getEffect();
 	Player& player = m_gameState->getCurrentPlayer();
 	Player& opponent = m_gameState->getOpponent();
 
@@ -187,7 +186,7 @@ void GameController::applyEffect(Card& card)
 		player.addResourceProduction(effect.getProduction());
 	
 	if (!effect.getCoinsPerCardType().empty()) {
-		if (card.getColor() == CardColor::PURPLE) {
+		if (effect.getGrantsGuildCopy()) {
 			for (const auto& pair: effect.getCoinsPerCardType()) {
 				Player& playerWithMostCards = m_gameState->getPlayerWithMostCardsPerColor(pair.first);
 				int coinsToAdd = playerWithMostCards.getCardPerColor(pair.first) * pair.second;
@@ -202,6 +201,7 @@ void GameController::applyEffect(Card& card)
 		}
 		// sunt 2 tipuri de aplicari: in functie de cate carti are jucatorul curent(carte normala) sau
 		// in functie de cine are cele mai multe carti de acea culoare (guild)
+		// cand schimb cu cardEffect pt a diferentia intre cele 2 cazuri folosesc acel membru guildCopy
 	}
 
 	if (effect.getGrantsPlayAgain())
@@ -223,11 +223,7 @@ void GameController::applyEffect(Card& card)
 		discardedTokens.erase(discardedTokens.begin() + choice);
 
 		// playerul trebuie sa aleaga din cele din decartate (care au ramas de la inceput in "cutie") una din 3
-	}
-
-	if (effect.getGrantsGuildCopy())
-	{
-		// de implementat - s-ar putea sa nu fie nevoie de asta
+		// aici mai trebuie aplicat efectul tokenului respectiv - eventual o alta functie care face asta
 	}
 
 	if (effect.getOpponentLosesCoins().has_value())
@@ -254,7 +250,9 @@ void GameController::applyEffect(Card& card)
 		}
 	}
 
-	if (effect.getGrantsDiscardedCard())
+	// trebuie mutata intr-o functie separata pt ca atunci cand adaugam o carte jucatorului trebuie aplicat efectul cartii 
+	// si se formeaza un loop infinit
+	if (effect.getGrantsDiscardedCard()) 
 	{
 		auto& discardedCards = m_gameState->getDiscardedCards();
 		if (discardedCards.empty()) {
@@ -292,7 +290,7 @@ bool GameController::handleConstructBuilding(int cardIndex)
 		costToPay = currentPlayer.calculateResourceCost(cardPtr->getCost(), opponent);
 		if (currentPlayer.getCoins() < costToPay) {
 			std::cout << "[!] Insufficient coins to build this card.\n";
-			return false;
+			return false; // de adaugat optiuni daca player ul nu are destule resurse: discard, cumpara sau alege alta carte
 		}
 	}
 
@@ -303,6 +301,7 @@ bool GameController::handleConstructBuilding(int cardIndex)
 	const CardEffect& effect = cardPtr->getEffect();
 
 	// aplicare efecte
+	applyEffect(effect);
 
   
 	int oldShields = currentPlayer.getMilitaryShields();

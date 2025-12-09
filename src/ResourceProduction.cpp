@@ -95,6 +95,19 @@ std::string ResourceProduction::getDescription() const
 	return ss.str();
 }
 
+void ResourceProduction::removeFixedResource(const ResourceProduction& resource)
+{
+	for (const auto& [type, quantity] : resource.getFixedResources())
+	{
+		if (m_fixedResources.count(type))
+		{
+			m_fixedResources[type] -= quantity;
+			if (m_fixedResources[type] <= 0)
+				m_fixedResources.erase(type);
+		}
+	}
+}
+
 void to_json(json& j, const ResourceProduction& prod)
 {
 	j = json{ {"fixedResources", prod.m_fixedResources},

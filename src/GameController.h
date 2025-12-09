@@ -26,7 +26,7 @@ private:
 	void checkMilitaryLooting(int previousShields, int currentShields);
 	void checkInstantVictory();
 
-	void applyEffect(Card& card);
+	void applyEffect(const CardEffect& effect);
 
 	bool handleConstructBuilding(int cardIndex);
 	bool handleDiscardCard(int cardIndex);

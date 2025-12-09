@@ -339,6 +339,10 @@ std::unique_ptr<Card> Player::removeCard(const Card& card)
 	{
 		if ( it->get()->getName() == cardName)
 		{
+			const auto& cardProduction = (*it)->getEffect().getProduction();
+			if (!cardProduction.isEmpty())
+				m_resourceProduction.removeFixedResource(cardProduction);
+
 			auto removed = std::move(*it);
 			m_constructedCards.erase(it);
 			return removed;

@@ -26,7 +26,8 @@ private:
 	void checkMilitaryLooting(int previousShields, int currentShields);
 	void checkInstantVictory();
 
-	void applyEffect(const CardEffect& effect);
+	void applyEffect(Player& player, const CardEffect& effect);
+	void grantCardToPlayer(Player& player, std::unique_ptr<Card> card);
 
 	bool handleConstructBuilding(int cardIndex);
 	bool handleDiscardCard(int cardIndex);

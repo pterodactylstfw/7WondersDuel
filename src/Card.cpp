@@ -17,12 +17,12 @@ Card::Card(std::string_view name, CardColor color, uint8_t age, Cost cost, CardE
 
 bool Card::canBeBuiltFreelyAfter(const Card& previousCard) const
 {
-	return (m_freeChainFrom == previousCard.getName());
+	return (m_freeChainFrom.has_value() && m_freeChainFrom.value() == previousCard.getName());
 }
 
 bool Card::canBuildFreeChainTo(const Card& nextCard) const
 {
-	return (m_providesChainTo == nextCard.getName());
+	return (m_providesChainTo.has_value() && m_providesChainTo.value() == nextCard.getName());
 }
 
 std::string Card::displayCardInfo() const

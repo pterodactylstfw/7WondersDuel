@@ -418,3 +418,4 @@ FodyWeavers.xsd
 *.msp
 ProjectModernCpp/test_savegame.json
 
+/CMakeUserPresets.json

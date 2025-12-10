@@ -4,6 +4,7 @@
 #include <iostream>
 #include "Constants.h"
 #include <optional>
+#include <sstream>
 #include "Cost.h"
 #include "CardEffect.h"
 #include "JsonUtils.h"

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <sstream>
 #include "Cost.h"
 #include "CardEffect.h"
 #include  "Constants.h"

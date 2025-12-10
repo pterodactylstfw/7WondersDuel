@@ -4,7 +4,7 @@
 #include <sstream>
 #include "Cost.h"
 #include "CardEffect.h"
-#include  "Constants.h"
+#include "Constants.h"
 #include "JsonUtils.h"
 
 class Wonder

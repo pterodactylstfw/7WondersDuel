@@ -16,7 +16,7 @@ MainWindow::MainWindow(QWidget* parent)
 	connect(ui->btnExit, &QPushButton::clicked, this, &MainWindow::onBtnExitClicked);
 
     connect(ui->btnBack, &QPushButton::clicked, this, [this]() {
-        ui->stackedWidget->setCurrentIndex(0); // Înapoi la meniu
+        ui->stackedWidget->setCurrentIndex(0); // Inapoi la meniu
         });
 
     this->setWindowTitle("7 Wonders Duel");
@@ -24,10 +24,10 @@ MainWindow::MainWindow(QWidget* parent)
 
 void MainWindow::onBtnStartClicked()
 {
-    // Aici vom porni logica jocului
-    // m_game.startNewGame("Player 1", "AI");
 
-    // Trecem la pagina de joc
+    // m_game.startNewGame("Player 1", "Bot");
+    // de impl setteri
+
     ui->stackedWidget->setCurrentIndex(1);
 }
 

@@ -1,7 +1,7 @@
 #include "Card.h"
 
 Card::Card(std::string_view name, CardColor color, uint8_t age, Cost cost, CardEffect effect,
-	std::optional<std::string> freeChainFrom, std::optional<std::string> providesChainTo) :
+           std::optional<std::string> freeChainFrom, std::optional<std::string> providesChainTo) :
 	m_name(name),
 	m_color(color),
 	m_age(age),

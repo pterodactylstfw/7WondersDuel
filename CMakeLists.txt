@@ -12,7 +12,19 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(CMAKE_PREFIX_PATH "C:/Qt/6.10.1/msvc2022_64")
+if(WIN32)
+    # Windows
+    set(CMAKE_PREFIX_PATH "C:/Qt/6.10.1/msvc2022_64")
+    # flag pt a ascunde consola pe Windows
+    set(GUI_TYPE WIN32)
+
+elseif(APPLE)
+    # macOS
+    set(CMAKE_PREFIX_PATH "/Users/pterodactylstfw/Qt/6.10.1/macos")
+
+    # flag pt a crea pachet pe mac
+    set(GUI_TYPE MACOSX_BUNDLE)
+endif()
 
 # cautare qt6 pe pc
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
@@ -31,7 +43,7 @@ set(CORE_SOURCES
     src/Player.cpp src/Player.h
     src/ProgressToken.cpp src/ProgressToken.h
     src/ProgressTokenFactory.cpp src/ProgressTokenFactory.h
-    src/ResourceProduction.cpp src/ResourceProduction.h
+    src/ResourceProduction.cpp src/ResourceProduction.h 
     src/Utils.h
     src/Wonder.cpp src/Wonder.h
     src/WonderFactory.cpp src/WonderFactory.h
@@ -58,13 +70,24 @@ target_include_directories(7WondersConsole PRIVATE src)
 
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/main_gui.cpp")
     add_executable(7WondersGUI
-        WIN32
-        ${CORE_SOURCES}
-        src/main_gui.cpp
-        src/MainWindow.cpp src/MainWindow.h
+            ${GUI_TYPE} # WIN32 pe Windows, Bundle pe Mac - pt ascundere terminal
+            ${CORE_SOURCES}
+            src/main_gui.cpp
+            src/MainWindow.cpp src/MainWindow.h
+        src/MainWindow.ui
+        src/resources.qrc
     )
 
     target_link_libraries(7WondersGUI PRIVATE Qt6::Widgets)
     target_include_directories(7WondersGUI PRIVATE include)
     target_include_directories(7WondersGUI PRIVATE src)
+
+    # config iconita si nume pe mac
+    if(APPLE)
+        set_target_properties(7WondersGUI PROPERTIES
+                MACOSX_BUNDLE_BUNDLE_NAME "7 Wonders Duel"
+                MACOSX_BUNDLE_GUI_IDENTIFIER "com.pterodactyl.7wonders"
+                MACOSX_BUNDLE_SHORT_VERSION_STRING "1.0"
+        )
+    endif()
 endif()

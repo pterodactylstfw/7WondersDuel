@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">
+QMainWindow {
+
+    border-image: url(:/assets/background.jpg) 0 0 0 0 stretch stretch;
+}
+
+QPushButton {
+
+    background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, 
+                                      stop:0 #6b6b6b, stop:0.1 #8a8a8a, 
+                                      stop:0.5 #5e5e5e, stop:0.9 #4a4a4a, stop:1 #333333);
+    
+    /* Textul */
+    color: #e0e0e0; /* Alb murdar */
+    font-family: &quot;Georgia&quot;; /* Font cu aspect mai vechi */
+    font-size: 16px;
+    font-weight: bold;
+
+    /* Bordură 3D (Bevel effect) */
+    border-style: outset;
+    border-width: 2px;
+    border-color: #4a4a4a;
+    border-radius: 8px;
+    padding: 6px;
+}
+
+QPushButton:hover {
+
+    background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, 
+                                      stop:0 #7b7b7b, stop:0.1 #9a9a9a, 
+                                      stop:0.5 #6e6e6e, stop:0.9 #5a5a5a, stop:1 #433333);
+    border-color: #aaaaaa;
+}
+
+QPushButton:pressed {
+
+    border-style: inset;
+    background-color: #333333;
+    padding-top: 8px;
+    padding-left: 8px;
+}
+
+
+QLabel {
+    color: #ffffff;
+    font-size: 36px;
+    font-weight: bold;
+    qproperty-alignment: AlignCenter;
+}</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QStackedWidget" name="stackedWidget">
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="pageMenu">
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <spacer name="verticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Orientation::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="font">
+           <font>
+            <pointsize>-1</pointsize>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>7 WONDERS DUEL</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignmentFlag::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="verticalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Orientation::Vertical</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Policy::Minimum</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btnStart">
+          <property name="text">
+           <string>START GAME</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btnLoad">
+          <property name="text">
+           <string>LOAD GAME</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btnExit">
+          <property name="text">
+           <string>EXIT</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="verticalSpacer_2">
+          <property name="orientation">
+           <enum>Qt::Orientation::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="pageGame">
+       <widget class="QLabel" name="label">
+        <property name="geometry">
+         <rect>
+          <x>330</x>
+          <y>310</y>
+          <width>111</width>
+          <height>71</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>GAME BOARD HERE</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btnBack">
+        <property name="geometry">
+         <rect>
+          <x>649</x>
+          <y>510</y>
+          <width>174</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Back to Main Menu</string>
+        </property>
+       </widget>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>21</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

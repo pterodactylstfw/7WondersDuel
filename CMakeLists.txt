@@ -31,7 +31,7 @@ set(CORE_SOURCES
     src/Player.cpp src/Player.h
     src/ProgressToken.cpp src/ProgressToken.h
     src/ProgressTokenFactory.cpp src/ProgressTokenFactory.h
-    src/ResourceProduction.cpp src/ResourceProduction.h
+    src/ResourceProduction.cpp src/ResourceProduction.h 
     src/Utils.h
     src/Wonder.cpp src/Wonder.h
     src/WonderFactory.cpp src/WonderFactory.h
@@ -62,6 +62,8 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/main_gui.cpp")
         ${CORE_SOURCES}
         src/main_gui.cpp
         src/MainWindow.cpp src/MainWindow.h
+        src/MainWindow.ui
+        src/resources.qrc
     )
 
     target_link_libraries(7WondersGUI PRIVATE Qt6::Widgets)

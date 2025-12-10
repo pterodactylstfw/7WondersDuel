@@ -1,27 +1,63 @@
 #include "MainWindow.h"
-#include <QLabel>
-#include <QFont>
+#include "./ui_MainWindow.h" 
+#include <QFileDialog> 
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
 {
-    setWindowTitle("7 Wonders Duel - Qt Edition");
-    resize(1280, 720);
+    ui->setupUi(this); 
 
-    QLabel* label = new QLabel("TEST FEREASTRA", this);
+	ui->stackedWidget->setCurrentIndex(0);
 
+    connect(ui->btnStart, &QPushButton::clicked, this, &MainWindow::onBtnStartClicked);
+    connect(ui->btnLoad, &QPushButton::clicked, this, &MainWindow::onBtnLoadClicked);
+	connect(ui->btnExit, &QPushButton::clicked, this, &MainWindow::onBtnExitClicked);
 
-    QFont font = label->font();
-    font.setPointSize(40);
-    font.setBold(true);
-    label->setFont(font);
+    connect(ui->btnBack, &QPushButton::clicked, this, [this]() {
+        ui->stackedWidget->setCurrentIndex(0); // Înapoi la meniu
+        });
 
-    // 3. Aliniem textul la mijloc
-    label->setAlignment(Qt::AlignCenter);
+    this->setWindowTitle("7 Wonders Duel");
+}
 
-    this->setCentralWidget(label);
+void MainWindow::onBtnStartClicked()
+{
+    // Aici vom porni logica jocului
+    // m_game.startNewGame("Player 1", "AI");
+
+    // Trecem la pagina de joc
+    ui->stackedWidget->setCurrentIndex(1);
+}
+
+void MainWindow::onBtnLoadClicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+        "Load Game",
+        "",
+        "JSON Files (*.json);;All Files(*)"
+	);
+
+    if (fileName.isEmpty())
+        return;
+
+    try {
+        m_game.loadGame(fileName.toStdString());
+
+        ui->stackedWidget->setCurrentIndex(1);
+        QMessageBox::information(this, "Success", "Game loaded successfully!");
+    }
+    catch (const std::exception& e) {
+        QMessageBox::critical(this, "Error", QString("Could not load game:\n").arg(e.what()));
+    }
+}
+
+void MainWindow::onBtnExitClicked() {
+    QApplication::quit();
 }
 
 MainWindow::~MainWindow()
 {
+    delete ui;
 }

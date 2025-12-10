@@ -1,5 +1,10 @@
 ﻿#pragma once
 #include <QMainWindow>
+#include "GameController.h"
+
+namespace Ui {
+    class MainWindow;
+}
 
 class MainWindow : public QMainWindow
 {
@@ -8,4 +13,13 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
+
+private slots:
+    void onBtnStartClicked();
+    void onBtnLoadClicked();
+	void onBtnExitClicked();
+
+private:
+    Ui::MainWindow* ui;
+    GameController m_game;
 };

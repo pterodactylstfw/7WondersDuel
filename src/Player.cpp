@@ -229,12 +229,12 @@ int Player::getFinalScore(const Player& opponent) const
 		}
 	}
 
-	/*for (const auto& wonder : m_constructedWonders)
+	for (const auto& wonder : m_constructedWonders)
 	{
 		if (wonder->getEffect().getVictoryPointsPerCard().has_value()) {
 			score += wonder->getEffect().getVictoryPointsPerCard().value();
 		}
-	}*/
+	}
 
 	score += m_coins / 3;
 
@@ -339,6 +339,10 @@ std::unique_ptr<Card> Player::removeCard(const Card& card)
 	{
 		if ( it->get()->getName() == cardName)
 		{
+			const auto& cardProduction = (*it)->getEffect().getProduction();
+			if (!cardProduction.isEmpty())
+				m_resourceProduction.removeFixedResource(cardProduction);
+
 			auto removed = std::move(*it);
 			m_constructedCards.erase(it);
 			return removed;

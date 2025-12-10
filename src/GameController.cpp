@@ -159,11 +159,11 @@ void GameController::checkInstantVictory()
 	}
 }
 
-void GameController::applyEffect(Card& card)
+void GameController::applyEffect(Player& player, const CardEffect& effect)
 {
-	const CardEffect& effect = card.getEffect();
-	Player& player = m_gameState->getCurrentPlayer();
-	Player& opponent = m_gameState->getOpponent();
+	Player& opponent = (player.getName() == m_gameState->getCurrentPlayer().getName())
+		? m_gameState->getOpponent()
+		: m_gameState->getCurrentPlayer();
 
 	if (effect.getVictoryPointsPerCard().has_value())
 		player.addVictoryPoints(effect.getVictoryPointsPerCard().value());
@@ -187,7 +187,7 @@ void GameController::applyEffect(Card& card)
 		player.addResourceProduction(effect.getProduction());
 	
 	if (!effect.getCoinsPerCardType().empty()) {
-		if (card.getColor() == CardColor::PURPLE) {
+		if (effect.getGrantsGuildCopy()) {
 			for (const auto& pair: effect.getCoinsPerCardType()) {
 				Player& playerWithMostCards = m_gameState->getPlayerWithMostCardsPerColor(pair.first);
 				int coinsToAdd = playerWithMostCards.getCardPerColor(pair.first) * pair.second;
@@ -202,6 +202,7 @@ void GameController::applyEffect(Card& card)
 		}
 		// sunt 2 tipuri de aplicari: in functie de cate carti are jucatorul curent(carte normala) sau
 		// in functie de cine are cele mai multe carti de acea culoare (guild)
+		// cand schimb cu cardEffect pt a diferentia intre cele 2 cazuri folosesc acel membru guildCopy
 	}
 
 	if (effect.getGrantsPlayAgain())
@@ -223,11 +224,7 @@ void GameController::applyEffect(Card& card)
 		discardedTokens.erase(discardedTokens.begin() + choice);
 
 		// playerul trebuie sa aleaga din cele din decartate (care au ramas de la inceput in "cutie") una din 3
-	}
-
-	if (effect.getGrantsGuildCopy())
-	{
-		// de implementat - s-ar putea sa nu fie nevoie de asta
+		// aici mai trebuie aplicat efectul tokenului respectiv - eventual o alta functie care face asta
 	}
 
 	if (effect.getOpponentLosesCoins().has_value())
@@ -254,7 +251,9 @@ void GameController::applyEffect(Card& card)
 		}
 	}
 
-	if (effect.getGrantsDiscardedCard())
+	// trebuie mutata intr-o functie separata pt ca atunci cand adaugam o carte jucatorului trebuie aplicat efectul cartii 
+	// si se formeaza un loop infinit
+	if (effect.getGrantsDiscardedCard()) 
 	{
 		auto& discardedCards = m_gameState->getDiscardedCards();
 		if (discardedCards.empty()) {
@@ -265,15 +264,41 @@ void GameController::applyEffect(Card& card)
 				std::cout << '[' << i + 1 << '] ' << discardedCards[i]->displayCardInfo();
 
 			int choice = Utils::getIntInput("Choose a card from the discarded pile: ");
-			choice--;
+			size_t chosenIndex = choice - 1;
 
-			player.addCard(m_gameState->extractDiscardedCard(choice));
-			discardedCards.erase(discardedCards.begin() + choice);
+			auto cardFromDiscard = m_gameState->extractDiscardedCard(chosenIndex);
+
+			if (cardFromDiscard) 
+				grantCardToPlayer(player, std::move(cardFromDiscard));
 		}
 	}
 
 	// cand construim o minune trebuie sa vedem daca avem o carte care ne ofera banuti 
 	// la finalul jocului trebuie sa vefiricam daca jucatorii au carti care le ofera vp pe carte/minune/set de banuti
+}
+
+void GameController::grantCardToPlayer(Player& player, std::unique_ptr<Card> card)
+{
+	const CardEffect& effect = card->getEffect();
+
+	player.addCard(std::move(card));
+
+	applyEffect(player, effect);
+
+	if (card->getColor() == CardColor::RED) {
+		if (player.hasProgressToken(ProgressTokenType::STRATEGY)) {
+			player.addMilitaryShields(1);
+			std::cout << "Strategy Token active: +1 Extra Shield!\n";
+		}
+	}
+	if (effect.getScienceSymbol().has_value()) {
+		ScientificSymbol sym =effect.getScienceSymbol().value();
+		if (player.addScientificSymbol(sym)) {
+			m_gameState->setPendingScientificReward(true);
+			std::cout << "--- SCIENCE PAIR! You earned a Progress Token! ---\n";
+		}
+	}
+
 }
 
 bool GameController::handleConstructBuilding(int cardIndex)
@@ -292,37 +317,20 @@ bool GameController::handleConstructBuilding(int cardIndex)
 		costToPay = currentPlayer.calculateResourceCost(cardPtr->getCost(), opponent);
 		if (currentPlayer.getCoins() < costToPay) {
 			std::cout << "[!] Insufficient coins to build this card.\n";
-			return false;
+			return false; // de adaugat optiuni daca player ul nu are destule resurse: discard, cumpara sau alege alta carte
 		}
 	}
 
 	if (costToPay > 0)
 		currentPlayer.removeCoins(costToPay);
 
-	//extrag efect inainte de a muta cartea
-	const CardEffect& effect = cardPtr->getEffect();
-
-	// aplicare efecte
-
-  
 	int oldShields = currentPlayer.getMilitaryShields();
+
 	std::unique_ptr<Card> takenCard = m_gameState->takeCard(cardIndex);
+	if (!takenCard) return false;
+	
+	grantCardToPlayer(currentPlayer, std::move(takenCard));
 
-	if (takenCard->getColor() == CardColor::RED) {
-		if (currentPlayer.hasProgressToken(ProgressTokenType::STRATEGY)) {
-			currentPlayer.addMilitaryShields(1);
-			std::cout << "Strategy Token active: +1 Extra Shield!\n";
-		}
-	}
-	if (takenCard->getEffect().getScienceSymbol().has_value()) {
-		ScientificSymbol sym = takenCard->getEffect().getScienceSymbol().value();
-		if (currentPlayer.addScientificSymbol(sym)) {
-			m_gameState->setPendingScientificReward(true);
-			std::cout << "--- SCIENCE PAIR! You earned a Progress Token! ---\n";
-		}
-	}
-
-	currentPlayer.addCard(std::move(takenCard));
 	int newShields = currentPlayer.getMilitaryShields();
 	if (newShields > oldShields) {
 		checkMilitaryLooting(oldShields, newShields);

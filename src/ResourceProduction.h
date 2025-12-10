@@ -31,6 +31,8 @@ public:
 	bool isEmpty() const;
 	std::string getDescription() const;
 
+	void removeFixedResource(const ResourceProduction& resource);
+
 	friend void to_json(json& j, const ResourceProduction& prod);
 	friend void from_json(const json& j, ResourceProduction& prod);
 };

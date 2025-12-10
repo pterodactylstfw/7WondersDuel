@@ -41,7 +41,9 @@ public:
 
 	void addResourceProduction(ResourceProduction resourceProduction);
 	void addCoins(int amount);
+
 	void removeCoins(int amount);
+
 	void addMilitaryShields(int shields);
 	bool addScientificSymbol(ScientificSymbol symbol);
 	void addVictoryPoints(int points);

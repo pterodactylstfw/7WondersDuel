@@ -303,59 +303,39 @@ void GameController::grantCardToPlayer(Player& player, std::unique_ptr<Card> car
 bool GameController::handleConstructBuilding(int cardIndex)
 {
 	Player& currentPlayer = m_gameState->getCurrentPlayer();
-	Player& opponent = m_gameState->getOpponent();
+	const Player& opponent = m_gameState->getOpponent();
 
 	auto cardView = m_gameState->getCardView(cardIndex);
 	if (!cardView.has_value()) return false;
 	auto card = cardView.value().get();
 
-	// plata cost carte
+	// 1. Calculam costul total (monede proprii + trade)
 	int costToPay = 0;
-	if (currentPlayer.hasChainForCard(card))
-		costToPay = 0;
-	else {
+	if (!currentPlayer.hasChainForCard(card)) {
 		costToPay = currentPlayer.calculateTotalCost(card.getCost(), opponent);
-
-		if (currentPlayer.canAfford(costToPay, opponent)) {
-			if (currentPlayer.calculateTradeCost(card.getCost(), opponent) > 0) {
-
-				std::cout << "You don't have enough resources to build this card. You can pay " << costToPay << " coins (including trade costs) to build it.\n";
-				std::cout << "What do you want to do?\n";
-
-				std::cout << "[1] Pay the cost and build the card.\n";
-				std::cout << "[2] Choose another card.\n";
-				std::cout << "[3] Discard the card for coins.\n";
-
-				int choice = Utils::getIntRange(1, 3, "Enter your choice: ");
-				switch (choice) {
-				case 1:
-					break;
-				case 2:
-					return false; 
-				case 3:
-					handleDiscardCard(cardIndex);
-					return true; 
-				default:
-					return false; 
-				}
-			}
-		}
-		else {
-			std::cout << "[!] Insufficient coins to build this card.\n";
-			return false; 
-		}
 	}
 
-	if (costToPay > 0)
-		currentPlayer.removeCoins(costToPay);
+	// 2. Verificam daca jucatorul isi permite (UI-ul ar fi trebuit sa verifice deja, dar facem double-check)
+	if (!currentPlayer.canAfford(costToPay, opponent)) {
+		// Nu are bani suficienti. In GUI asta nu ar trebui sa se intample daca butonul e dezactivat,
+		// dar e bine sa avem protectia aici.
+		return false;
+	}
 
+	// 3. Executam plata
+	if (costToPay > 0) {
+		currentPlayer.removeCoins(costToPay);
+	}
+
+	// 4. Mutam cartea si aplicam efectele
 	int oldShields = currentPlayer.getMilitaryShields();
 
 	std::unique_ptr<Card> takenCard = m_gameState->takeCard(cardIndex);
 	if (!takenCard) return false;
-	
+
 	grantCardToPlayer(currentPlayer, std::move(takenCard));
 
+	// 5. Verificam efectele militare imediate
 	int newShields = currentPlayer.getMilitaryShields();
 	if (newShields > oldShields) {
 		checkMilitaryLooting(oldShields, newShields);
@@ -388,21 +368,18 @@ bool GameController::handleConstructWonders(int cardIndex, int wonderIndex, bool
 	auto& wonders = currentPlayer.getWonders();
 	if (wonderIndex < 0 || wonderIndex >= 4 || !wonders[wonderIndex]) return false;
 
-	Wonder& targetWonder = *wonders[wonderIndex];
+	auto& targetWonderPtr = wonders[wonderIndex];
 
-	if (targetWonder.isBuilt()) {
-		std::cout << "Wonder already built!\n";
+	if (targetWonderPtr->isBuilt()) {
 		return false;
 	}
 
 	if (m_gameState->getAllConstructedWondersCount() >= GameConstants::MAX_WONDERS_TOTAL) {
-		std::cout << "Max 7 wonders built globally!\n";
 		return false;
 	}
 
-	int costToPay = currentPlayer.calculateTotalCost(targetWonder.getCost(), opponent);
+	int costToPay = currentPlayer.calculateTotalCost(targetWonderPtr->getCost(), opponent);
 	if (currentPlayer.getCoins() < costToPay) {
-		std::cout << "[!] Insufficient coins for Wonder.\n";
 		return false;
 	}
 
@@ -411,26 +388,27 @@ bool GameController::handleConstructWonders(int cardIndex, int wonderIndex, bool
 	std::unique_ptr<Card> sacrificedCard = m_gameState->takeCard(cardIndex);
 	m_gameState->addToDiscardCards(std::move(sacrificedCard)); // cartea nu ar trebui adaugata la decartate 
 
-	currentPlayer.getConstructedWonders().push_back(std::move(wonders[wonderIndex]));
+	currentPlayer.getConstructedWonders().push_back(std::move(targetWonderPtr));
 	// de mutat minunea in minuni realizate(daca facem) sau marcata ca realizata
 
-	bool hasTheology = currentPlayer.hasProgressToken(ProgressTokenType::THEOLOGY);
-	bool wonderReplay = targetWonder.getEffect().getGrantsPlayAgain();
+	auto& builtWonder = currentPlayer.getConstructedWonders().back();
 
-	if (hasTheology || wonderReplay) {
+	bool hasTheology = currentPlayer.hasProgressToken(ProgressTokenType::THEOLOGY);
+	bool wonderReplay = builtWonder->getEffect().getGrantsPlayAgain();
+
+	if (hasTheology || wonderReplay)
 		outPlayAgain = true;
-		std::cout << ">>> Play Again granted!\n";
-	}
+
 	int oldShields = currentPlayer.getMilitaryShields();
 
-	CardEffect wonderEffect = targetWonder.getEffect();
-	applyEffect(currentPlayer, wonderEffect);
+	const CardEffect& wonderEffect = builtWonder->getEffect();
+	applyEffect(currentPlayer, builtWonder->getEffect());
 
 	int newShields = currentPlayer.getMilitaryShields();
 
-	if (newShields > oldShields) {
+	if (newShields > oldShields)
 		checkMilitaryLooting(oldShields, newShields);
-	}
+
 
 	// + trebuie sa verificam daca avem o carte care ne ofera bani pentru minune
 	return true;

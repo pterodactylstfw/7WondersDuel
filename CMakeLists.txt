@@ -6,39 +6,36 @@ project(7WondersDuel VERSION 1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Configurare automată Qt (MOC, RCC, UIC)
+# Configurare automata Qt
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-# -----------------------------------------------------------
-# CONFIGURARE CALE QT & TIP GUI (AUTO-DETECTARE OS)
-# -----------------------------------------------------------
+# config path qt si tip gui
+
 if(WIN32)
     # --- WINDOWS ---
     set(CMAKE_PREFIX_PATH "C:/Qt/6.10.1/msvc2022_64")
-    # Flag pentru a ascunde consola pe Windows
+    # Flag pt a ascunde consola pe Windows
     set(GUI_TYPE WIN32)
 
 elseif(APPLE)
-    # --- MACOS ---
+    # --- macOS ---
     set(CMAKE_PREFIX_PATH "/Users/pterodactylstfw/Qt/6.10.1/macos")
-    # Flag pentru a crea pachet .app pe Mac
+    # flag pt creare .app pe mac
     set(GUI_TYPE MACOSX_BUNDLE)
 
 else()
     message(WARNING "OS necunoscut. Qt Path trebuie setat manual.")
 endif()
 
-# Căutare pachet Qt6
+# Cautare pachet qt6
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
 
-# -----------------------------------------------------------
-# ORGANIZARE FIȘIERE SURSĂ (Pe Foldere)
-# -----------------------------------------------------------
+# organizare fisiere source
 
-# 1. MODEL (Date și Logică Pură)
+# model
 set(SRC_MODEL
         src/model/Card.cpp src/model/Card.h
         src/model/CardEffect.cpp src/model/CardEffect.h
@@ -50,32 +47,32 @@ set(SRC_MODEL
         src/model/Wonder.cpp src/model/Wonder.h
 )
 
-# 2. FACTORIES (Generatoare)
+# factories
 set(SRC_FACTORIES
         src/factories/CardFactory.cpp src/factories/CardFactory.h
         src/factories/ProgressTokenFactory.cpp src/factories/ProgressTokenFactory.h
         src/factories/WonderFactory.cpp src/factories/WonderFactory.h
 )
 
-# 3. CONTROLLER (Creierul)
+# controller
 set(SRC_CONTROLLER
         src/controller/GameController.cpp src/controller/GameController.h
 )
 
-# 4. UTILS (Utilitare)
+# utils
 set(SRC_UTILS
         src/utils/Constants.cpp src/utils/Constants.h
         src/utils/JsonUtils.cpp src/utils/JsonUtils.h
         src/utils/Utils.h
 )
 
-# 5. VIEW (Doar partea de MainWindow, ConsoleUI e separată jos)
+# view
 set(SRC_VIEW_GUI
         src/view/MainWindow.cpp src/view/MainWindow.h
         src/view/MainWindow.ui
 )
 
-# Reunim sursele comune (folosite și de consolă și de GUI)
+# reuniune surse comune
 set(CORE_SOURCES
         ${SRC_MODEL}
         ${SRC_FACTORIES}
@@ -84,9 +81,8 @@ set(CORE_SOURCES
 )
 
 
-# -----------------------------------------------------------
-# EXECUTABIL 1: CONSOLA (Legacy / Debug)
-# -----------------------------------------------------------
+# exec consola
+
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/view/ConsoleUI.cpp")
     add_executable(7WondersConsole
             ${CORE_SOURCES}
@@ -94,7 +90,6 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/view/ConsoleUI.cpp")
             src/main.cpp
     )
 
-    # Includem toate folderele ca să putem da #include "Card.h" direct
     target_include_directories(7WondersConsole PRIVATE
             include
             src
@@ -107,13 +102,11 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/view/ConsoleUI.cpp")
 endif()
 
 
-# -----------------------------------------------------------
-# EXECUTABIL 2: QT GUI (Jocul Grafic)
-# -----------------------------------------------------------
+# exec qt gui
 
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/main_gui.cpp")
     add_executable(7WondersGUI
-            ${GUI_TYPE} # WIN32 sau MACOSX_BUNDLE
+            ${GUI_TYPE} # WIN32 / macOS X Bundle
             ${CORE_SOURCES}
             ${SRC_VIEW_GUI}
             src/main_gui.cpp
@@ -122,7 +115,7 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/main_gui.cpp")
 
     target_link_libraries(7WondersGUI PRIVATE Qt6::Widgets)
 
-    # Includem toate folderele și pentru GUI
+    # Incl toate folderele pt GUI
     target_include_directories(7WondersGUI PRIVATE
             include
             src
@@ -133,7 +126,7 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/main_gui.cpp")
             src/utils
     )
 
-    # Configurare specifică Mac (Iconiță, Nume)
+    # Configurare specifica Mac (iconita si nume)
     if(APPLE)
         set_target_properties(7WondersGUI PROPERTIES
                 MACOSX_BUNDLE_BUNDLE_NAME "7 Wonders Duel"

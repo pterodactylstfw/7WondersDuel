@@ -26,7 +26,7 @@ private:
 	void displayCityDetails(); // view my city details
 
 	int showHighLevelMenu(); // meniu initial - play / view city / exit
-	int showCardActionMenu(const Card* card); // meniu actiuni pentru o carte aleasa
+	int showCardActionMenu(const Card& card); // meniu actiuni pentru o carte aleasa
 
 public:
 

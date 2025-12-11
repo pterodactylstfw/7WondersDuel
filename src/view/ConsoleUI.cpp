@@ -95,14 +95,14 @@ void ConsoleUI::displayPyramid() const
 		}
 
 
-		const Card* card = state.getCardPtr(node.m_index);
-		if (card) {
-
+		auto cardView = state.getCardView(node.m_index);
+		if (cardView.has_value()) {
+			const Card& card = cardView.value().get();
 			std::cout << "   [" << std::right << std::setw(2) << node.m_index + 1 << "]  "
-				<< std::left << std::setw(20) << card->getName()
-				<< std::left << std::setw(20) << colorToString(card->getColor()) // de refacut cu cardCategory
-				<< std::left << std::setw(20) << card->getCost().toShortString()
-				<< card->getEffect().getDescription()
+				<< std::left << std::setw(20) << card.getName()
+				<< std::left << std::setw(20) << colorToString(card.getColor()) // de refacut cu cardCategory
+				<< std::left << std::setw(20) << card.getCost().toShortString()
+				<< card.getEffect().getDescription()
 				<< "\n";
 			foundAny = true;
 		}
@@ -155,10 +155,10 @@ void ConsoleUI::displayAccesibleCards() const
 	{
 		if (!node.m_isRemoved && node.m_isFaceUp)
 		{
-			const auto* card = m_game.getGameState().getCardPtr(node.m_index);
-			if (card)
-			{
-				std::cout << " - [" << node.m_index << "] " << card->displayCardInfo() << "\n";
+			auto cardView = m_game.getGameState().getCardView(node.m_index);
+			if (cardView.has_value()) {
+				const Card& card = cardView.value().get();
+				std::cout << " - [" << node.m_index << "] " << card.displayCardInfo() << "\n";
 			}
 		}
 	}
@@ -233,10 +233,10 @@ void ConsoleUI::handlePlayCard()
 		return;
 	}
 
-	const Card* card = m_game.getGameState().getCardPtr(cardIndex);
-	if (!card) return;
+	auto cardView = m_game.getGameState().getCardView(cardIndex);
+	if (!cardView.has_value()) return;
 
-	int actionChoice = showCardActionMenu(card);
+	int actionChoice = showCardActionMenu(cardView.value().get());
 
 	if (actionChoice == 0) {
 		std::cout << "Action cancelled.\n";
@@ -354,16 +354,16 @@ int ConsoleUI::showHighLevelMenu() {
 	return Utils::getIntRange(1, 3, "Select option: ");
 }
 
-int ConsoleUI::showCardActionMenu(const Card* card)
+int ConsoleUI::showCardActionMenu(const Card& card)
 {
 	std::cout << "\n=======================================\n";
-	std::cout << "   SELECTED CARD: " << card->getName() << "\n";
+	std::cout << "   SELECTED CARD: " << card.getName() << "\n";
 	std::cout << "=======================================\n";
-	std::cout << "Cost: " << card->getCost().toString() << "\n";
-	std::cout << "Effect: " << card->getEffect().getDescription() << "\n";
+	std::cout << "Cost: " << card.getCost().toString() << "\n";
+	std::cout << "Effect: " << card.getEffect().getDescription() << "\n";
 
 	const auto& player = m_game.getGameState().getCurrentPlayer();
-	if (player.hasChainForCard(*card)) {
+	if (player.hasChainForCard(card)) {
 		std::cout << ">> FREE CONSTRUCTION (Chain Link) <<\n";
 	}
 

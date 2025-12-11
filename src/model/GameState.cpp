@@ -188,11 +188,12 @@ const std::optional<uint8_t>& GameState::getWinnerIndex() const
 	return m_winnerIndex;
 }
 
-const Card* GameState::getCardPtr(int index) const
+std::optional<std::reference_wrapper<const Card>> GameState::getCardView(int index) const
 {
-    if (index >= 0 && index < m_currentAgeCards.size())
-        return m_currentAgeCards[index].get();
-    return nullptr;
+    if (index >= 0 && index < m_currentAgeCards.size() && m_currentAgeCards[index]) {
+        return std::cref(*m_currentAgeCards[index]);
+    }
+    return std::nullopt;
 }
 
 void GameState::initializeAge(int age, std::vector<std::unique_ptr<Card>>& deck)

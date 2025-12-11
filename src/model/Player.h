@@ -50,7 +50,10 @@ public:
 	void addTradeDiscount(ResourceType type, int amount);
 
 	bool canAfford(const Cost& cost, const Player& opponent) const;
-	int calculateResourceCost(const Cost& cost, const Player& opponent) const;
+
+	int calculateTradeCost(const Cost& cost, const Player& opponent) const;
+	int calculateTotalCost(const Cost& cost, const Player& opponent) const;
+
 	bool hasChainForCard(const Card& card) const;
 	bool canBuildCard(const Card& card, const Player& opponent) const;
 

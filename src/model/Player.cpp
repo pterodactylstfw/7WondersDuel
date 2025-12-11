@@ -65,11 +65,11 @@ void Player::addTradeDiscount(ResourceType type, int amount)
 
 bool Player::canAfford(const Cost& cost, const Player& opponent) const
 {
-	const int totalCoinCost = calculateResourceCost(cost, opponent);
+	const int totalCoinCost = calculateTotalCost(cost, opponent);
 	return m_coins >= totalCoinCost;
 }
 
-int Player::calculateResourceCost(const Cost& cost, const Player& opponent) const
+int Player::calculateTradeCost(const Cost& cost, const Player& opponent) const
 {
 	int totalTradeCost = 0;
 
@@ -131,9 +131,15 @@ int Player::calculateResourceCost(const Cost& cost, const Player& opponent) cons
 			}
 		}
 	}
-	totalTradeCost += cost.getCoinCost();
 
 	return totalTradeCost;
+}
+
+int Player::calculateTotalCost(const Cost& cost, const Player& opponent) const
+{
+	int totalCost = calculateTradeCost(cost, opponent);
+	totalCost += cost.getCoinCost();
+	return totalCost;
 }
 
 bool Player::hasChainForCard(const Card& card) const

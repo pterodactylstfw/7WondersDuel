@@ -175,7 +175,9 @@ NLOHMANN_JSON_SERIALIZE_ENUM(WonderType,
 enum class PlayerAction {
     CONSTRUCT_BUILDING,   
     DISCARD_FOR_COINS,    
-    CONSTRUCT_WONDER      
+    CONSTRUCT_WONDER,
+	CHOOSE_ANOTHER_CARD,
+	ACTION_SUCCESSFUL
 };
 
 std::string colorToString(CardColor color);

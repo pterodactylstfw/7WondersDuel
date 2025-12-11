@@ -205,9 +205,6 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 		// cand schimb cu cardEffect pt a diferentia intre cele 2 cazuri folosesc acel membru guildCopy
 	}
 
-	if (effect.getGrantsPlayAgain())
-		m_gameState->switchPlayer(); // nu sunt sigura daca e bine
-
 	if (effect.getGrantsProgressToken())
 	{
 		auto& discardedTokens = m_gameState->getDiscardedTokens();
@@ -218,10 +215,12 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 
 		for (int i = 0; i < 3; i++)
 			std::cout << '[' << i + 1 << '] ' << discardedTokens[i]->toString();
-		int choice = Utils::getIntInput("Choose one Progress Token from the discarded pile: ");
-		choice--;
-		player.addProgressToken(std::move(discardedTokens[choice]));
-		discardedTokens.erase(discardedTokens.begin() + choice);
+
+		int choice = Utils::getIntRange(1, 3, "Select a Progress Token to claim: ");
+		size_t chosenIndex = choice - 1;
+
+		player.addProgressToken(std::move(discardedTokens[chosenIndex]));
+		discardedTokens.erase(discardedTokens.begin() + chosenIndex);
 
 		// playerul trebuie sa aleaga din cele din decartate (care au ramas de la inceput in "cutie") una din 3
 		// aici mai trebuie aplicat efectul tokenului respectiv - eventual o alta functie care face asta
@@ -242,17 +241,15 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 			for (int i = 0; i < cardsOfColor.size(); i++)
 				std::cout << '[' << i + 1 << '] ' << cardsOfColor[i].get().displayCardInfo();
 
-			int choice = Utils::getIntInput("Select a card to be removed from your opponent's city: ");
-			choice--;
+			int choice = Utils::getIntRange(1, static_cast<int>(cardsOfColor.size()), "Select a card to remove from opponent: ");
+			size_t chosenIndex = choice - 1;
 
-			auto removedCard = opponent.removeCard(cardsOfColor[choice].get());
+			auto removedCard = opponent.removeCard(cardsOfColor[chosenIndex].get());
 			if (removedCard != nullptr)
 				m_gameState->addToDiscardCards(std::move(removedCard));
 		}
 	}
 
-	// trebuie mutata intr-o functie separata pt ca atunci cand adaugam o carte jucatorului trebuie aplicat efectul cartii 
-	// si se formeaza un loop infinit
 	if (effect.getGrantsDiscardedCard()) 
 	{
 		auto& discardedCards = m_gameState->getDiscardedCards();
@@ -263,7 +260,7 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 			for (int i = 0; i < discardedCards.size(); i++)
 				std::cout << '[' << i + 1 << '] ' << discardedCards[i]->displayCardInfo();
 
-			int choice = Utils::getIntInput("Choose a card from the discarded pile: ");
+			int choice = Utils::getIntRange(1, static_cast<int>(discardedCards.size()), "Select a card to retrieve from the discarded pile: ");
 			size_t chosenIndex = choice - 1;
 
 			auto cardFromDiscard = m_gameState->extractDiscardedCard(chosenIndex);
@@ -279,19 +276,21 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 
 void GameController::grantCardToPlayer(Player& player, std::unique_ptr<Card> card)
 {
-	const CardEffect& effect = card->getEffect();
+	CardEffect effect = card->getEffect();
+	CardColor cardColor = card->getColor();
+	std::optional<ScientificSymbol> scienceSymbol = effect.getScienceSymbol();
 
 	player.addCard(std::move(card));
 
 	applyEffect(player, effect);
 
-	if (card->getColor() == CardColor::RED) {
+	if (cardColor == CardColor::RED) {
 		if (player.hasProgressToken(ProgressTokenType::STRATEGY)) {
 			player.addMilitaryShields(1);
 			std::cout << "Strategy Token active: +1 Extra Shield!\n";
 		}
 	}
-	if (effect.getScienceSymbol().has_value()) {
+	if (scienceSymbol.has_value()) {
 		ScientificSymbol sym =effect.getScienceSymbol().value();
 		if (player.addScientificSymbol(sym)) {
 			m_gameState->setPendingScientificReward(true);
@@ -306,18 +305,44 @@ bool GameController::handleConstructBuilding(int cardIndex)
 	Player& currentPlayer = m_gameState->getCurrentPlayer();
 	Player& opponent = m_gameState->getOpponent();
 
-	const Card* cardPtr = m_gameState->getCardPtr(cardIndex);
-	if (!cardPtr) return false;
+	auto cardView = m_gameState->getCardView(cardIndex);
+	if (!cardView.has_value()) return false;
+	auto card = cardView.value().get();
 
 	// plata cost carte
 	int costToPay = 0;
-	if (currentPlayer.hasChainForCard(*cardPtr))
+	if (currentPlayer.hasChainForCard(card))
 		costToPay = 0;
 	else {
-		costToPay = currentPlayer.calculateResourceCost(cardPtr->getCost(), opponent);
-		if (currentPlayer.getCoins() < costToPay) {
+		costToPay = currentPlayer.calculateTotalCost(card.getCost(), opponent);
+
+		if (currentPlayer.canAfford(costToPay, opponent)) {
+			if (currentPlayer.calculateTradeCost(card.getCost(), opponent) > 0) {
+
+				std::cout << "You don't have enough resources to build this card. You can pay " << costToPay << " coins (including trade costs) to build it.\n";
+				std::cout << "What do you want to do?\n";
+
+				std::cout << "[1] Pay the cost and build the card.\n";
+				std::cout << "[2] Choose another card.\n";
+				std::cout << "[3] Discard the card for coins.\n";
+
+				int choice = Utils::getIntRange(1, 3, "Enter your choice: ");
+				switch (choice) {
+				case 1:
+					break;
+				case 2:
+					return false; 
+				case 3:
+					handleDiscardCard(cardIndex);
+					return true; 
+				default:
+					return false; 
+				}
+			}
+		}
+		else {
 			std::cout << "[!] Insufficient coins to build this card.\n";
-			return false; // de adaugat optiuni daca player ul nu are destule resurse: discard, cumpara sau alege alta carte
+			return false; 
 		}
 	}
 
@@ -375,7 +400,7 @@ bool GameController::handleConstructWonders(int cardIndex, int wonderIndex, bool
 		return false;
 	}
 
-	int costToPay = currentPlayer.calculateResourceCost(targetWonder.getCost(), opponent);
+	int costToPay = currentPlayer.calculateTotalCost(targetWonder.getCost(), opponent);
 	if (currentPlayer.getCoins() < costToPay) {
 		std::cout << "[!] Insufficient coins for Wonder.\n";
 		return false;
@@ -384,20 +409,23 @@ bool GameController::handleConstructWonders(int cardIndex, int wonderIndex, bool
 	if (costToPay > 0) currentPlayer.removeCoins(costToPay);
 
 	std::unique_ptr<Card> sacrificedCard = m_gameState->takeCard(cardIndex);
-	m_gameState->addToDiscardCards(std::move(sacrificedCard));
+	m_gameState->addToDiscardCards(std::move(sacrificedCard)); // cartea nu ar trebui adaugata la decartate 
 
 	currentPlayer.getConstructedWonders().push_back(std::move(wonders[wonderIndex]));
 	// de mutat minunea in minuni realizate(daca facem) sau marcata ca realizata
 
 	bool hasTheology = currentPlayer.hasProgressToken(ProgressTokenType::THEOLOGY);
-	bool wonderReplay = targetWonder.getEffect().getDescription().find("Play a second turn") != std::string::npos;
+	bool wonderReplay = targetWonder.getEffect().getGrantsPlayAgain();
 
 	if (hasTheology || wonderReplay) {
 		outPlayAgain = true;
 		std::cout << ">>> Play Again granted!\n";
 	}
 	int oldShields = currentPlayer.getMilitaryShields();
-	//applyWonderEffect(currentPlayer, opponent, targetWonder);
+
+	CardEffect wonderEffect = targetWonder.getEffect();
+	applyEffect(currentPlayer, wonderEffect);
+
 	int newShields = currentPlayer.getMilitaryShields();
 
 	if (newShields > oldShields) {
@@ -463,9 +491,8 @@ bool GameController::executeAction(int cardIndex, PlayerAction action, int wonde
 
 	Player& currentPlayer = m_gameState->getCurrentPlayer();
 	const Player& opponent = m_gameState->getOpponent();
-	const Card* cardPtr = m_gameState->getCardPtr(cardIndex);
-
-	if (!cardPtr) return false;
+	auto cardView = m_gameState->getCardView(cardIndex);
+	if (!cardView.has_value()) return false;
 
 	bool success = false;
 	bool playAgain = false;

@@ -79,7 +79,7 @@ public:
 
 	const std::optional<uint8_t>& getWinnerIndex() const;
 
-	const Card* getCardPtr(int index) const; // pt verif costuri
+	std::optional<std::reference_wrapper<const Card>> getCardView(int index) const;
 
 
 	void initializeAge(int age, std::vector<std::unique_ptr<Card>>& deck);

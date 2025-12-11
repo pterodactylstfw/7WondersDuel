@@ -219,66 +219,110 @@ void ConsoleUI::showVictoryScreen(const std::string& winnerName)
 	std::cout << "=======================================\n";
 }
 
+
 void ConsoleUI::handlePlayCard()
 {
-	
-	int cardIndex = Utils::getIntInput("\n>>> Enter card index from pyramid (-1 to cancel): ");
-	if (cardIndex == -1) return;
 
-	cardIndex--; // din motive de 0-based index
+    int cardIndex = Utils::getIntInput("\n>>> Enter card index from pyramid (-1 to cancel): ");
+    if (cardIndex == -1) return;
 
-	// carte accessibila?
-	if (!m_game.getGameState().isCardAccessible(cardIndex)) {
-		std::cout << "[!] Error: Card is not accessible (blocked or face down).\n";
-		return;
-	}
+    cardIndex--; // ajustare index 0-based
 
-	auto cardView = m_game.getGameState().getCardView(cardIndex);
-	if (!cardView.has_value()) return;
+    // carte accesibila?
+    if (!m_game.getGameState().isCardAccessible(cardIndex)) {
+        std::cout << "[!] Error: Card is not accessible (blocked or face down).\n";
+        return;
+    }
 
-	int actionChoice = showCardActionMenu(cardView.value().get());
+    auto cardView = m_game.getGameState().getCardView(cardIndex);
+    if (!cardView.has_value()) return;
+    const Card& card = cardView.value().get();
 
-	if (actionChoice == 0) {
-		std::cout << "Action cancelled.\n";
-		return;
-	}
+	// Vom calcula aici costurile pentru a informa playerul - detasare de GameController
+    const Player& me = m_game.getGameState().getCurrentPlayer();
+    const Player& opp = m_game.getGameState().getOpponent();
 
+    int totalCost = 0;
+    int tradeCost = 0;
+    bool canAfford = false;
 
-	bool success = false;
+    if (me.hasChainForCard(card)) {
+        // E gratis prin lant
+        canAfford = true;
+        // totalCost ramane 0
+    } else {
+        totalCost = me.calculateTotalCost(card.getCost(), opp);
+        tradeCost = me.calculateTradeCost(card.getCost(), opp);
+        canAfford = me.canAfford(totalCost, opp);
+    }
 
-	if (actionChoice == 1) {
-		success = m_game.executeAction(cardIndex, PlayerAction::CONSTRUCT_BUILDING);
-	}
-	else if (actionChoice == 2) {
-		success = m_game.executeAction(cardIndex, PlayerAction::DISCARD_FOR_COINS);
-	}
-	else if (actionChoice == 3) {
-		displayWonderBoard();
-		int wonderIndex = Utils::getIntInput("Choose Wonder index (1-4) or 0 to cancel: ");
-		if (wonderIndex == 0) return;
+    int actionChoice = showCardActionMenu(card);
 
-		success = m_game.executeAction(cardIndex, PlayerAction::CONSTRUCT_WONDER, wonderIndex - 1);
-	}
+    if (actionChoice == 0) {
+        std::cout << "Action cancelled.\n";
+        return;
+    }
 
-	if (success) {
-		if (m_game.isGameOver())
-		{
-			const auto& state = m_game.getGameState();
-			const auto& winner = state.getWinnerIndex();
-			if (state.getCurrentPlayerIndex() == winner.value())
-			{
-				showVictoryScreen(state.getCurrentPlayer().getName());
-			}
-			else
-			{
-				showVictoryScreen(state.getOpponent().getName());
-			}
-		}
-		std::cout << "\n>>> SUCCESS! Action completed. <<<\n";
-	}
-	else {
-		std::cout << "\n[!] FAILED: Insufficient resources or invalid move.\n";
-	}
+    bool success = false;
+
+    if (actionChoice == 1) { // CONSTRUCT BUILDING
+        if (!canAfford) {
+            std::cout << "\n[!] You do not have enough coins (" << me.getCoins() << ") to pay the cost (" << totalCost << ").\n";
+            return;
+        }
+
+        // Intrebam playerul daca vrea sa plateasca tradeul
+        if (confirmPurchaseInteraction(totalCost, tradeCost)) {
+            success = m_game.executeAction(cardIndex, PlayerAction::CONSTRUCT_BUILDING);
+        }
+    }
+    else if (actionChoice == 2) { // DISCARD
+        success = m_game.executeAction(cardIndex, PlayerAction::DISCARD_FOR_COINS);
+    }
+    else if (actionChoice == 3) { // CONSTRUCT WONDER
+        displayWonderBoard();
+        int wonderIndex = Utils::getIntInput("Choose Wonder index (1-4) or 0 to cancel: ");
+        if (wonderIndex == 0) return;
+        wonderIndex--; // 0-based
+
+        // Verificam minunea
+        const auto& wonders = me.getWonders();
+        if (wonderIndex >= 0 && wonderIndex < 4 && wonders[wonderIndex] && !wonders[wonderIndex]->isBuilt()) {
+
+            // Calculam cost minune
+            const auto& w = wonders[wonderIndex];
+            int wTotalCost = me.calculateTotalCost(w->getCost(), opp);
+            int wTradeCost = me.calculateTradeCost(w->getCost(), opp);
+
+            if (me.getCoins() < wTotalCost) {
+                 std::cout << "\n[!] Not enough coins for this Wonder.\n";
+                 return;
+            }
+
+            if (confirmPurchaseInteraction(wTotalCost, wTradeCost)) {
+                success = m_game.executeAction(cardIndex, PlayerAction::CONSTRUCT_WONDER, wonderIndex);
+            }
+        } else {
+            std::cout << "[!] Invalid wonder selection.\n";
+        }
+    }
+
+    if (success) {
+        if (m_game.isGameOver())
+        {
+            const auto& state = m_game.getGameState();
+            const auto& winner = state.getWinnerIndex();
+            if (state.getCurrentPlayerIndex() == winner.value())
+            {
+                showVictoryScreen(state.getCurrentPlayer().getName());
+            }
+            else
+            {
+                showVictoryScreen(state.getOpponent().getName());
+            }
+        }
+        std::cout << "\n>>> SUCCESS! Action completed. <<<\n";
+    }
 }
 
 void ConsoleUI::displayCityDetails() {
@@ -374,6 +418,22 @@ int ConsoleUI::showCardActionMenu(const Card& card)
 	std::cout << "0. CANCEL (Go back)\n";
 
 	return Utils::getIntRange(0, 3, "Choose action: ");
+}
+
+bool ConsoleUI::confirmPurchaseInteraction(int totalCost, int tradeCost) {
+	if (tradeCost == 0)
+		return true;
+
+	std::cout << "\n[!] Missing resources. You need to trade with the bank.\n";
+	std::cout << "   -> Total Cost: " << totalCost << " coins\n";
+	std::cout << "   -> (Includes Trade Cost: " << tradeCost << " coins)\n";
+
+	std::cout << "Do you want to proceed?\n";
+	std::cout << "1. Pay " << totalCost << " coins and Construct\n";
+	std::cout << "2. Cancel (Go back)\n";
+
+	int choice = Utils::getIntRange(1, 2, "Choose option: ");
+	return (choice == 1);
 }
 
 void ConsoleUI::run()

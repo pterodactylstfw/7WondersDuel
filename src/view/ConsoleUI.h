@@ -28,6 +28,8 @@ private:
 	int showHighLevelMenu(); // meniu initial - play / view city / exit
 	int showCardActionMenu(const Card& card); // meniu actiuni pentru o carte aleasa
 
+	bool confirmPurchaseInteraction(int totalCost, int tradeCost);
+
 public:
 
 	void run();

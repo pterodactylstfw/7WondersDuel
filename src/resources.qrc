@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>../assets/background.jpg</file>
+	<file>../assets/coins.png</file>
+	<file>../assets/victorypoints.png</file>
     </qresource>
 </RCC>

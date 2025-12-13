@@ -60,6 +60,7 @@ set(SRC_FACTORIES
 # 3. CONTROLLER (Creierul)
 set(SRC_CONTROLLER
         src/controller/GameController.cpp src/controller/GameController.h
+        src/controller/AIController.cpp src/controller/AIController.h
 )
 
 # 4. UTILS (Utilitare)

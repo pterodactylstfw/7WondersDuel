@@ -3,5 +3,7 @@
         <file>../assets/background.jpg</file>
 	<file>../assets/coins.png</file>
 	<file>../assets/victorypoints.png</file>
+	<file>../assets/military_board.png</file>
+	<file>../assets/military_lead.png</file>
     </qresource>
 </RCC>

@@ -67,6 +67,8 @@ public:
 	uint8_t getCurrentPlayerIndex() const;
 	void setWinner(uint8_t index);
 
+	int getMilitaryPosition() const;
+
     Player& getPlayerWithMostCardsPerColor(const CardColor& color);
 
 	uint8_t getCurrentAge() const;

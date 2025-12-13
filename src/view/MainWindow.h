@@ -26,4 +26,5 @@ private:
 private:
     void updateGameUI();
     void updatePlayerPanel(const Player& player, bool isOpponent);
+    void updateMilitaryTrack();
 };

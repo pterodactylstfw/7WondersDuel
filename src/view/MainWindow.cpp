@@ -13,6 +13,9 @@ MainWindow::MainWindow(QWidget* parent)
 {
     ui->setupUi(this); 
 
+    ui->labelMilitaryBoard->setPixmap(QPixmap(":/assets/military_board.png"));
+    ui->labelMilitaryLead->setPixmap(QPixmap(":/assets/military_lead.png"));
+
 	ui->stackedWidget->setCurrentIndex(0);
 
     connect(ui->btnStart, &QPushButton::clicked, this, &MainWindow::onBtnStartClicked);
@@ -89,6 +92,8 @@ void MainWindow::updateGameUI()
 
 	updatePlayerPanel(gameState.getCurrentPlayer(), false);
 	updatePlayerPanel(gameState.getOpponent(), true);
+
+    updateMilitaryTrack();
 }
 
 void MainWindow::updatePlayerPanel(const Player& player, bool isOpponent)
@@ -121,6 +126,24 @@ void MainWindow::updatePlayerPanel(const Player& player, bool isOpponent)
         ui->labelCurrentPlayerVP->setStyleSheet(styleTemplate.arg(":/assets/victorypoints.png"));
         ui->labelCurrentPlayerVP->setText(QString::number(player.getVictoryPoints()));
     }
+}
+
+void MainWindow::updateMilitaryTrack()
+{
+    const auto& gameState = m_game.getGameState();
+    int militaryPosition = gameState.getMilitaryPosition();
+
+    const int startY = ui->labelMilitaryBoard->y();     
+    const int endY = ui->labelMilitaryBoard->y() + ui->labelMilitaryBoard->height();
+    const int trackHeight = endY - startY;
+
+    int leadX = ui->labelMilitaryBoard->x() + (ui->labelMilitaryBoard->width() / 2) - (ui->labelMilitaryLead->width() / 2) - 5;
+
+    double percentage = (militaryPosition + 9.0) / 18.0;
+
+    int leadY = startY + (trackHeight * percentage) - (ui->labelMilitaryLead->height() / 2);
+
+    ui->labelMilitaryLead->move(leadX, leadY);
 }
 
 MainWindow::~MainWindow()

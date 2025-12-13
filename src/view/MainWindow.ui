@@ -198,34 +198,6 @@ QLabel {
          <string>Back to Main Menu</string>
         </property>
        </widget>
-       <widget class="QSlider" name="sliderMilitary">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="geometry">
-         <rect>
-          <x>700</x>
-          <y>170</y>
-          <width>16</width>
-          <height>160</height>
-         </rect>
-        </property>
-        <property name="minimum">
-         <number>-9</number>
-        </property>
-        <property name="maximum">
-         <number>9</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Orientation::Vertical</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TickPosition::TicksBothSides</enum>
-        </property>
-        <property name="tickInterval">
-         <number>1</number>
-        </property>
-       </widget>
        <widget class="QWidget" name="horizontalLayoutWidget">
         <property name="geometry">
          <rect>
@@ -367,6 +339,65 @@ QLabel {
         </property>
         <property name="textFormat">
          <enum>Qt::TextFormat::AutoText</enum>
+        </property>
+       </widget>
+       <widget class="QLabel" name="labelMilitaryBoard">
+        <property name="geometry">
+         <rect>
+          <x>660</x>
+          <y>50</y>
+          <width>100</width>
+          <height>400</height>
+         </rect>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>100</width>
+          <height>400</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>100</width>
+          <height>400</height>
+         </size>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="pixmap">
+         <pixmap>../../assets/military_board.png</pixmap>
+        </property>
+        <property name="scaledContents">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QLabel" name="labelMilitaryLead">
+        <property name="geometry">
+         <rect>
+          <x>680</x>
+          <y>240</y>
+          <width>50</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>50</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>50</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="pixmap">
+         <pixmap>../../assets/military_lead.png</pixmap>
         </property>
        </widget>
       </widget>

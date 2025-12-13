@@ -10,7 +10,7 @@ bool GameController::isGameOver() const {
 
 void GameController::startNewGame(const std::string& p1, const std::string& p2) {
 	m_gameState = std::make_unique<GameState>(p1, p2);
-	selectWondersManual();
+	draftWondersAuto(); // am pus asa momentan pentru interfata grafica
 	prepareProgressTokens();
 	prepareAge(1);
 }

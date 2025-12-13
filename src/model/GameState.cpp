@@ -423,6 +423,13 @@ void GameState::setWinner(uint8_t index)
 {
     m_winnerIndex = index;
 }
+int GameState::getMilitaryPosition() const
+{
+    int player1Shields = m_players[0]->getMilitaryShields();
+    int player2Shields = m_players[1]->getMilitaryShields();
+	return player1Shields - player2Shields;
+}
+
 Player& GameState::getPlayerWithMostCardsPerColor(const CardColor& color)
 {
     Player& player1 = getCurrentPlayer();

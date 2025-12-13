@@ -22,4 +22,9 @@ private slots:
 private:
     Ui::MainWindow* ui;
     GameController m_game;
+
+private:
+    void updateGameUI();
+    void updatePlayerPanel(const Player& player, bool isOpponent);
+    void updateMilitaryTrack();
 };

@@ -378,7 +378,65 @@ bool GameController::handleConstructWonders(int cardIndex, int wonderIndex, bool
 		return false;
 	}
 
-	int costToPay = currentPlayer.calculateTotalCost(targetWonderPtr->getCost(), opponent);
+	//int costToPay = currentPlayer.calculateTotalCost(targetWonderPtr->getCost(), opponent);
+	Cost baseCost = targetWonderPtr->getCost();
+	int costToPay = 0;
+
+	if (currentPlayer.hasProgressToken(ProgressTokenType::ARCHITECTURE))
+	{
+		int discount = 2;
+
+		auto resourceCosts = baseCost.getResourceCosts();
+
+		while (discount > 0)
+		{
+			std::cout << "Choose a resource to reduce:\n";
+
+			std::vector <ResourceType> options;
+			int index = 1;
+
+			for (const auto& it : resourceCosts)
+			{
+				ResourceType resType = it.first;
+				int qty = it.second;
+
+				if (qty > 0)
+				{
+					std::cout << index << ". " << resourceToString(resType) << "(" << qty << ")\n";
+					options.push_back(resType);
+					index++;
+				}
+			}
+
+			if(options.empty())
+				break;
+
+			int choice;
+			std::cout << "Enter your choice: ";
+			std::cin >> choice;
+			if (choice < 1 || choice > static_cast<int>(options.size()))
+			{
+				std::cout << "Invalid choice. Try again.\n";
+				continue;
+			}
+
+			ResourceType chosen = options[choice - 1];
+			resourceCosts[chosen]--;
+			
+			if (resourceCosts[chosen] == 0)
+				resourceCosts.erase(chosen);
+
+			discount--;
+		}
+
+		Cost discountedCost(baseCost.getCoinCost(), resourceCosts);
+		costToPay = currentPlayer.calculateTotalCost(discountedCost, opponent);
+	}
+	else
+	{
+		costToPay = currentPlayer.calculateTotalCost(baseCost, opponent);
+	}
+
 	if (currentPlayer.getCoins() < costToPay) {
 		return false;
 	}

@@ -36,11 +36,17 @@ AIMove AIController::getRandomMove(const GameState& state)
 AIMove AIController::getGreedyMove(const GameState& state)
 {
 	// to do 
+
+	//temporar pentru ca nu compila
+	return getRandomMove(state);
 }
 
 double AIController::evaluateCardValue(const Card& card, const Player& player, const Player& opponent, const GameState& state)
 {
 	// to do 
+
+	//temporar pentru ca nu compila
+	return 0.0;
 }
 
 AIController::AIController(AIDifficulty difficulty): m_difficulty(difficulty){}

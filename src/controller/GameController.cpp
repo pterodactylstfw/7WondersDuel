@@ -303,16 +303,75 @@ void GameController::grantCardToPlayer(Player& player, std::unique_ptr<Card> car
 bool GameController::handleConstructBuilding(int cardIndex)
 {
 	Player& currentPlayer = m_gameState->getCurrentPlayer();
-	const Player& opponent = m_gameState->getOpponent();
+	Player& opponent = m_gameState->getOpponent();
 
 	auto cardView = m_gameState->getCardView(cardIndex);
 	if (!cardView.has_value()) return false;
-	auto card = cardView.value().get();
+	auto& card = cardView.value().get();
+
+	Cost baseCost = card.getCost();
+	Cost finalCost = baseCost;
+
+	int tradeCost = 0;
+	int costToPay = 0;
 
 	// 1. Calculam costul total (monede proprii + trade)
-	int costToPay = 0;
-	if (!currentPlayer.hasChainForCard(card)) {
-		costToPay = currentPlayer.calculateTotalCost(card.getCost(), opponent);
+	if (!currentPlayer.hasChainForCard(card) && 
+		 card.getColor() == CardColor::BLUE &&
+		 currentPlayer.hasProgressToken(ProgressTokenType::MASONRY))
+	{
+		int discount = 2;
+
+		auto resourceCosts = baseCost.getResourceCosts();
+
+		while (discount > 0)
+		{
+			std::cout << "Choose a resource to reduce:\n";
+
+			std::vector <ResourceType> options;
+			int index = 1;
+
+			for (const auto& it : resourceCosts)
+			{
+				ResourceType resType = it.first;
+				int qty = it.second;
+
+				if (qty > 0)
+				{
+					std::cout << index << ". " << resourceToString(resType) << "(" << qty << ")\n";
+					options.push_back(resType);
+					index++;
+				}
+			}
+
+			if (options.empty())
+				break;
+
+			int choice;
+			std::cout << "Enter your choice: ";
+			std::cin >> choice;
+			if (choice < 1 || choice > static_cast<int>(options.size()))
+			{
+				std::cout << "Invalid choice. Try again.\n";
+				continue;
+			}
+
+			ResourceType chosen = options[choice - 1];
+			resourceCosts[chosen]--;
+
+			if (resourceCosts[chosen] == 0)
+				resourceCosts.erase(chosen);
+
+			discount--;
+		}
+
+		finalCost = Cost(baseCost.getCoinCost(), resourceCosts);
+	}
+	
+	if (!currentPlayer.hasChainForCard(card))
+	{
+		tradeCost = currentPlayer.calculateTradeCost(finalCost, opponent);
+		costToPay = tradeCost + finalCost.getCoinCost();
 	}
 
 	// 2. Verificam daca jucatorul isi permite (UI-ul ar fi trebuit sa verifice deja, dar facem double-check)
@@ -325,6 +384,11 @@ bool GameController::handleConstructBuilding(int cardIndex)
 	// 3. Executam plata
 	if (costToPay > 0) {
 		currentPlayer.removeCoins(costToPay);
+	}
+
+	if (tradeCost > 0 && opponent.hasProgressToken(ProgressTokenType::ECONOMY))
+	{
+		opponent.addCoins(tradeCost);
 	}
 
 	// 4. Mutam cartea si aplicam efectele
@@ -370,20 +434,81 @@ bool GameController::handleConstructWonders(int cardIndex, int wonderIndex, bool
 
 	auto& targetWonderPtr = wonders[wonderIndex];
 
-	if (targetWonderPtr->isBuilt()) {
-		return false;
+	if (targetWonderPtr->isBuilt()) return false;
+
+	if (m_gameState->getAllConstructedWondersCount() >= GameConstants::MAX_WONDERS_TOTAL) return false;
+
+	//int costToPay = currentPlayer.calculateTotalCost(targetWonderPtr->getCost(), opponent);
+	Cost baseCost = targetWonderPtr->getCost();
+	Cost finalCost = baseCost;
+	int costToPay = 0;
+	int tradeCost = 0;
+
+	if (currentPlayer.hasProgressToken(ProgressTokenType::ARCHITECTURE))
+	{
+		int discount = 2;
+
+		auto resourceCosts = baseCost.getResourceCosts();
+
+		while (discount > 0)
+		{
+			std::cout << "Choose a resource to reduce:\n";
+
+			std::vector <ResourceType> options;
+			int index = 1;
+
+			for (const auto& it : resourceCosts)
+			{
+				ResourceType resType = it.first;
+				int qty = it.second;
+
+				if (qty > 0)
+				{
+					std::cout << index << ". " << resourceToString(resType) << "(" << qty << ")\n";
+					options.push_back(resType);
+					index++;
+				}
+			}
+
+			if(options.empty())
+				break;
+
+			int choice;
+			std::cout << "Enter your choice: ";
+			std::cin >> choice;
+			if (choice < 1 || choice > static_cast<int>(options.size()))
+			{
+				std::cout << "Invalid choice. Try again.\n";
+				continue;
+			}
+
+			ResourceType chosen = options[choice - 1];
+			resourceCosts[chosen]--;
+			
+			if (resourceCosts[chosen] == 0)
+				resourceCosts.erase(chosen);
+
+			discount--;
+		}
+
+		finalCost = Cost(baseCost.getCoinCost(), resourceCosts);
+	}
+	else
+	{
+		finalCost = baseCost;
 	}
 
-	if (m_gameState->getAllConstructedWondersCount() >= GameConstants::MAX_WONDERS_TOTAL) {
-		return false;
-	}
+	tradeCost = currentPlayer.calculateTradeCost(finalCost, opponent);
+	costToPay = tradeCost + finalCost.getCoinCost();
 
-	int costToPay = currentPlayer.calculateTotalCost(targetWonderPtr->getCost(), opponent);
-	if (currentPlayer.getCoins() < costToPay) {
-		return false;
-	}
+	if (currentPlayer.getCoins() < costToPay) return false;
 
 	if (costToPay > 0) currentPlayer.removeCoins(costToPay);
+
+	if (tradeCost > 0 && opponent.hasProgressToken(ProgressTokenType::ECONOMY))
+	{
+		opponent.addCoins(tradeCost);
+	}
 
 	std::unique_ptr<Card> sacrificedCard = m_gameState->takeCard(cardIndex);
 	m_gameState->addToDiscardCards(std::move(sacrificedCard)); // cartea nu ar trebui adaugata la decartate 

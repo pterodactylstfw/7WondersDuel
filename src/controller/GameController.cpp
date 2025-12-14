@@ -307,16 +307,71 @@ bool GameController::handleConstructBuilding(int cardIndex)
 
 	auto cardView = m_gameState->getCardView(cardIndex);
 	if (!cardView.has_value()) return false;
-	auto card = cardView.value().get();
+	auto& card = cardView.value().get();
+
+	Cost baseCost = card.getCost();
+	Cost finalCost = baseCost;
 
 	int tradeCost = 0;
 	int costToPay = 0;
 
 	// 1. Calculam costul total (monede proprii + trade)
-	if (!currentPlayer.hasChainForCard(card)) {
+	if (!currentPlayer.hasChainForCard(card) && 
+		 card.getColor() == CardColor::BLUE &&
+		 currentPlayer.hasProgressToken(ProgressTokenType::MASONRY))
+	{
+		int discount = 2;
 
-		tradeCost = currentPlayer.calculateTradeCost(card.getCost(), opponent);
-		costToPay = currentPlayer.calculateTotalCost(card.getCost(), opponent);
+		auto resourceCosts = baseCost.getResourceCosts();
+
+		while (discount > 0)
+		{
+			std::cout << "Choose a resource to reduce:\n";
+
+			std::vector <ResourceType> options;
+			int index = 1;
+
+			for (const auto& it : resourceCosts)
+			{
+				ResourceType resType = it.first;
+				int qty = it.second;
+
+				if (qty > 0)
+				{
+					std::cout << index << ". " << resourceToString(resType) << "(" << qty << ")\n";
+					options.push_back(resType);
+					index++;
+				}
+			}
+
+			if (options.empty())
+				break;
+
+			int choice;
+			std::cout << "Enter your choice: ";
+			std::cin >> choice;
+			if (choice < 1 || choice > static_cast<int>(options.size()))
+			{
+				std::cout << "Invalid choice. Try again.\n";
+				continue;
+			}
+
+			ResourceType chosen = options[choice - 1];
+			resourceCosts[chosen]--;
+
+			if (resourceCosts[chosen] == 0)
+				resourceCosts.erase(chosen);
+
+			discount--;
+		}
+
+		finalCost = Cost(baseCost.getCoinCost(), resourceCosts);
+	}
+	
+	if (!currentPlayer.hasChainForCard(card))
+	{
+		tradeCost = currentPlayer.calculateTradeCost(finalCost, opponent);
+		costToPay = tradeCost + finalCost.getCoinCost();
 	}
 
 	// 2. Verificam daca jucatorul isi permite (UI-ul ar fi trebuit sa verifice deja, dar facem double-check)
@@ -385,7 +440,7 @@ bool GameController::handleConstructWonders(int cardIndex, int wonderIndex, bool
 
 	//int costToPay = currentPlayer.calculateTotalCost(targetWonderPtr->getCost(), opponent);
 	Cost baseCost = targetWonderPtr->getCost();
-	Cost finalCost;
+	Cost finalCost = baseCost;
 	int costToPay = 0;
 	int tradeCost = 0;
 

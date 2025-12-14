@@ -303,15 +303,19 @@ void GameController::grantCardToPlayer(Player& player, std::unique_ptr<Card> car
 bool GameController::handleConstructBuilding(int cardIndex)
 {
 	Player& currentPlayer = m_gameState->getCurrentPlayer();
-	const Player& opponent = m_gameState->getOpponent();
+	Player& opponent = m_gameState->getOpponent();
 
 	auto cardView = m_gameState->getCardView(cardIndex);
 	if (!cardView.has_value()) return false;
 	auto card = cardView.value().get();
 
-	// 1. Calculam costul total (monede proprii + trade)
+	int tradeCost = 0;
 	int costToPay = 0;
+
+	// 1. Calculam costul total (monede proprii + trade)
 	if (!currentPlayer.hasChainForCard(card)) {
+
+		tradeCost = currentPlayer.calculateTradeCost(card.getCost(), opponent);
 		costToPay = currentPlayer.calculateTotalCost(card.getCost(), opponent);
 	}
 
@@ -325,6 +329,11 @@ bool GameController::handleConstructBuilding(int cardIndex)
 	// 3. Executam plata
 	if (costToPay > 0) {
 		currentPlayer.removeCoins(costToPay);
+	}
+
+	if (tradeCost > 0 && opponent.hasProgressToken(ProgressTokenType::ECONOMY))
+	{
+		opponent.addCoins(tradeCost);
 	}
 
 	// 4. Mutam cartea si aplicam efectele
@@ -370,17 +379,15 @@ bool GameController::handleConstructWonders(int cardIndex, int wonderIndex, bool
 
 	auto& targetWonderPtr = wonders[wonderIndex];
 
-	if (targetWonderPtr->isBuilt()) {
-		return false;
-	}
+	if (targetWonderPtr->isBuilt()) return false;
 
-	if (m_gameState->getAllConstructedWondersCount() >= GameConstants::MAX_WONDERS_TOTAL) {
-		return false;
-	}
+	if (m_gameState->getAllConstructedWondersCount() >= GameConstants::MAX_WONDERS_TOTAL) return false;
 
 	//int costToPay = currentPlayer.calculateTotalCost(targetWonderPtr->getCost(), opponent);
 	Cost baseCost = targetWonderPtr->getCost();
+	Cost finalCost;
 	int costToPay = 0;
+	int tradeCost = 0;
 
 	if (currentPlayer.hasProgressToken(ProgressTokenType::ARCHITECTURE))
 	{
@@ -429,19 +436,24 @@ bool GameController::handleConstructWonders(int cardIndex, int wonderIndex, bool
 			discount--;
 		}
 
-		Cost discountedCost(baseCost.getCoinCost(), resourceCosts);
-		costToPay = currentPlayer.calculateTotalCost(discountedCost, opponent);
+		finalCost = Cost(baseCost.getCoinCost(), resourceCosts);
 	}
 	else
 	{
-		costToPay = currentPlayer.calculateTotalCost(baseCost, opponent);
+		finalCost = baseCost;
 	}
 
-	if (currentPlayer.getCoins() < costToPay) {
-		return false;
-	}
+	tradeCost = currentPlayer.calculateTradeCost(finalCost, opponent);
+	costToPay = tradeCost + finalCost.getCoinCost();
+
+	if (currentPlayer.getCoins() < costToPay) return false;
 
 	if (costToPay > 0) currentPlayer.removeCoins(costToPay);
+
+	if (tradeCost > 0 && opponent.hasProgressToken(ProgressTokenType::ECONOMY))
+	{
+		opponent.addCoins(tradeCost);
+	}
 
 	std::unique_ptr<Card> sacrificedCard = m_gameState->takeCard(cardIndex);
 	m_gameState->addToDiscardCards(std::move(sacrificedCard)); // cartea nu ar trebui adaugata la decartate 

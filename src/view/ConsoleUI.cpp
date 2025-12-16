@@ -1,12 +1,15 @@
 ﻿#include "ConsoleUI.h"
 #include "Utils.h"
+#include <print>
 
 void ConsoleUI::displayHeader() const
 {
 	Utils::clearScreen();
-	std::cout << "\n=======================================\n";
-	std::cout << "       7 WONDERS DUEL - CONSOLE\n";
-	std::cout << "=======================================\n";
+
+	std::println("");
+	std::println("=======================================");
+	std::println("       7 WONDERS DUEL - CONSOLE");
+	std::println("=======================================");
 }
 
 void ConsoleUI::displayGameState() const
@@ -17,48 +20,49 @@ void ConsoleUI::displayGameState() const
 
 	displayHeader();
 
-	std::cout << "\n\n";
-	std::cout << "---------------- [ AGE " << (int)state.getCurrentAge() << " ] ----------------\n";
+	std::println("\n");
+	std::println("---------------- [ AGE {} ] ----------------", static_cast<int>(state.getCurrentAge()));
 
 	// Adversarul
-	std::cout << ">>> OPPONENT: "<<opponent.getName()<<"\n";
+	std::println(">>> OPPONENT: {}", opponent.getName());
 	displayPlayer(opponent);
 
 	displayMilitaryTrack();
 
 	// Piramida
-	std::cout << "\n            --- CARDS PYRAMID ---\n";
+	std::println("\n            --- CARDS PYRAMID ---");
 	displayPyramid();
-	std::cout << "---------------------------------------\n";
+	std::println("---------------------------------------");
 
 	// Jucatorul curent
-	std::cout << ">>> YOU (" << currentPlayer.getName() << ") <<<\n";
+	std::println(">>> YOU ({}) <<<", currentPlayer.getName());
 	displayPlayer(currentPlayer);
 }
 
 void ConsoleUI::displayPlayer(const Player& player) const
 {
-	std::cout << "   Name: " << player.getName();
-	std::cout << " | Coins: " << player.getCoins();
-	std::cout << " | Shields: " << player.getMilitaryShields();
-	std::cout << " | Victory Points: " << player.getVictoryPoints();
+	std::print("   Name: {} | ", player.getName());
+	std::print("Coins: {} | ", player.getCoins());
+	std::print("Shields: {} | ", player.getMilitaryShields());
+	std::println("Victory Points: {}", player.getVictoryPoints());
 
 	// afis resurse
 	auto resources = player.getTotalResources();
-	std::cout << "\n   Resources: ";
-	if (resources.empty()) std::cout << "None";
+	std::string resString;
+	if (resources.empty()) resString = "None";
 	for (const auto& [type, qty] : resources)
-		std::cout << resourceToString(type) << ":" << qty << "  ";
+		resString += std::format("{}:{}  ", resourceToString(type), qty);
 
-	std::cout << "\n   Wonders:\n";
+	std::println("   Resources: {}", resString);
+
+	std::println("\n   Wonders:");
 
 	// minuni neconstruite
 	const auto& unbuiltWonders = player.getWonders();
 	for (const auto& wonder : unbuiltWonders)
 	{
 		if (wonder) { // verif daca minunea exista
-			std::cout << "     [ ] " << wonder->getName()
-				<< " (Cost: " << wonder->getCost().toShortString() << ")\n";
+			std::println("     [ ] {} (Cost: {})", wonder->getName(), wonder->getCost().toShortString());
 		}
 	}
 
@@ -67,11 +71,11 @@ void ConsoleUI::displayPlayer(const Player& player) const
 	for (const auto& wonder : builtWonders)
 	{
 		if (wonder) {
-			std::cout << "     [X] " << wonder->getName() << " [BUILT]\n";
+			std::println("     [X] {} [BUILT]", wonder->getName());
 		}
 	}
 
-	std::cout << "\n";
+	std::println("");
 }
 
 void ConsoleUI::displayPyramid() const
@@ -79,8 +83,8 @@ void ConsoleUI::displayPyramid() const
 	const auto& state = m_game.getGameState();
 	const auto& pyramidNodes = state.getPyramid();
 
-	std::cout << "\n   [ID]  CARD NAME           COST                 EFFECT\n";
-	std::cout << "   ----------------------------------------------------------------------------\n";
+	std::println("\n   [ID]  CARD NAME           COST                 EFFECT");
+	std::println("   ----------------------------------------------------------------------------");
 
 	bool foundAny = false;
 
@@ -117,15 +121,15 @@ void ConsoleUI::displayPyramid() const
 				<< colorCode << std::left << std::setw(20) << card.getName()<< Colors::RESET
 				<< std::left << std::setw(20) << card.getCost().toShortString()
 				<< card.getEffect().getDescription()
-				<< "\n";
+				<< "\n"; // ramanem la cout pt ca e greu de aliniat cu println fara parametri optionali ai lui println - vezi documentatie
 			foundAny = true;
 		}
 	}
 
 	if (!foundAny) {
-		std::cout << "   (No accessible cards right now.)\n";
+		std::println("   (No accessible cards right now.)");
 	}
-	std::cout << "\n";
+	std::println("");
 }
 
 void ConsoleUI::displayMilitaryTrack() const
@@ -139,32 +143,25 @@ void ConsoleUI::displayMilitaryTrack() const
 	if (balance > 9) balance = 9;
 	if (balance < -9) balance = -9;
 
-	std::cout << "\n   >>> MILITARY TRACK <<<\n";
+	std::println("\n   >>> MILITARY TRACK <<<");
 
-	std::cout << "   " << me.getName() << " (LOSE) ";
+	std::print("   {} (LOSE) ", me.getName());
 
 	for (int i = -9; i <= 9; ++i)
 	{
-		if (i == balance) {
-			std::cout << "[x]";
-		}
-		else if (i == 0) {
-			std::cout << "[0]";
-		}
-		else {
-			std::cout << "[ ]";
-		}
+		if (i == balance) std::print("[x]");
+		else if (i == 0) std::print("[0]");
+		else std::print("[ ]");
 	}
 
-	std::cout << " " << opp.getName() << " (WIN) \n";
-
-	std::cout << "   Current Balance: " << balance << "\n";
+	std::println(" {} (WIN) ", opp.getName());
+	std::println("   Current Balance: {}", balance);
 }
 
-void ConsoleUI::displayAccesibleCards() const
+void ConsoleUI::displayAccessibleCards() const
 {
 	const auto& pyramid = m_game.getGameState().getPyramid();
-	std::cout << "Pyramid Cards (Accessible): \n";
+	std::println("Pyramid Cards (Accessible):");
 	for (const auto& node : pyramid)
 	{
 		if (!node.m_isRemoved && node.m_isFaceUp)
@@ -172,7 +169,7 @@ void ConsoleUI::displayAccesibleCards() const
 			auto cardView = m_game.getGameState().getCardView(node.m_index);
 			if (cardView.has_value()) {
 				const Card& card = cardView.value().get();
-				std::cout << " - [" << node.m_index << "] " << card.displayCardInfo() << "\n";
+				std::println(" - [{}] {}", node.m_index + 1, card.displayCardInfo());
 			}
 		}
 	}
@@ -183,54 +180,54 @@ void ConsoleUI::displayWonderBoard() const
 	const auto& player = m_game.getGameState().getCurrentPlayer();
 	const auto& wonders = player.getWonders();
 
-	std::cout << "\n--- CHOOSE A WONDER TO BUILD ---\n";
+	std::println("\n--- CHOOSE A WONDER TO BUILD ---");
 
 	for (size_t i = 0; i < wonders.size(); ++i)
 	{
 		// afis doar minunile neconstruite si disponibile
 		if (wonders[i] && !wonders[i]->isBuilt())
 		{
-			std::cout << "[" << i + 1 << "] " << wonders[i]->getName()
-				<< " -- Cost: " << wonders[i]->getCost().toString() << "\n";
+			std::println("[{}] {} -- Cost: {}", i + 1,
+				wonders[i]->getName(), wonders[i]->getCost().toString());
 		}
 	}
-	std::cout << "----------------------------------------\n";
+	std::println("----------------------------------------");
 }
 
 
 int ConsoleUI::showMainMenu()
 {
-	std::cout << "\n=======================================\n";
-	std::cout << "               MAIN MENU\n";
-	std::cout << "=======================================\n";
+	std::println("\n=======================================");
+	std::println("               MAIN MENU");
+	std::println("=======================================");
 
-	std::cout << "0. Exit\n";
-	std::cout << "1. Start new game\n";
-	std::cout << "2. Load game\n";
+	std::println("0. Exit");
+	std::println("1. Start new game");
+	std::println("2. Load game");
 
 	return Utils::getIntInput("Select an option: ");
 }
 
 int ConsoleUI::showActionMenu()
 {
-	std::cout << "0. Exit to Main Menu\n";
-	std::cout << "1. Construct Building\n";
-	std::cout << "2. Discard to obtain coins\n";
-	std::cout << "3. Construct Wonder\n";
-	std::cout << "4. Save Game\n";
+	std::println("0. Exit to Main Menu");
+	std::println("1. Construct Building");
+	std::println("2. Discard to obtain coins");
+	std::println("3. Construct Wonder");
+	std::println("4. Save Game");
 
 	return Utils::getIntInput("Select an option: ");
 }
 
 void ConsoleUI::showVictoryScreen(const std::string& winnerName)
 {
-	system("cls");
-	std::cout << "\n=======================================\n";
-	std::cout << "           GAME OVER\n";
-	std::cout << "=======================================\n";
-	std::cout << ">>> The winner is: " << winnerName << " <<<\n";
-	std::cout << "Congratulations!\n";
-	std::cout << "=======================================\n";
+	Utils::clearScreen();
+	std::println("\n=======================================");
+	std::println("           GAME OVER");
+	std::println("=======================================");
+	std::println(">>> The winner is: {} <<<", winnerName);
+	std::println("Congratulations!");
+	std::println("=======================================");
 }
 
 
@@ -400,7 +397,7 @@ void ConsoleUI::displayCityDetails() {
 	}
 
 	std::cout << "\n================================================================\n";
-	Utils::getStringInput("Press Enter to return to map...");
+	Utils::waitForEnter("Press Enter to return to map...");
 }
 
 int ConsoleUI::showHighLevelMenu() {
@@ -466,25 +463,29 @@ void ConsoleUI::run()
 		bool gameIsRunning = false;
 
 		if (startOption == 1) {
+			std::cout << "(Player names must be 3-15 characters, alphanumeric only)\n";
 
-			std::string player1 = Utils::getStringInput("Player 1 name: ");
-			std::string player2 = Utils::getStringInput("Player 2 name: ");
+			std::string regexName = "^[a-zA-Z0-9 ]{3,15}$";
+			std::string errorMsg = "Name must be 3-15 characters, alphanumeric only.";
 
-			if (player1.empty()) player1 = "Player 1";
-			if (player2.empty()) player2 = "Player 2";
+			std::string player1 = Utils::getStringInput("Player 1 name: ", regexName, errorMsg);
+			std::string player2 = Utils::getStringInput("Player 2 name: ", regexName, errorMsg);
 
 			m_game.startNewGame(player1, player2);
 			gameIsRunning = true;
 
 		}
 		else if (startOption == 2) {
-			std::cout << "Save filename: (ex: savegame.json): ";
-			std::string filename;
-			std::getline(std::cin, filename);
+			std::string regexFile = "^.+\\.json$";
+			std::string errorFile = "Filename must end with .json";
+
+			std::string filename = Utils::getStringInput("Save filename (e.g. save.json): "
+				, regexFile, errorFile);
 			try {
 				m_game.loadGame(filename);
 				std::cout << ">>> Game successfully loaded! <<<\n";
 				gameIsRunning = true;
+				Utils::waitForEnter();
 			}
 			catch (...) {
 				std::cout << ">>> ERROR: Game couldn't be loaded.\n";
@@ -500,32 +501,34 @@ void ConsoleUI::run()
 			int choice = showHighLevelMenu();
 
 			switch (choice) {
-			case 1:
-				handlePlayCard();
-				break;
+				case 1:
+					handlePlayCard();
+					break;
 
-			case 2:
-				displayCityDetails();
-				break;
+				case 2:
+					displayCityDetails();
+					break;
 
-			case 3:
-				std::cout << "Do you want to save before exiting? (1=Yes, 0=No): ";
-				int save = Utils::getIntInput("");
-				if (save == 1) {
-					std::cout << "Save file name: ";
-					std::string saveFile;
-					std::getline(std::cin, saveFile);
-					m_game.saveGame(saveFile);
-					std::cout << ">>> Game Saved! <<<\n";
-				}
-				gameIsRunning = false;
-				break;
+				case 3:
+					std::string regexFile = "^.+\\.json$";
+					std::string errorFile = "Filename must end with .json";
+
+					std::cout << "Do you want to save before exiting? (1=Yes, 0=No): ";
+					int save = Utils::getIntInput("");
+
+					if (save == 1) {
+						std::string saveFile = Utils::getStringInput("Save file name: ", regexFile, errorFile);
+						m_game.saveGame(saveFile);
+						std::cout << ">>> Game Saved! <<<\n";
+					}
+					gameIsRunning = false;
+					break;
 			}
 		}
 
 
 		if (m_game.isGameOver()) {
-			// Logica ta de victorie (neschimbată)
+			// logica victorie
 			const auto& state = m_game.getGameState();
 			if (state.getWinnerIndex().has_value()) {
 				int winnerIndex = state.getWinnerIndex().value();
@@ -543,12 +546,12 @@ void ConsoleUI::run()
 
 
 void ConsoleUI::onMessage(const std::string& message) {
-	std::cout << "[INFO] " << message << "\n";
+	std::println("[INFO] {}", message);
 }
 
 void ConsoleUI::onError(const std::string& error) {
 	std::cerr << "[ERROR] " << error << "\n";
-	Utils::getStringInput("Press Enter to continue...");
+	Utils::waitForEnter("Press Enter to continue...");
 }
 
 void ConsoleUI::onStateUpdated() {

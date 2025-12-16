@@ -16,7 +16,7 @@ private:
 
 	void displayMilitaryTrack() const;
 
-	void displayAccesibleCards() const;
+	void displayAccessibleCards() const;
 
 	int showMainMenu();
 	int showActionMenu();

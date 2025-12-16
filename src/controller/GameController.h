@@ -4,6 +4,7 @@
 #include "GameState.h"
 #include "Player.h"
 #include "CardFactory.h"
+#include "IGameView.h"
 #include "WonderFactory.h"
 #include "Utils.h"
 #include "ProgressTokenFactory.h"
@@ -13,13 +14,13 @@ class GameController
 {
 private:
 	std::unique_ptr<GameState> m_gameState;
+	std::reference_wrapper<IGameView> m_view;
 
 	void prepareAge(int age);
 	void checkEndAge();
 
 	void draftWondersAuto();
 	void selectWondersManual();
-	void displayWondersForSelection(const std::vector<std::unique_ptr<Wonder>>& wonders) const;
 
 	void prepareProgressTokens();
 
@@ -34,7 +35,7 @@ private:
 	bool handleConstructWonders(int cardIndex, int wonderIndex, bool & outPlayAgain);
 
 public:
-	GameController() = default;
+	explicit GameController(IGameView& view);
 
 	void startNewGame(const std::string& player1, const std::string& player2);
 	

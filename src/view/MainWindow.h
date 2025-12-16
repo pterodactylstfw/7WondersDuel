@@ -1,18 +1,28 @@
 ﻿#pragma once
 #include <QMainWindow>
 #include "GameController.h"
+#include "IGameView.h"
 
 namespace Ui {
     class MainWindow;
 }
 
-class MainWindow : public QMainWindow
+class MainWindow : public QMainWindow, public IGameView
 {
     Q_OBJECT
 
 public:
     MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
+
+    void onMessage(const std::string& message) override;
+    void onError(const std::string& error) override;
+    void onStateUpdated() override;
+    int askInt(int min, int max, const std::string& prompt) override;
+    ResourceType askResourceSelection(const std::vector<ResourceType>& options, const std::string& prompt) override;
+    int askWonderSelection(const std::vector<std::unique_ptr<Wonder>>& wonders, const std::string& playerName) override;
+    int askTokenSelection(const std::vector<std::unique_ptr<ProgressToken>>& tokens, const std::string& prompt) override;
+    int askCardSelectionFromList(const std::vector<std::reference_wrapper<const Card>>& cards, const std::string& prompt) override;
 
 private slots:
     void onBtnStartClicked();

@@ -515,3 +515,57 @@ void ConsoleUI::run()
 		}
 	}
 }
+
+ConsoleUI::ConsoleUI() : m_game(*this) {}
+
+void ConsoleUI::onMessage(const std::string& message) {
+    std::cout << message << "\n";
+}
+
+void ConsoleUI::onError(const std::string& error) {
+    std::cerr << "[!] " << error << "\n";
+}
+
+void ConsoleUI::onStateUpdated() {
+    // aici poate fi gol sau un simplu mesaj
+}
+
+int ConsoleUI::askInt(int min, int max, const std::string& prompt) {
+    return Utils::getIntRange(min, max, prompt);
+}
+
+ResourceType ConsoleUI::askResourceSelection(const std::vector<ResourceType>& options, const std::string& prompt) {
+    std::cout << prompt << "\n";
+    for (size_t i = 0; i < options.size(); ++i) {
+        std::cout << i + 1 << ". " << resourceToString(options[i]) << "\n";
+    }
+    int choice = Utils::getIntRange(1, static_cast<int>(options.size()), "Choose resource: ");
+    return options[choice - 1];
+}
+
+int ConsoleUI::askWonderSelection(const std::vector<std::unique_ptr<Wonder>>& wonders, const std::string& playerName) {
+    std::cout << "\n" << playerName << ", select a Wonder:\n";
+    for (size_t i = 0; i < wonders.size(); ++i) {
+        std::cout << i + 1 << ". " << wonders[i]->getName() << "\n";
+    }
+    int choice = Utils::getIntRange(1, static_cast<int>(wonders.size()), "Select Wonder: ");
+    return choice - 1; // 0-based index
+}
+
+int ConsoleUI::askTokenSelection(const std::vector<std::unique_ptr<ProgressToken>>& tokens, const std::string& prompt) {
+    std::cout << "\n" << prompt << "\n";
+    for (size_t i = 0; i < tokens.size(); ++i) {
+        std::cout << i + 1 << ". " << tokens[i]->getName() << "\n";
+    }
+    int choice = Utils::getIntRange(1, static_cast<int>(tokens.size()), "Select Token: ");
+    return choice - 1;
+}
+
+int ConsoleUI::askCardSelectionFromList(const std::vector<std::reference_wrapper<const Card>>& cards, const std::string& prompt) {
+    std::cout << "\n" << prompt << "\n";
+    for (size_t i = 0; i < cards.size(); ++i) {
+        std::cout << i + 1 << ". " << cards[i].get().getName() << "\n";
+    }
+    int choice = Utils::getIntRange(1, static_cast<int>(cards.size()), "Select Card: ");
+    return choice - 1;
+}

@@ -10,6 +10,7 @@
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , m_game(*this)
 {
     ui->setupUi(this); 
 
@@ -28,6 +29,41 @@ MainWindow::MainWindow(QWidget* parent)
 
     this->setWindowTitle("7 Wonders Duel");
 }
+
+void MainWindow::onMessage(const std::string& message) {
+    // Implementare temporara
+    qDebug() << "Message:" << QString::fromStdString(message);
+}
+
+void MainWindow::onError(const std::string& error) {
+    qDebug() << "Error:" << QString::fromStdString(error);
+}
+
+void MainWindow::onStateUpdated() {
+    updateGameUI();
+}
+
+int MainWindow::askInt(int min, int max, const std::string& prompt) {
+    return min; // Default
+}
+
+ResourceType MainWindow::askResourceSelection(const std::vector<ResourceType>& options, const std::string& prompt) {
+    if(options.empty()) return ResourceType::NONE;
+    return options[0]; // Default
+}
+
+int MainWindow::askWonderSelection(const std::vector<std::unique_ptr<Wonder>>& wonders, const std::string& playerName) {
+    return 0; // Default
+}
+
+int MainWindow::askTokenSelection(const std::vector<std::unique_ptr<ProgressToken>>& tokens, const std::string& prompt) {
+    return 0; // Default
+}
+
+int MainWindow::askCardSelectionFromList(const std::vector<std::reference_wrapper<const Card>>& cards, const std::string& prompt) {
+    return 0; // Default
+}
+
 
 void MainWindow::onBtnStartClicked()
 {

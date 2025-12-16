@@ -71,6 +71,7 @@ set(SRC_UTILS
 set(SRC_VIEW_GUI
         src/view/MainWindow.cpp src/view/MainWindow.h
         src/view/MainWindow.ui
+        src/view/IGameView.h
 )
 
 # reuniune surse comune

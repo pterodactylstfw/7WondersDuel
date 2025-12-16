@@ -1,5 +1,8 @@
 ﻿#include "GameController.h"
 
+
+GameController::GameController(IGameView &view): m_view(view) {}
+
 const GameState& GameController::getGameState() const {
 	return *m_gameState;
 }
@@ -13,6 +16,8 @@ void GameController::startNewGame(const std::string& p1, const std::string& p2) 
 	draftWondersAuto(); // am pus asa momentan pentru interfata grafica
 	prepareProgressTokens();
 	prepareAge(1);
+
+	m_view.get().onStateUpdated(); // notifica ui ca s-a inceput un joc nou
 }
 
 void GameController::draftWondersAuto() {
@@ -57,26 +62,30 @@ void GameController::selectWondersManual()
 			allWonders.pop_back();
 		}
 	}
-	displayWondersForSelection(first4Wonders);
+	//displayWondersForSelection(first4Wonders);
 
 	Player& player1 = m_gameState->getCurrentPlayer();
 	int player1Wonders = 0;
 	Player& player2 = m_gameState->getOpponent();
 	int player2Wonders = 0;
 
-	int choice = Utils::getIntRange(1, static_cast<int>(first4Wonders.size()), player1.getName() + ", select a Wonder: ");
-	player1.addWonder(std::move(first4Wonders[choice - 1]), player1Wonders++);
-	first4Wonders.erase(first4Wonders.begin() + (choice - 1));
+	// int choice = Utils::getIntRange(1, static_cast<int>(first4Wonders.size()), player1.getName() + ", select a Wonder: ");
+	// player1.addWonder(std::move(first4Wonders[choice - 1]), player1Wonders++);
+	// first4Wonders.erase(first4Wonders.begin() + (choice - 1));
+
+	int choice = m_view.get().askWonderSelection(first4Wonders, player1.getName());
+	player1.addWonder(std::move(first4Wonders[choice]), player1Wonders++);
+	first4Wonders.erase(first4Wonders.begin() + choice);
+
 
 	for (int i = 0; i < 2; i++)
 	{
-		displayWondersForSelection(first4Wonders);
-		choice = Utils::getIntRange(1, static_cast<int>(first4Wonders.size()), player2.getName() + ", select a Wonder: ");
-		player2.addWonder(std::move(first4Wonders[choice - 1]), player2Wonders++);
-		first4Wonders.erase(first4Wonders.begin() + (choice - 1));
+		choice = m_view.get().askWonderSelection(first4Wonders, player2.getName());
+		player2.addWonder(std::move(first4Wonders[choice]), player2Wonders++);
+		first4Wonders.erase(first4Wonders.begin() + choice);
 	}
 
-	std::cout << player1.getName() << ", you get the last wonder";
+	m_view.get().onMessage(player1.getName() + " gets the last wonder: " + first4Wonders[0]->getName());
 	player1.addWonder(std::move(first4Wonders[0]), player1Wonders++);
 	first4Wonders.erase(first4Wonders.begin());
 
@@ -86,35 +95,26 @@ void GameController::selectWondersManual()
 			allWonders.pop_back();
 		}
 	}
-	displayWondersForSelection(first4Wonders);
+	//displayWondersForSelection(first4Wonders);
 
-	choice = Utils::getIntRange(1, static_cast<int>(first4Wonders.size()), player2.getName() + ", select a Wonder: ");
-	player2.addWonder(std::move(first4Wonders[choice - 1]), player2Wonders++);
-	first4Wonders.erase(first4Wonders.begin() + (choice - 1));
+	choice = m_view.get().askWonderSelection(first4Wonders, player2.getName());
+	player1.addWonder(std::move(first4Wonders[choice]), player2Wonders++);
+	first4Wonders.erase(first4Wonders.begin() + choice);
 
 	for (int i = 0; i < 2; i++)
 	{
-		displayWondersForSelection(first4Wonders);
-		choice = Utils::getIntRange(1, static_cast<int>(first4Wonders.size()), player1.getName() + ", select a Wonder: ");
-		player1.addWonder(std::move(first4Wonders[choice - 1]), player1Wonders++);
-		first4Wonders.erase(first4Wonders.begin() + (choice - 1));
+		choice = m_view.get().askWonderSelection(first4Wonders, player1.getName());
+		player2.addWonder(std::move(first4Wonders[choice]), player1Wonders++);
+		first4Wonders.erase(first4Wonders.begin() + choice);
 	}
 
-	std::cout << player2.getName() << ", you get the last wonder";
-	player2.addWonder(std::move(first4Wonders[0]), player2Wonders++);
+
+	m_view.get().onMessage(player2.getName() + " gets the last wonder: " + first4Wonders[0]->getName());
+	player1.addWonder(std::move(first4Wonders[0]), player2Wonders++);
 	first4Wonders.erase(first4Wonders.begin());
 
 }
 
-void GameController::displayWondersForSelection(const std::vector<std::unique_ptr<Wonder>>& wonders) const
-{
-	std::cout << "\n--- AVAILABLE WONDERS ---\n";
-	for (size_t i = 0; i < wonders.size(); ++i)
-	{
-		std::cout << "[" << i + 1 << "] " << wonders[i]->toString() << "\n";
-	}
-	std::cout << "-------------------------\n";
-}
 
 void GameController::checkMilitaryLooting(int previousShields, int currentShields)
 {
@@ -126,13 +126,13 @@ void GameController::checkMilitaryLooting(int previousShields, int currentShield
 	if (previousShields < ZONE_1 && currentShields >= ZONE_1) {
 		if (m_gameState->removeMilitaryToken(0)) {
 			opponent.removeCoins(2);
-			std::cout << "--- MILITARY ATTACK! Opponent lost 2 coins (Zone 1) ---\n";
+			m_view.get().onMessage("--- MILITARY ATTACK! Opponent lost 2 coins (Zone 1) ---");
 		}
 	}
 	if (previousShields < ZONE_2 && currentShields >= ZONE_2) {
 		if (m_gameState->removeMilitaryToken(1)) {
 			opponent.removeCoins(5);
-			std::cout << "--- MILITARY ATTACK! Opponent lost 5 coins (Zone 2) ---\n";
+			m_view.get().onMessage("--- MILITARY ATTACK! Opponent lost 5 coins (Zone 2) ---");
 		}
 	}
 }
@@ -148,13 +148,13 @@ void GameController::checkInstantVictory()
 		if (diff > 0) m_gameState->setWinner(m_gameState->getCurrentPlayerIndex());
 		else m_gameState->setWinner(1 - m_gameState->getCurrentPlayerIndex());
 
-		std::cout << "\n--- MILITARY VICTORY ---\n";
+		m_view.get().onMessage("\n--- MILITARY VICTORY ---\n");
 		return;
 	}
 	if (current.hasScientificVictory()) {
 		m_gameState->setGameOver(true);
 		m_gameState->setWinner(m_gameState->getCurrentPlayerIndex());
-		std::cout << "\n--- SCIENTIFIC VICTORY ---\n";
+		m_view.get().onMessage("\n--- SCIENTIFIC VICTORY ---\n");
 		return;
 	}
 }
@@ -209,21 +209,22 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 	{
 		auto& discardedTokens = m_gameState->getDiscardedTokens();
 
-		std::random_device rd;
-		std::mt19937 g(rd());
-		std::shuffle(discardedTokens.begin(), discardedTokens.end(), g);
+		// Nu mai facem shuffle aici neapărat, UI-ul decide cum le arată,
+		// dar putem lăsa shuffle-ul dacă e regulă de joc.
 
-		for (int i = 0; i < 3; i++)
-			std::cout << '[' << i + 1 << '] ' << discardedTokens[i]->toString();
+		// Cerem UI-ului să aleagă un token din listă
+		// ATENȚIE: Trebuie să ai askTokenSelection implementat în IGameView
+		int chosenIndex = m_view.get().askTokenSelection(
+			discardedTokens,
+			"Select a Progress Token to claim:"
+		);
 
-		int choice = Utils::getIntRange(1, 3, "Select a Progress Token to claim: ");
-		size_t chosenIndex = choice - 1;
-
-		player.addProgressToken(std::move(discardedTokens[chosenIndex]));
-		discardedTokens.erase(discardedTokens.begin() + chosenIndex);
-
-		// playerul trebuie sa aleaga din cele din decartate (care au ramas de la inceput in "cutie") una din 3
-		// aici mai trebuie aplicat efectul tokenului respectiv - eventual o alta functie care face asta
+		// Validare index (UI-ul ar trebui să returneze ceva valid, dar verificăm)
+		if (chosenIndex >= 0 && chosenIndex < discardedTokens.size()) {
+			player.addProgressToken(std::move(discardedTokens[chosenIndex]));
+			discardedTokens.erase(discardedTokens.begin() + chosenIndex);
+			applyProgressTokenEffect(player, opponent, *player.getProgressTokens().back());
+		}
 	}
 
 	if (effect.getOpponentLosesCoins().has_value())
@@ -235,38 +236,48 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 	{
 		auto cardsOfColor = opponent.getCardsOfType(effect.getOpponentLosesCard().value());
 		if (cardsOfColor.empty()) {
-			std::cout << "The opponent doesn't have a card of this color.\n";
+			m_view.get().onMessage("The opponent doesn't have a card of this color.");
 		}
 		else {
-			for (int i = 0; i < cardsOfColor.size(); i++)
-				std::cout << '[' << i + 1 << '] ' << cardsOfColor[i].get().displayCardInfo();
+			// Convertim vectorul pentru a fi compatibil cu interfața (reference_wrapper)
+			// cardsOfColor este deja vector<reference_wrapper>, deci e perfect!
 
-			int choice = Utils::getIntRange(1, static_cast<int>(cardsOfColor.size()), "Select a card to remove from opponent: ");
-			size_t chosenIndex = choice - 1;
+			int chosenIndex = m_view.get().askCardSelectionFromList(
+				cardsOfColor,
+				"Select a card to remove from opponent:"
+			);
 
-			auto removedCard = opponent.removeCard(cardsOfColor[chosenIndex].get());
-			if (removedCard != nullptr)
-				m_gameState->addToDiscardCards(std::move(removedCard));
+			if (chosenIndex >= 0 && chosenIndex < cardsOfColor.size()) {
+				auto removedCard = opponent.removeCard(cardsOfColor[chosenIndex].get());
+				if (removedCard != nullptr)
+					m_gameState->addToDiscardCards(std::move(removedCard));
+			}
 		}
 	}
 
-	if (effect.getGrantsDiscardedCard()) 
+	if (effect.getGrantsDiscardedCard())
 	{
 		auto& discardedCards = m_gameState->getDiscardedCards();
 		if (discardedCards.empty()) {
-			std::cout << "The discarded pile is empty.\n";
+			m_view.get().onMessage("The discarded pile is empty.");
 		}
 		else {
-			for (int i = 0; i < discardedCards.size(); i++)
-				std::cout << '[' << i + 1 << '] ' << discardedCards[i]->displayCardInfo();
+			// Trebuie să construim un vector de referințe pentru UI
+			std::vector<std::reference_wrapper<const Card>> cardOptions;
+			for(const auto& cPtr : discardedCards) {
+				cardOptions.push_back(std::cref(*cPtr));
+			}
 
-			int choice = Utils::getIntRange(1, static_cast<int>(discardedCards.size()), "Select a card to retrieve from the discarded pile: ");
-			size_t chosenIndex = choice - 1;
+			int chosenIndex = m_view.get().askCardSelectionFromList(
+				cardOptions,
+				"Select a card to retrieve from the discarded pile and play for FREE:"
+			);
 
-			auto cardFromDiscard = m_gameState->extractDiscardedCard(chosenIndex);
-
-			if (cardFromDiscard) 
-				grantCardToPlayer(player, std::move(cardFromDiscard));
+			if (chosenIndex >= 0 && chosenIndex < discardedCards.size()) {
+				auto cardFromDiscard = m_gameState->extractDiscardedCard(chosenIndex);
+				if (cardFromDiscard)
+					grantCardToPlayer(player, std::move(cardFromDiscard));
+			}
 		}
 	}
 
@@ -287,14 +298,14 @@ void GameController::grantCardToPlayer(Player& player, std::unique_ptr<Card> car
 	if (cardColor == CardColor::RED) {
 		if (player.hasProgressToken(ProgressTokenType::STRATEGY)) {
 			player.addMilitaryShields(1);
-			std::cout << "Strategy Token active: +1 Extra Shield!\n";
+			m_view.get().onMessage("Strategy Token active: +1 Extra Shield!");
 		}
 	}
 	if (scienceSymbol.has_value()) {
 		ScientificSymbol sym =effect.getScienceSymbol().value();
 		if (player.addScientificSymbol(sym)) {
 			m_gameState->setPendingScientificReward(true);
-			std::cout << "--- SCIENCE PAIR! You earned a Progress Token! ---\n";
+			m_view.get().onMessage("--- SCIENCE PAIR! You earned a Progress Token! ---");
 		}
 	}
 
@@ -326,40 +337,19 @@ bool GameController::handleConstructBuilding(int cardIndex)
 
 		while (discount > 0)
 		{
-			std::cout << "Choose a resource to reduce:\n";
-
 			std::vector <ResourceType> options;
-			int index = 1;
+			for (const auto& it: resourceCosts)
+				if (it.second > 0) options.push_back(it.first);
 
-			for (const auto& it : resourceCosts)
-			{
-				ResourceType resType = it.first;
-				int qty = it.second;
+			if (options.empty()) break;
+			ResourceType chosen = m_view.get().askResourceSelection(
+	options,
+	"Masonry Effect: Choose a resource to reduce cost (-1):"
+);
 
-				if (qty > 0)
-				{
-					std::cout << index << ". " << resourceToString(resType) << "(" << qty << ")\n";
-					options.push_back(resType);
-					index++;
-				}
-			}
-
-			if (options.empty())
-				break;
-
-			int choice;
-			std::cout << "Enter your choice: ";
-			std::cin >> choice;
-			if (choice < 1 || choice > static_cast<int>(options.size()))
-			{
-				std::cout << "Invalid choice. Try again.\n";
-				continue;
-			}
-
-			ResourceType chosen = options[choice - 1];
 			resourceCosts[chosen]--;
 
-			if (resourceCosts[chosen] == 0)
+			if (resourceCosts[chosen] <= 0)
 				resourceCosts.erase(chosen);
 
 			discount--;
@@ -419,7 +409,7 @@ bool GameController::handleDiscardCard(int cardIndex)
 	m_gameState->addToDiscardCards(std::move(discardedCard));
 
 	currentPlayer.addCoins(coinsGained);
-	std::cout << "Discarded card for " << coinsGained << " coins.\n";
+	m_view.get().onMessage("Discarded card for " + std::to_string(coinsGained) + " coins.");
 
 	return true;
 }
@@ -447,50 +437,30 @@ bool GameController::handleConstructWonders(int cardIndex, int wonderIndex, bool
 	if (currentPlayer.hasProgressToken(ProgressTokenType::ARCHITECTURE))
 	{
 		int discount = 2;
-
 		auto resourceCosts = baseCost.getResourceCosts();
 
 		while (discount > 0)
 		{
-			std::cout << "Choose a resource to reduce:\n";
-
+			// 1. Construim opțiunile
 			std::vector <ResourceType> options;
-			int index = 1;
-
 			for (const auto& it : resourceCosts)
-			{
-				ResourceType resType = it.first;
-				int qty = it.second;
+				if (it.second > 0) options.push_back(it.first);
 
-				if (qty > 0)
-				{
-					std::cout << index << ". " << resourceToString(resType) << "(" << qty << ")\n";
-					options.push_back(resType);
-					index++;
-				}
-			}
+			if(options.empty()) break;
 
-			if(options.empty())
-				break;
+			// 2. Cerem UI-ului fara input output
+			ResourceType chosen = m_view.get().askResourceSelection(
+				options,
+				"Architecture Effect: Choose a resource to reduce cost (-1):"
+			);
 
-			int choice;
-			std::cout << "Enter your choice: ";
-			std::cin >> choice;
-			if (choice < 1 || choice > static_cast<int>(options.size()))
-			{
-				std::cout << "Invalid choice. Try again.\n";
-				continue;
-			}
-
-			ResourceType chosen = options[choice - 1];
+			// 3. Aplicam reducerea
 			resourceCosts[chosen]--;
-			
-			if (resourceCosts[chosen] == 0)
+			if (resourceCosts[chosen] <= 0)
 				resourceCosts.erase(chosen);
 
 			discount--;
 		}
-
 		finalCost = Cost(baseCost.getCoinCost(), resourceCosts);
 	}
 	else
@@ -511,7 +481,8 @@ bool GameController::handleConstructWonders(int cardIndex, int wonderIndex, bool
 	}
 
 	std::unique_ptr<Card> sacrificedCard = m_gameState->takeCard(cardIndex);
-	m_gameState->addToDiscardCards(std::move(sacrificedCard)); // cartea nu ar trebui adaugata la decartate 
+	// nu mai adaug la decartate
+	//m_gameState->addToDiscardCards(std::move(sacrificedCard)); // cartea nu ar trebui adaugata la decartate
 
 	currentPlayer.getConstructedWonders().push_back(std::move(targetWonderPtr));
 	// de mutat minunea in minuni realizate(daca facem) sau marcata ca realizata
@@ -588,7 +559,7 @@ void GameController::prepareProgressTokens()
 
 bool GameController::executeAction(int cardIndex, PlayerAction action, int wonderIndex) {
 	if (!m_gameState->isCardAccessible(cardIndex)) {
-		std::cout << "[!] Card is blocked or invalid.\n";
+		m_view.get().onError("[!] Card is blocked or invalid.");
 		return false; // carte blocata/inexistenta
 	}
 
@@ -617,7 +588,10 @@ bool GameController::executeAction(int cardIndex, PlayerAction action, int wonde
 
 	if (success) {
 		checkInstantVictory();
-		if (m_gameState->isGameOver()) return true;
+		if (m_gameState->isGameOver()) {
+			m_view.get().onStateUpdated();
+			return true;
+		}
 
 		m_gameState->removeCardFromPyramid(cardIndex);
 
@@ -634,6 +608,7 @@ bool GameController::executeAction(int cardIndex, PlayerAction action, int wonde
 				m_gameState->switchPlayer();
 			}
 		}
+		m_view.get().onStateUpdated();
 		return true;
 	}
 

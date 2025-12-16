@@ -209,17 +209,12 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 	{
 		auto& discardedTokens = m_gameState->getDiscardedTokens();
 
-		// Nu mai facem shuffle aici neapărat, UI-ul decide cum le arată,
-		// dar putem lăsa shuffle-ul dacă e regulă de joc.
 
-		// Cerem UI-ului să aleagă un token din listă
-		// ATENȚIE: Trebuie să ai askTokenSelection implementat în IGameView
 		int chosenIndex = m_view.get().askTokenSelection(
 			discardedTokens,
 			"Select a Progress Token to claim:"
 		);
 
-		// Validare index (UI-ul ar trebui să returneze ceva valid, dar verificăm)
 		if (chosenIndex >= 0 && chosenIndex < discardedTokens.size()) {
 			player.addProgressToken(std::move(discardedTokens[chosenIndex]));
 			discardedTokens.erase(discardedTokens.begin() + chosenIndex);
@@ -239,8 +234,6 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 			m_view.get().onMessage("The opponent doesn't have a card of this color.");
 		}
 		else {
-			// Convertim vectorul pentru a fi compatibil cu interfața (reference_wrapper)
-			// cardsOfColor este deja vector<reference_wrapper>, deci e perfect!
 
 			int chosenIndex = m_view.get().askCardSelectionFromList(
 				cardsOfColor,

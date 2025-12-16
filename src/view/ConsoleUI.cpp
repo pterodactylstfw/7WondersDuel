@@ -3,7 +3,7 @@
 
 void ConsoleUI::displayHeader() const
 {
-	system("cls");
+	Utils::clearScreen();
 	std::cout << "\n=======================================\n";
 	std::cout << "       7 WONDERS DUEL - CONSOLE\n";
 	std::cout << "=======================================\n";
@@ -15,9 +15,11 @@ void ConsoleUI::displayGameState() const
 	const auto& currentPlayer = state.getCurrentPlayer();
 	const auto& opponent = state.getOpponent();
 
+	displayHeader();
+
 	std::cout << "\n\n";
 	std::cout << "---------------- [ AGE " << (int)state.getCurrentAge() << " ] ----------------\n";
-	
+
 	// Adversarul
 	std::cout << ">>> OPPONENT: "<<opponent.getName()<<"\n";
 	displayPlayer(opponent);
@@ -47,7 +49,7 @@ void ConsoleUI::displayPlayer(const Player& player) const
 	if (resources.empty()) std::cout << "None";
 	for (const auto& [type, qty] : resources)
 		std::cout << resourceToString(type) << ":" << qty << "  ";
-	
+
 	std::cout << "\n   Wonders:\n";
 
 	// minuni neconstruite
@@ -77,7 +79,7 @@ void ConsoleUI::displayPyramid() const
 	const auto& state = m_game.getGameState();
 	const auto& pyramidNodes = state.getPyramid();
 
-	std::cout << "\n   [ID]  CARD NAME         CARD COLOR            COST                 EFFECT\n";
+	std::cout << "\n   [ID]  CARD NAME           COST                 EFFECT\n";
 	std::cout << "   ----------------------------------------------------------------------------\n";
 
 	bool foundAny = false;
@@ -98,9 +100,21 @@ void ConsoleUI::displayPyramid() const
 		auto cardView = state.getCardView(node.m_index);
 		if (cardView.has_value()) {
 			const Card& card = cardView.value().get();
+
+			std::string colorCode = Colors::RESET;
+			switch(card.getColor()) {
+				case CardColor::RED: colorCode = Colors::RED; break;
+				case CardColor::GREEN: colorCode = Colors::GREEN; break;
+				case CardColor::BLUE: colorCode = Colors::BLUE; break;
+				case CardColor::YELLOW: colorCode = Colors::YELLOW; break;
+				case CardColor::BROWN: colorCode = Colors::BROWN; break;
+				case CardColor::GREY: colorCode = Colors::GREY; break;
+				case CardColor::PURPLE: colorCode = Colors::MAGENTA; break;
+				default: break;
+			}
+
 			std::cout << "   [" << std::right << std::setw(2) << node.m_index + 1 << "]  "
-				<< std::left << std::setw(20) << card.getName()
-				<< std::left << std::setw(20) << colorToString(card.getColor()) // de refacut cu cardCategory
+				<< colorCode << std::left << std::setw(20) << card.getName()<< Colors::RESET
 				<< std::left << std::setw(20) << card.getCost().toShortString()
 				<< card.getEffect().getDescription()
 				<< "\n";
@@ -332,7 +346,7 @@ void ConsoleUI::displayCityDetails() {
 
 	// sumar resurse
 	std::cout << ">>> RESOURCES:\n";
-	
+
 	std::string_view resDesc = player.getResourceDescription();
 	if (resDesc.empty()) {
 		std::cout << "None";
@@ -436,6 +450,8 @@ bool ConsoleUI::confirmPurchaseInteraction(int totalCost, int tradeCost) {
 	return (choice == 1);
 }
 
+ConsoleUI::ConsoleUI() : m_game(*this) {}
+
 void ConsoleUI::run()
 {
 	while (true)
@@ -447,17 +463,19 @@ void ConsoleUI::run()
 			return;
 		}
 
-		if (startOption == 1) {
-			std::cout << "Enter player 1 name: ";
-			std::string player1;
-			std::getline(std::cin, player1);
-			if (player1.empty()) std::getline(std::cin, player1);
+		bool gameIsRunning = false;
 
-			std::cout << "Enter player 2 name: ";
-			std::string player2;
-			std::getline(std::cin, player2);
+		if (startOption == 1) {
+
+			std::string player1 = Utils::getStringInput("Player 1 name: ");
+			std::string player2 = Utils::getStringInput("Player 2 name: ");
+
+			if (player1.empty()) player1 = "Player 1";
+			if (player2.empty()) player2 = "Player 2";
 
 			m_game.startNewGame(player1, player2);
+			gameIsRunning = true;
+
 		}
 		else if (startOption == 2) {
 			std::cout << "Save filename: (ex: savegame.json): ";
@@ -466,6 +484,7 @@ void ConsoleUI::run()
 			try {
 				m_game.loadGame(filename);
 				std::cout << ">>> Game successfully loaded! <<<\n";
+				gameIsRunning = true;
 			}
 			catch (...) {
 				std::cout << ">>> ERROR: Game couldn't be loaded.\n";
@@ -473,7 +492,6 @@ void ConsoleUI::run()
 			}
 		}
 
-		bool gameIsRunning = true;
 
 		while (gameIsRunning && !m_game.isGameOver())
 		{
@@ -509,25 +527,33 @@ void ConsoleUI::run()
 		if (m_game.isGameOver()) {
 			// Logica ta de victorie (neschimbată)
 			const auto& state = m_game.getGameState();
-			const auto& player1 = state.getCurrentPlayer(); // Atenție la logica de winner
-			// ... (restul codului tău pentru winner) ...
-			// showVictoryScreen(winnerName);
+			if (state.getWinnerIndex().has_value()) {
+				int winnerIndex = state.getWinnerIndex().value();
+				std::string winnerName = (winnerIndex == 0) ?
+				state.getCurrentPlayer().getName() : state.getOpponent().getName();
+				showVictoryScreen(winnerName);
+			}
+
+			else
+				showVictoryScreen("Unknown...");
 		}
+
 	}
 }
 
-ConsoleUI::ConsoleUI() : m_game(*this) {}
 
 void ConsoleUI::onMessage(const std::string& message) {
-    std::cout << message << "\n";
+	std::cout << "[INFO] " << message << "\n";
 }
 
 void ConsoleUI::onError(const std::string& error) {
-    std::cerr << "[!] " << error << "\n";
+	std::cerr << "[ERROR] " << error << "\n";
+	Utils::getStringInput("Press Enter to continue...");
 }
 
 void ConsoleUI::onStateUpdated() {
     // aici poate fi gol sau un simplu mesaj
+	// apelam displayGameState() in run loop explicit, previne afisare dubla
 }
 
 int ConsoleUI::askInt(int min, int max, const std::string& prompt) {

@@ -33,5 +33,10 @@ namespace Utils {
             std::cout << "[!] Numarul trebuie sa fie intre " << min << " si " << max << ".\n";
         }
     }
+
+    inline void clearScreen() {
+	    std::cout << "\033[2J\033[1;1H";// cod ansi care curata ecranul, un fel de system cls/clear
+	    //sterg daca nu este ok
+	}
 }
 

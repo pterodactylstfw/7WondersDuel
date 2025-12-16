@@ -21,6 +21,18 @@ namespace GameConstants {
     constexpr uint8_t MILITARY_ZONE_2 = 6;
 }
 
+namespace Colors {
+    const std::string RESET = "\033[0m";
+    const std::string RED = "\033[31m";     // Military
+    const std::string GREEN = "\033[32m";   // Science
+    const std::string YELLOW = "\033[33m";  // Commercial
+    const std::string BLUE = "\033[34m";    // Civilian
+    const std::string MAGENTA = "\033[35m"; // Guilds
+    const std::string CYAN = "\033[36m";    // Wonders
+    const std::string GREY = "\033[90m";    // Raw Materials
+    const std::string BROWN = "\033[38;5;94m"; // Manufactured
+}
+
 enum class CardColor {
     BROWN,   
     GREY,     

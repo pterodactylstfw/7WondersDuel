@@ -203,7 +203,7 @@ std::map<ResourceType, int> Player::getTotalResources() const
 	return m_resourceProduction.getTotalProduction();
 }
 
-std::string_view Player::getResourceDescription() const
+std::string Player::getResourceDescription() const
 {
 	return m_resourceProduction.getDescription();
 }

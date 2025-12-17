@@ -344,7 +344,7 @@ void ConsoleUI::displayCityDetails() {
 	// sumar resurse
 	std::cout << ">>> RESOURCES:\n";
 
-	std::string_view resDesc = player.getResourceDescription();
+	std::string resDesc = player.getResourceDescription();
 	if (resDesc.empty()) {
 		std::cout << "None";
 	}

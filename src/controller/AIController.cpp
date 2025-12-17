@@ -27,7 +27,7 @@ AIMove AIController::getRandomMove(const GameState& state)
 	const Card& card = cardView.value().get();
 	const Player& player = state.getCurrentPlayer();
 	const Player& opponent = state.getOpponent();
-	if (player.canBuildCard(card, opponent)) 
+	if (player.canBuildCard(card, opponent))
 		return { chosenIndex, PlayerAction::CONSTRUCT_BUILDING };
 
 	return { chosenIndex,PlayerAction::DISCARD_FOR_COINS };
@@ -109,22 +109,50 @@ AIMove AIController::getGreedyMove(const GameState& state)
 
 double AIController::evaluateCardValue(const Card& card, const Player& player, const Player& opponent, const GameState& state)
 {
-	// to do 
+	double score = 0.0;
+	const CardEffect& effect = card.getEffect();
 
-	//temporar pentru ca nu compila
-	return 0.0;
+	if (effect.getShields().has_value()) {
+		int shields = effect.getShields().value();
+		score += shields * 4.0;
+		int currentDiff = player.getMilitaryShields() - opponent.getMilitaryShields();
+
+		if (currentDiff + shields >= GameConstants::MILITARY_SUPREMACY_DISTANCE)
+			return 1000.0;
+
+		if (opponent.getMilitaryShields() - player.getMilitaryShields() > 6)
+			score += 10.0;
+	}
+
+	if (effect.getScienceSymbol().has_value())
+		score += 4.0;
+
+	if (effect.getVictoryPointsPerCard().has_value())
+		score += effect.getVictoryPointsPerCard().value() * 1.5;
+
+	if (!effect.getProduction().isEmpty()){
+		int age = state.getCurrentAge();
+		if (age == 1)
+			score += 4.5;
+		else if (age == 2)
+			score += 2.0;
+		else
+			score += 0.1;
+	}
+	if (effect.getBaseCoins().has_value())
+		score += effect.getBaseCoins().value() * 0.5;
+	
+	int tradeCost = player.calculateTradeCost(card.getCost(), opponent);
+	if (tradeCost > 0)
+		score -= (tradeCost * 0.6);
+
+	return score;
 }
-
 AIController::AIController(AIDifficulty difficulty): m_difficulty(difficulty){}
 
-AIMove AIController::decideMove(const GameState& state) {
-	if (m_difficulty == AIDifficulty::EASY) {
+AIMove AIController::decideMove(const GameState& state){
+	if (m_difficulty == AIDifficulty::EASY)
 		return getRandomMove(state);
-	}
-	/*
-	Implementing greedy AI next week
-	else {
+	else
 		return getGreedyMove(state);
-	}
-	*/
 }

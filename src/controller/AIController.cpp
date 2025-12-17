@@ -86,7 +86,24 @@ AIMove AIController::getGreedyMove(const GameState& state)
 				}
 			}
 		}
+		double discardScore = 1.0;
+		if (player.getCoins() < 4)
+			discardScore += 4.0;
+		double valueForOpponent = evaluateCardValue(card, opponent, player, state);
+		if (valueForOpponent > 8.0) {
+			discardScore += 3.0;
+		}
+		if (discardScore > maxScore) {
+			maxScore = discardScore;
+			bestCardIndex = i;
+			bestAction = PlayerAction::DISCARD_FOR_COINS;
+			bestWonderIndex = -1;
+			
+		}
 	}
+	if (bestCardIndex == -1)
+		return getRandomMove(state);
+
 	return { bestCardIndex, bestAction, bestWonderIndex };
 }
 

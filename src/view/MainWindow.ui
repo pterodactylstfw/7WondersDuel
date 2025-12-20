@@ -170,21 +170,13 @@ QLabel {
 #labelOpponentName {
 	color: red;
 	font-family: &quot;Trajan Pro&quot;, &quot;Palatino Linotype&quot;, serif;
+}
+
+QPushButton[class=&quot;CardButton&quot;] {
+    border: 1px solid black;
+    border-radius: 4px;
 }</string>
        </property>
-       <widget class="QLabel" name="label">
-        <property name="geometry">
-         <rect>
-          <x>230</x>
-          <y>240</y>
-          <width>341</width>
-          <height>71</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>GAME BOARD HERE</string>
-        </property>
-       </widget>
        <widget class="QPushButton" name="btnBack">
         <property name="geometry">
          <rect>

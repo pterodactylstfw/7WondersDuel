@@ -6,6 +6,7 @@
 #include <QString> 
 #include <QDebug>
 #include <QApplication>
+#include <qpainter.h>
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
@@ -27,6 +28,7 @@ MainWindow::MainWindow(QWidget* parent)
         ui->stackedWidget->setCurrentIndex(0); // Inapoi la meniu
         });
 
+    setupLayouts();
     this->setWindowTitle("7 Wonders Duel");
 }
 
@@ -130,6 +132,7 @@ void MainWindow::updateGameUI()
 	updatePlayerPanel(gameState.getOpponent(), true);
 
     updateMilitaryTrack();
+	updateCardStructures();
 }
 
 void MainWindow::updatePlayerPanel(const Player& player, bool isOpponent)
@@ -180,6 +183,117 @@ void MainWindow::updateMilitaryTrack()
     int leadY = startY + (trackHeight * percentage) - (ui->labelMilitaryLead->height() / 2);
 
     ui->labelMilitaryLead->move(leadX, leadY);
+}
+
+void MainWindow::setupLayouts()
+{
+    const int cardH = 120;
+    const int cardW = 80;
+
+    const int startX = 120;
+    const int startY = 60;
+
+    const int horizontalGap = 5;
+    const int overlapX = cardW + horizontalGap;
+    const int overlapY = cardH / 2;
+
+	// age 1 layout
+    for (int i = 0; i < 6; ++i) m_age1Layout[i] = { startX + i * overlapX, startY + 4 * overlapY };
+    for (int i = 0; i < 5; ++i) m_age1Layout[i + 6] = { startX + (cardW / 2) + i * overlapX, startY + 3 * overlapY };
+    for (int i = 0; i < 4; ++i) m_age1Layout[i + 11] = { startX + cardW + i * overlapX, startY + 2 * overlapY };
+    for (int i = 0; i < 3; ++i) m_age1Layout[i + 15] = { startX + (cardW * 3 / 2) + i * overlapX, startY + 1 * overlapY };
+    for (int i = 0; i < 2; ++i) m_age1Layout[i + 18] = { startX + 2 * cardW + i * overlapX, startY };
+
+	// age 2 layout
+
+	// age 3 layout
+}
+
+void MainWindow::updateCardStructures()
+{
+    for (QPushButton* button : m_cardButtons) {
+		delete button;
+    }
+	m_cardButtons.clear();
+
+    const auto& pyramid = m_game.getGameState().getPyramid();
+	const int currentAge = m_game.getGameState().getCurrentAge();
+
+    const std::array<CardPosition, 20>* currentLayout = nullptr;
+    if (currentAge == 1) {
+        currentLayout = &m_age1Layout;
+    }
+    else if (currentAge == 2) {
+        currentLayout = &m_age2Layout;
+    }
+    else if (currentAge == 3) {
+        currentLayout = &m_age3Layout;
+    }
+
+    if (!currentLayout) {
+        qDebug() << "Error: No layout found for age" << currentAge;
+        return;
+    }
+
+    for (auto it = pyramid.rbegin(); it != pyramid.rend(); ++it) {
+        const CardNode& node = *it;
+
+        if (node.m_isRemoved) {
+            continue;
+        }
+
+        auto cardViewOpt = m_game.getGameState().getCardView(node.m_index);
+        if (!cardViewOpt) continue;
+        const Card& card = cardViewOpt->get();
+
+        // obtinem calea imaginii
+        QString imagePath;
+        if (node.m_isFaceUp) {
+            imagePath = QString::fromStdString(card.getImagePath());
+        }
+        else {
+            imagePath = QString(":/assets/age%1/age%1_back.png").arg(currentAge);
+        }
+
+        const int cardW = 80;
+        const int cardH = 120;
+
+        // creeaza si scaleaza pixmap
+        QPixmap originalPixmap(imagePath);
+        QPixmap scaledPixmap = originalPixmap.scaled(QSize(cardW, cardH), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+
+        QPainter painter(&scaledPixmap);
+
+        if (node.m_isFaceUp) {
+            QFont font = painter.font();
+            font.setBold(true);
+            font.setPixelSize(7); 
+            painter.setFont(font);
+            painter.setPen(QPen(Qt::black));
+
+            QString cardName = QString::fromStdString(card.getName());
+            QFontMetrics metrics(font);
+            QString elidedName = metrics.elidedText(cardName, Qt::ElideRight, cardW - 4); 
+
+            QRectF textRect(2, cardH - 17, cardW - 4, 14); 
+            painter.drawText(textRect, Qt::AlignCenter, elidedName);
+        }
+        painter.end();
+
+        QPushButton* cardButton = new QPushButton(ui->pageGame);
+        const CardPosition& pos = (*currentLayout)[node.m_index];
+        cardButton->setGeometry(pos.x, pos.y, cardW, cardH);
+        cardButton->setIcon(QIcon(scaledPixmap));
+        cardButton->setIconSize(QSize(cardW, cardH));
+        cardButton->setStyleSheet("border: none;");
+
+        connect(cardButton, &QPushButton::clicked, [this, cardIndex = node.m_index]() {
+            qDebug() << "Player wants to select card with index:" << cardIndex;
+            });
+
+        cardButton->show();
+        m_cardButtons.push_back(cardButton);
+    }
 }
 
 MainWindow::~MainWindow()

@@ -5,5 +5,18 @@
 	<file>../assets/victorypoints.png</file>
 	<file>../assets/military_board.png</file>
 	<file>../assets/military_lead.png</file>
+		
+    <file>../assets/wonders/the_appian_way.png</file>
+	<file>../assets/wonders/circus_maximus.png</file>
+	<file>../assets/wonders/the_colossus.png</file>
+	<file>../assets/wonders/the_great_library.png</file>
+	<file>../assets/wonders/the_great_lighthouse.png</file>
+	<file>../assets/wonders/the_hanging_gardens.png</file>
+	<file>../assets/wonders/the_mausoleum.png</file>
+	<file>../assets/wonders/piraeus.png</file>
+	<file>../assets/wonders/the_pyramids.png</file>
+	<file>../assets/wonders/the_sphinx.png</file>
+	<file>../assets/wonders/the_statue_of_zeus.png</file>
+	<file>../assets/wonders/the_temple_of_artemis.png</file>
     </qresource>
 </RCC>

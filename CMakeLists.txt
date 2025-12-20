@@ -64,7 +64,7 @@ set(SRC_CONTROLLER
 set(SRC_UTILS
         src/utils/Constants.cpp src/utils/Constants.h
         src/utils/JsonUtils.cpp src/utils/JsonUtils.h
-        src/utils/Utils.h
+        src/utils/Utils.cpp src/utils/Utils.h
 )
 
 # view
@@ -72,6 +72,7 @@ set(SRC_VIEW_GUI
         src/view/MainWindow.cpp src/view/MainWindow.h
         src/view/MainWindow.ui
         src/view/IGameView.h
+        src/utils/Utils.cpp
 )
 
 # reuniune surse comune

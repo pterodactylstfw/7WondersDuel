@@ -129,6 +129,7 @@ void ConsoleUI::displayPyramid() const
 	if (!foundAny) {
 		std::println("   (No accessible cards right now.)");
 	}
+	std::print(Colors::RESET);
 	std::println("");
 }
 
@@ -241,7 +242,7 @@ void ConsoleUI::handlePlayCard()
 
     // carte accesibila?
     if (!m_game.getGameState().isCardAccessible(cardIndex)) {
-        std::cout << "[!] Error: Card is not accessible (blocked or face down).\n";
+        std::println("[!] Error: Card is not accessible (blocked or face down).");
         return;
     }
 
@@ -270,7 +271,7 @@ void ConsoleUI::handlePlayCard()
     int actionChoice = showCardActionMenu(card);
 
     if (actionChoice == 0) {
-        std::cout << "Action cancelled.\n";
+        std::println("Action cancelled.");
         return;
     }
 
@@ -278,7 +279,7 @@ void ConsoleUI::handlePlayCard()
 
     if (actionChoice == 1) { // CONSTRUCT BUILDING
         if (!canAfford) {
-            std::cout << "\n[!] You do not have enough coins (" << me.getCoins() << ") to pay the cost (" << totalCost << ").\n";
+        	std::println("{}[!] You do not have enough coins ( {} << ) to pay the cost ( {} ).", '\n', me.getCoins(), totalCost);
             return;
         }
 
@@ -306,7 +307,7 @@ void ConsoleUI::handlePlayCard()
             int wTradeCost = me.calculateTradeCost(w->getCost(), opp);
 
             if (me.getCoins() < wTotalCost) {
-                 std::cout << "\n[!] Not enough coins for this Wonder.\n";
+                 std::println("{}[!] Not enough coins for this Wonder.", '\n');
                  return;
             }
 
@@ -314,7 +315,7 @@ void ConsoleUI::handlePlayCard()
                 success = m_game.executeAction(cardIndex, PlayerAction::CONSTRUCT_WONDER, wonderIndex);
             }
         } else {
-            std::cout << "[!] Invalid wonder selection.\n";
+            std::println("[!] Invalid wonder selection.");
         }
     }
 
@@ -332,51 +333,51 @@ void ConsoleUI::handlePlayCard()
                 showVictoryScreen(state.getOpponent().getName());
             }
         }
-        std::cout << "\n>>> SUCCESS! Action completed. <<<\n";
+        std::println("{}>>> SUCCESS! Action completed. <<<", '\n');
     }
 }
 
 void ConsoleUI::displayCityDetails() {
 	const auto& player = m_game.getGameState().getCurrentPlayer();
 
-	std::cout << "\n================ [ CITY DETAILS: " << player.getName() << " ] ================\n";
+	std::println("{}================ [ CITY DETAILS:  {}  ] ================", '\n', player.getName());
 
 	// sumar resurse
-	std::cout << ">>> RESOURCES:\n";
+	std::println(">>> RESOURCES:");
 
 	std::string resDesc = player.getResourceDescription();
 	if (resDesc.empty()) {
-		std::cout << "None";
+		std::println("None");
 	}
 	else {
-		std::cout << resDesc;
+		std::println("{}", resDesc);
 	}
 
-	std::cout << "\n";
+	std::println();
 
-	std::cout << "   Coins: " << player.getCoins() << "\n";
+	std::println("   Coins:   {} << ", player.getCoins());
 
 	// minuni constr
-	std::cout << "\n>>> CONSTRUCTED WONDERS:\n";
+	std::println("{}>>> CONSTRUCTED WONDERS:", '\n');
 	const auto& builtWonders = player.getConstructedWonders();
-	if (builtWonders.empty()) std::cout << "   (None)\n";
+	if (builtWonders.empty()) std::println("   (None)");
 	for (const auto& w : builtWonders)
 		{
-		std::cout << "   - " << w->getName() << "\n";
+		std::println("   - {}", w->getName());
 	}
 
 	// carti construite pe categ
-	std::cout << "\n>>> CONSTRUCTED BUILDINGS:\n";
+	std::println("{}>>> CONSTRUCTED BUILDINGS:", '\n');
 
 	// lambda pt afisare carti pe culoare
 	auto printColor = [&](CardColor color, std::string label) {
 		auto cards = player.getCardsOfType(color);
 		if (!cards.empty()) {
-			std::cout << "   " << label << ": ";
+			std::println("   {}: ", label);
 			for (const auto& c : cards) {
-				std::cout << c.get().getName() << ", ";
+				std::println("{} , ", c.get().getName());
 			}
-			std::cout << "\n";
+			std::println();
 		}
 		};
 
@@ -389,44 +390,44 @@ void ConsoleUI::displayCityDetails() {
 	printColor(CardColor::PURPLE, "Guilds (Purple)");
 
 	// progress tokens
-	std::cout << "\n>>> PROGRESS TOKENS:\n ...";
-	if (player.getProgressTokens().empty()) std::cout << "   (None)\n";
+	std::println("\n>>> PROGRESS TOKENS:");
+	if (player.getProgressTokens().empty()) std::println("   (None)");
 	for(const auto& token : player.getProgressTokens())
 	{
-		std::cout << "   - " << token->getName() << "\n";
+		std::println("   - {}", token->getName());
 	}
 
-	std::cout << "\n================================================================\n";
+	std::println("\n================================================================");
 	Utils::waitForEnter("Press Enter to return to map...");
 }
 
 int ConsoleUI::showHighLevelMenu() {
-	std::cout << "\n[ YOUR TURN, "<< m_game.getGameState().getCurrentPlayer().getName()<<" ] What do you want to do ? \n";
-	std::cout << "1. Pick a card to play\n";
-	std::cout << "2. View my city details (Cards, Tokens)\n";
-	std::cout << "3. Save & Exit to Main Menu\n";
+	std::println("\n[ YOUR TURN, {} ] What do you want to do ?", m_game.getGameState().getCurrentPlayer().getName());
+	std::println("1. Pick a card to play");
+	std::println("2. View my city details (Cards, Tokens)");
+	std::println("3. Save & Exit to Main Menu");
 
 	return Utils::getIntRange(1, 3, "Select option: ");
 }
 
 int ConsoleUI::showCardActionMenu(const Card& card)
 {
-	std::cout << "\n=======================================\n";
-	std::cout << "   SELECTED CARD: " << card.getName() << "\n";
-	std::cout << "=======================================\n";
-	std::cout << "Cost: " << card.getCost().toString() << "\n";
-	std::cout << "Effect: " << card.getEffect().getDescription() << "\n";
+	std::println("\n=======================================");
+	std::println("   SELECTED CARD: {}", card.getName());
+	std::println("=======================================");
+	std::println("Cost: {}", card.getCost().toString());
+	std::println("Effect: {}", card.getEffect().getDescription());
 
 	const auto& player = m_game.getGameState().getCurrentPlayer();
 	if (player.hasChainForCard(card)) {
-		std::cout << ">> FREE CONSTRUCTION (Chain Link) <<\n";
+		std::println(">> FREE CONSTRUCTION (Chain Link) <<");
 	}
 
-	std::cout << "\nWhat do you want to do?\n";
-	std::cout << "1. Construct Building\n";
-	std::cout << "2. Discard for Coins\n";
-	std::cout << "3. Construct Wonder\n";
-	std::cout << "0. CANCEL (Go back)\n";
+	std::println("\nWhat do you want to do?");
+	std::println("1. Construct Building");
+	std::println("2. Discard for Coins");
+	std::println("3. Construct Wonder");
+	std::println("0. CANCEL (Go back)");
 
 	return Utils::getIntRange(0, 3, "Choose action: ");
 }
@@ -435,13 +436,13 @@ bool ConsoleUI::confirmPurchaseInteraction(int totalCost, int tradeCost) {
 	if (tradeCost == 0)
 		return true;
 
-	std::cout << "\n[!] Missing resources. You need to trade with the bank.\n";
-	std::cout << "   -> Total Cost: " << totalCost << " coins\n";
-	std::cout << "   -> (Includes Trade Cost: " << tradeCost << " coins)\n";
+	std::println("\n[!] Missing resources. You need to trade with the bank.");
+	std::println("   -> Total Cost: {} coins", totalCost);
+	std::println("   -> (Includes Trade Cost: {} coins)", tradeCost);
 
-	std::cout << "Do you want to proceed?\n";
-	std::cout << "1. Pay " << totalCost << " coins and Construct\n";
-	std::cout << "2. Cancel (Go back)\n";
+	std::println("Do you want to proceed?");
+	std::println("1. Pay {} coins and Construct", totalCost);
+	std::println("2. Cancel (Go back)");
 
 	int choice = Utils::getIntRange(1, 2, "Choose option: ");
 	return (choice == 1);
@@ -456,14 +457,14 @@ void ConsoleUI::run()
 		int startOption = showMainMenu();
 
 		if (startOption == 0) {
-			std::cout << "Goodbye!\n";
+			std::println("Goodbye!");
 			return;
 		}
 
 		bool gameIsRunning = false;
 
 		if (startOption == 1) {
-			std::cout << "(Player names must be 3-15 characters, alphanumeric only)\n";
+			std::println("(Player names must be 3-15 characters, alphanumeric only)");
 
 			std::string regexName = "^[a-zA-Z0-9 ]{3,15}$";
 			std::string errorMsg = "Name must be 3-15 characters, alphanumeric only.";
@@ -483,12 +484,12 @@ void ConsoleUI::run()
 				, regexFile, errorFile);
 			try {
 				m_game.loadGame(filename);
-				std::cout << ">>> Game successfully loaded! <<<\n";
+				std::println(">>> Game successfully loaded! <<<");
 				gameIsRunning = true;
 				Utils::waitForEnter();
 			}
 			catch (...) {
-				std::cout << ">>> ERROR: Game couldn't be loaded.\n";
+				std::println(">>> ERROR: Game couldn't be loaded.");
 				continue;
 			}
 		}
@@ -513,13 +514,14 @@ void ConsoleUI::run()
 					std::string regexFile = "^.+\\.json$";
 					std::string errorFile = "Filename must end with .json";
 
-					std::cout << "Do you want to save before exiting? (1=Yes, 0=No): ";
+					std::print("Do you want to save before exiting? (1=Yes, 0=No): ");
 					int save = Utils::getIntInput("");
 
 					if (save == 1) {
-						std::string saveFile = Utils::getStringInput("Save file name: ", regexFile, errorFile);
+						std::string saveFile = Utils::getStringInput("Save file name: ",
+							regexFile, errorFile);
 						m_game.saveGame(saveFile);
-						std::cout << ">>> Game Saved! <<<\n";
+						std::println(">>> Game Saved! <<<");
 					}
 					gameIsRunning = false;
 					break;
@@ -564,37 +566,30 @@ int ConsoleUI::askInt(int min, int max, const std::string& prompt) {
 }
 
 ResourceType ConsoleUI::askResourceSelection(const std::vector<ResourceType>& options, const std::string& prompt) {
-    std::cout << prompt << "\n";
-    for (size_t i = 0; i < options.size(); ++i) {
-        std::cout << i + 1 << ". " << resourceToString(options[i]) << "\n";
-    }
-    int choice = Utils::getIntRange(1, static_cast<int>(options.size()), "Choose resource: ");
-    return options[choice - 1];
+	int index = Utils::getUserSelection(options,
+		prompt,
+		[](const ResourceType& r) { return resourceToString(r); }
+	);
+	return options[index];
 }
 
 int ConsoleUI::askWonderSelection(const std::vector<std::unique_ptr<Wonder>>& wonders, const std::string& playerName) {
-    std::cout << "\n" << playerName << ", select a Wonder:\n";
-    for (size_t i = 0; i < wonders.size(); ++i) {
-        std::cout << i + 1 << ". " << wonders[i]->getName() << "\n";
-    }
-    int choice = Utils::getIntRange(1, static_cast<int>(wonders.size()), "Select Wonder: ");
-    return choice - 1; // 0-based index
+	return Utils::getUserSelection(wonders,
+		std::format("{}, select a Wonder:", playerName),
+		[](const auto& w) { return w->getName(); }
+	);
 }
 
 int ConsoleUI::askTokenSelection(const std::vector<std::unique_ptr<ProgressToken>>& tokens, const std::string& prompt) {
-    std::cout << "\n" << prompt << "\n";
-    for (size_t i = 0; i < tokens.size(); ++i) {
-        std::cout << i + 1 << ". " << tokens[i]->getName() << "\n";
-    }
-    int choice = Utils::getIntRange(1, static_cast<int>(tokens.size()), "Select Token: ");
-    return choice - 1;
+	return Utils::getUserSelection(tokens,
+		prompt,
+		[](const auto& t) { return t->getName(); }
+	);
 }
 
 int ConsoleUI::askCardSelectionFromList(const std::vector<std::reference_wrapper<const Card>>& cards, const std::string& prompt) {
-    std::cout << "\n" << prompt << "\n";
-    for (size_t i = 0; i < cards.size(); ++i) {
-        std::cout << i + 1 << ". " << cards[i].get().getName() << "\n";
-    }
-    int choice = Utils::getIntRange(1, static_cast<int>(cards.size()), "Select Card: ");
-    return choice - 1;
+	return Utils::getUserSelection(cards,
+		prompt,
+		[](const auto& c) { return c.get().getName(); }
+	);
 }

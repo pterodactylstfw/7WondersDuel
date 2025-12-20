@@ -1,18 +1,19 @@
 #include "Card.h"
 
-Card::Card(std::string_view name, CardColor color, uint8_t age, Cost cost, CardEffect effect,
+Card::Card(std::string_view name, CardColor color, uint8_t age, Cost cost, CardEffect effect, std::string imagePath,
            std::optional<std::string> freeChainFrom, std::optional<std::string> providesChainTo) :
 	m_name(name),
 	m_color(color),
 	m_age(age),
 	m_cost(std::move(cost)),
 	m_effect(std::move(effect)),
+	m_imagePath(imagePath),
 	m_freeChainFrom(std::move(freeChainFrom)),
 	m_providesChainTo(std::move(providesChainTo)) {
 }
 
-Card::Card(std::string_view name, CardColor color, uint8_t age, Cost cost, CardEffect effect):
-	Card(name, color, age, std::move(cost), std::move(effect), std::nullopt, std::nullopt) {
+Card::Card(std::string_view name, CardColor color, uint8_t age, Cost cost, CardEffect effect, std::string imagePath):
+	Card(name, color, age, std::move(cost), std::move(effect), imagePath, std::nullopt, std::nullopt) {
 }
 
 bool Card::canBeBuiltFreelyAfter(const Card& previousCard) const
@@ -68,6 +69,15 @@ const Cost& Card::getCost() const
 const CardEffect& Card::getEffect() const
 {
 	return m_effect;
+}
+
+std::string Card::getImagePath() const
+{
+	std::string path = ":/assets/";
+	if (m_color == CardColor::PURPLE)
+		path += "guilds/";
+	else path += "age" + std::to_string(m_age) + '/';
+	return path + m_imagePath;
 }
 
 const std::optional<std::string>& Card::getFreeChainFrom() const

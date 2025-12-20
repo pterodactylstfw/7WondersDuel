@@ -18,6 +18,7 @@ private:
 	uint8_t m_age;
 	Cost m_cost;
 	CardEffect m_effect;
+	std::string m_imagePath;
 
 	std::optional<std::string> m_freeChainFrom; // Card care ofera lant liber catre aceasta carte (daca exista)
 	std::optional<std::string> m_providesChainTo; // Cardul pentru care aceasta carte ofera lant liber (daca exista)
@@ -25,10 +26,10 @@ private:
 public:
 	Card() = default; // default constructor pentru json - pana la revizuire ulterioara - sa vad cum pot sa fac altfel
 
-	Card(std::string_view name, CardColor color, uint8_t age, Cost cost, CardEffect effect,
+	Card(std::string_view name, CardColor color, uint8_t age, Cost cost, CardEffect effect, std::string imagePath,
 		std::optional<std::string> freeChainFrom, std::optional<std::string> providesChainTo);
 
-	Card(std::string_view name, CardColor color, uint8_t age, Cost cost, CardEffect effect);
+	Card(std::string_view name, CardColor color, uint8_t age, Cost cost, CardEffect effect, std::string imagePath);
 
 	Card(const Card& other) = default;
 
@@ -43,6 +44,8 @@ public:
 
 	const Cost& getCost() const;
 	const CardEffect& getEffect() const;
+
+	std::string getImagePath() const;
 
 	const std::optional<std::string>& getFreeChainFrom() const;
 	const std::optional<std::string>& getProvidesChainTo() const;

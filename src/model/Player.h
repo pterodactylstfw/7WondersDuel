@@ -58,7 +58,7 @@ public:
 	bool canBuildCard(const Card& card, const Player& opponent) const;
 
 	std::map<ResourceType, int> getTotalResources() const;
-	std::string_view getResourceDescription() const;
+	std::string getResourceDescription() const;
 
 	std::vector<std::reference_wrapper<const Card>> getCardsOfType(const CardColor& color) const;
 

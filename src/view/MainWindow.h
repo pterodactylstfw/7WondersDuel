@@ -1,7 +1,11 @@
 ﻿#pragma once
 #include <QMainWindow>
+#include <QPushButton>
+#include <array>
+
 #include "GameController.h"
 #include "IGameView.h"
+#include "Constants.h"
 
 namespace Ui {
     class MainWindow;
@@ -30,11 +34,26 @@ private slots:
 	void onBtnExitClicked();
 
 private:
+    struct CardPosition {
+        int x;
+        int y;
+    };
+
     Ui::MainWindow* ui;
     GameController m_game;
+
+    std::vector<QPushButton*> m_cardButtons;
+
+    std::array<CardPosition, GameConstants::CARDS_PER_AGE> m_age1Layout;
+    std::array<CardPosition, GameConstants::CARDS_PER_AGE> m_age2Layout;
+    std::array<CardPosition, GameConstants::CARDS_PER_AGE> m_age3Layout;
 
 private:
     void updateGameUI();
     void updatePlayerPanel(const Player& player, bool isOpponent);
     void updateMilitaryTrack();
+
+    void setupLayouts();
+    void updateCardStructures();
+
 };

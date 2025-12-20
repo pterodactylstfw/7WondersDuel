@@ -1,12 +1,97 @@
 <RCC>
     <qresource prefix="/">
         <file>../assets/background.jpg</file>
-	<file>../assets/coins.png</file>
-	<file>../assets/victorypoints.png</file>
-	<file>../assets/military_board.png</file>
-	<file>../assets/military_lead.png</file>
-		
-    <file>../assets/wonders/the_appian_way.png</file>
+        <file>../assets/coins.png</file>
+        <file>../assets/victorypoints.png</file>
+        <file>../assets/military_board.png</file>
+        <file>../assets/military_lead.png</file>
+
+        <file>../assets/age1/age1_back.png</file>
+        <file>../assets/age1/age1_back_rotated.png</file>
+        <file>../assets/age1/altar.png</file>
+        <file>../assets/age1/apothecary.png</file>
+        <file>../assets/age1/baths.png</file>
+        <file>../assets/age1/clay_pit.png</file>
+        <file>../assets/age1/clay_pool.png</file>
+        <file>../assets/age1/clay_reserve.png</file>
+        <file>../assets/age1/garrison.png</file>
+        <file>../assets/age1/glassworks.png</file>
+        <file>../assets/age1/guard_tower.png</file>
+        <file>../assets/age1/logging_camp.png</file>
+        <file>../assets/age1/lumber_yard.png</file>
+        <file>../assets/age1/palisade.png</file>
+        <file>../assets/age1/pharmacist.png</file>
+        <file>../assets/age1/press.png</file>
+        <file>../assets/age1/quarry.png</file>
+        <file>../assets/age1/scriptorium.png</file>
+        <file>../assets/age1/stable.png</file>
+        <file>../assets/age1/stone_pit.png</file>
+        <file>../assets/age1/stone_reserve.png</file>
+        <file>../assets/age1/tavern.png</file>
+        <file>../assets/age1/theater.png</file>
+        <file>../assets/age1/wood_reserve.png</file>
+        <file>../assets/age1/workshop.png</file>
+
+        <file>../assets/age2/age2_back.png</file>
+        <file>../assets/age2/age2_back_rotated.png</file>
+        <file>../assets/age2/aqueduct.png</file>
+        <file>../assets/age2/archery_range.png</file>
+        <file>../assets/age2/barracks.png</file>
+        <file>../assets/age2/brewery.png</file>
+        <file>../assets/age2/brickyard.png</file>
+        <file>../assets/age2/caravansery.png</file>
+        <file>../assets/age2/courthouse.png</file>
+        <file>../assets/age2/customs_house.png</file>
+        <file>../assets/age2/dispensary.png</file>
+        <file>../assets/age2/drying_room.png</file>
+        <file>../assets/age2/forum.png</file>
+        <file>../assets/age2/glassblower.png</file>
+        <file>../assets/age2/horse_breeders.png</file>
+        <file>../assets/age2/laboratory.png</file>
+        <file>../assets/age2/library.png</file>
+        <file>../assets/age2/parade_ground.png</file>
+        <file>../assets/age2/rostrum.png</file>
+        <file>../assets/age2/sawmill.png</file>
+        <file>../assets/age2/school.png</file>
+        <file>../assets/age2/shelf_quarry.png</file>
+        <file>../assets/age2/statue.png</file>
+        <file>../assets/age2/temple.png</file>
+        <file>../assets/age2/walls.png</file>
+
+        <file>../assets/age3/academy.png</file>
+        <file>../assets/age3/age3_back.png</file>
+        <file>../assets/age3/age3_back_rotated.png</file>
+        <file>../assets/age3/arena.png</file>
+        <file>../assets/age3/armory.png</file>
+        <file>../assets/age3/arsenal.png</file>
+        <file>../assets/age3/chamber_of_commerce.png</file>
+        <file>../assets/age3/circus.png</file>
+        <file>../assets/age3/fortifications.png</file>
+        <file>../assets/age3/gardens.png</file>
+        <file>../assets/age3/lighthouse.png</file>
+        <file>../assets/age3/obelisk.png</file>
+        <file>../assets/age3/observatory.png</file>
+        <file>../assets/age3/palace.png</file>
+        <file>../assets/age3/pantheon.png</file>
+        <file>../assets/age3/port.png</file>
+        <file>../assets/age3/pretorium.png</file>
+        <file>../assets/age3/senate.png</file>
+        <file>../assets/age3/siege_workshop.png</file>
+        <file>../assets/age3/study.png</file>
+        <file>../assets/age3/town_hall.png</file>
+        <file>../assets/age3/university.png</file>
+        
+        <file>../assets/guilds/builders_guild.png</file>
+        <file>../assets/guilds/guilds_back.png</file>
+        <file>../assets/guilds/guilds_back_rotated.png</file>
+        <file>../assets/guilds/magistrates_guild.png</file>
+        <file>../assets/guilds/merchants_guild.png</file>
+        <file>../assets/guilds/moneylenders_guild.png</file>
+        <file>../assets/guilds/scientists_guild.png</file>
+        <file>../assets/guilds/shipowners_guild.png</file>
+        <file>../assets/guilds/tacticians_guild.png</file>
+
+        <file>../assets/wonders/the_appian_way.png</file>
 	<file>../assets/wonders/circus_maximus.png</file>
 	<file>../assets/wonders/the_colossus.png</file>
 	<file>../assets/wonders/the_great_library.png</file>

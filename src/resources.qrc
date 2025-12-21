@@ -90,5 +90,29 @@
         <file>../assets/guilds/scientists_guild.png</file>
         <file>../assets/guilds/shipowners_guild.png</file>
         <file>../assets/guilds/tacticians_guild.png</file>
+        
+        <file>../assets/wonders/the_appian_way.png</file>
+      	<file>../assets/wonders/circus_maximus.png</file>
+      	<file>../assets/wonders/the_colossus.png</file>
+      	<file>../assets/wonders/the_great_library.png</file>
+      	<file>../assets/wonders/the_great_lighthouse.png</file>
+      	<file>../assets/wonders/the_hanging_gardens.png</file>
+      	<file>../assets/wonders/the_mausoleum.png</file>
+      	<file>../assets/wonders/piraeus.png</file>
+      	<file>../assets/wonders/the_pyramids.png</file>
+      	<file>../assets/wonders/the_sphinx.png</file>
+      	<file>../assets/wonders/the_statue_of_zeus.png</file>
+      	<file>../assets/wonders/the_temple_of_artemis.png</file>
+
+		<file>../assets/tokens/agriculture.png</file>
+		<file>../assets/tokens/architecture.png</file>
+		<file>../assets/tokens/economy.png</file>
+		<file>../assets/tokens/law.png</file>
+		<file>../assets/tokens/masonry.png</file>
+		<file>../assets/tokens/mathematics.png</file>
+		<file>../assets/tokens/philosophy.png</file>
+		<file>../assets/tokens/strategy.png</file>
+		<file>../assets/tokens/theology.png</file>
+		<file>../assets/tokens/urbanism.png</file>
     </qresource>
 </RCC>

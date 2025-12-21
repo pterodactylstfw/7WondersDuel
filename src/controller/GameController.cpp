@@ -313,6 +313,8 @@ bool GameController::handleConstructBuilding(int cardIndex)
 	if (!cardView.has_value()) return false;
 	auto& card = cardView.value().get();
 
+	bool buildForFreeByChain = currentPlayer.hasChainForCard(card);
+
 	Cost baseCost = card.getCost();
 	Cost finalCost = baseCost;
 
@@ -351,8 +353,7 @@ bool GameController::handleConstructBuilding(int cardIndex)
 		finalCost = Cost(baseCost.getCoinCost(), resourceCosts);
 	}
 	
-	if (!currentPlayer.hasChainForCard(card))
-	{
+	if (!buildForFreeByChain) {
 		tradeCost = currentPlayer.calculateTradeCost(finalCost, opponent);
 		costToPay = tradeCost + finalCost.getCoinCost();
 	}
@@ -369,8 +370,7 @@ bool GameController::handleConstructBuilding(int cardIndex)
 		currentPlayer.removeCoins(costToPay);
 	}
 
-	if (tradeCost > 0 && opponent.hasProgressToken(ProgressTokenType::ECONOMY))
-	{
+	if (tradeCost > 0 && opponent.hasProgressToken(ProgressTokenType::ECONOMY)){
 		opponent.addCoins(tradeCost);
 	}
 
@@ -381,6 +381,12 @@ bool GameController::handleConstructBuilding(int cardIndex)
 	if (!takenCard) return false;
 
 	grantCardToPlayer(currentPlayer, std::move(takenCard));
+
+	if (buildForFreeByChain &&
+		currentPlayer.hasProgressToken(ProgressTokenType::URBANISM))
+	{
+		currentPlayer.addCoins(4);
+	}
 
 	// 5. Verificam efectele militare imediate
 	int newShields = currentPlayer.getMilitaryShields();
@@ -456,8 +462,7 @@ bool GameController::handleConstructWonders(int cardIndex, int wonderIndex, bool
 		}
 		finalCost = Cost(baseCost.getCoinCost(), resourceCosts);
 	}
-	else
-	{
+	else {
 		finalCost = baseCost;
 	}
 
@@ -468,14 +473,11 @@ bool GameController::handleConstructWonders(int cardIndex, int wonderIndex, bool
 
 	if (costToPay > 0) currentPlayer.removeCoins(costToPay);
 
-	if (tradeCost > 0 && opponent.hasProgressToken(ProgressTokenType::ECONOMY))
-	{
+	if (tradeCost > 0 && opponent.hasProgressToken(ProgressTokenType::ECONOMY)) {
 		opponent.addCoins(tradeCost);
 	}
 
 	std::unique_ptr<Card> sacrificedCard = m_gameState->takeCard(cardIndex);
-	// nu mai adaug la decartate
-	//m_gameState->addToDiscardCards(std::move(sacrificedCard)); // cartea nu ar trebui adaugata la decartate
 
 	currentPlayer.getConstructedWonders().push_back(std::move(targetWonderPtr));
 	// de mutat minunea in minuni realizate(daca facem) sau marcata ca realizata
@@ -485,8 +487,9 @@ bool GameController::handleConstructWonders(int cardIndex, int wonderIndex, bool
 	bool hasTheology = currentPlayer.hasProgressToken(ProgressTokenType::THEOLOGY);
 	bool wonderReplay = builtWonder->getEffect().getGrantsPlayAgain();
 
-	if (hasTheology || wonderReplay)
+	if (hasTheology || wonderReplay) {
 		outPlayAgain = true;
+	}
 
 	int oldShields = currentPlayer.getMilitaryShields();
 
@@ -497,7 +500,6 @@ bool GameController::handleConstructWonders(int cardIndex, int wonderIndex, bool
 
 	if (newShields > oldShields)
 		checkMilitaryLooting(oldShields, newShields);
-
 
 	// + trebuie sa verificam daca avem o carte care ne ofera bani pentru minune
 	return true;

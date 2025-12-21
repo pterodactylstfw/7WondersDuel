@@ -73,7 +73,7 @@ namespace Utils {
     }
 
     void waitForEnter(const std::string &prompt) {
-        std::print ("{}", prompt);
+        std::print("{}", prompt);
         std::string s;
         std::getline(std::cin, s);
     }

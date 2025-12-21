@@ -157,7 +157,6 @@ CardEffect& CardEffect::withUrbanismEffect() noexcept
     return *this;
 }
 
-
 bool CardEffect::hasStrategyEffect() const
 {
     return m_strategyEffect.value_or(false);

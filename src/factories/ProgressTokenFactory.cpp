@@ -9,7 +9,8 @@ std::unique_ptr<ProgressToken> ProgressTokenFactory::createToken(ProgressTokenTy
             CardEffect()
             .withBaseCoins(6)
             .withVictoryPoints(4)
-            .withCustomDescription("Immediately take 6 coins from the Bank. The token is worth 4 victory points.")
+            .withCustomDescription("Immediately take 6 coins from the Bank. The token is worth 4 victory points."),
+			"agriculture.png"
         );
 
     case ProgressTokenType::ARCHITECTURE:
@@ -18,7 +19,8 @@ std::unique_ptr<ProgressToken> ProgressTokenFactory::createToken(ProgressTokenTy
             "Architecture",
             CardEffect()
             .withArchitectureEffect()
-            .withCustomDescription("Any future Wonders built by you will cost 2 fewer resources.")
+            .withCustomDescription("Any future Wonders built by you will cost 2 fewer resources."),
+			"architecture.png"
         );
 
     case ProgressTokenType::ECONOMY:
@@ -27,7 +29,8 @@ std::unique_ptr<ProgressToken> ProgressTokenFactory::createToken(ProgressTokenTy
             "Economy",
             CardEffect()
             .withEconomyEffect()
-            .withCustomDescription("You gain the money spent by your opponent when they trade for resources.")
+            .withCustomDescription("You gain the money spent by your opponent when they trade for resources."),
+			"economy.png"
         );
 
     case ProgressTokenType::LAW:
@@ -36,7 +39,8 @@ std::unique_ptr<ProgressToken> ProgressTokenFactory::createToken(ProgressTokenTy
             "Law",
             CardEffect()
             .withScienceSymbol(ScientificSymbol::SCALES)
-            .withCustomDescription("This token is worth a scientific symbol.")
+            .withCustomDescription("This token is worth a scientific symbol."),
+			"law.png"
         );
     case ProgressTokenType::MASONRY:
         return std::make_unique<ProgressToken>(
@@ -44,7 +48,8 @@ std::unique_ptr<ProgressToken> ProgressTokenFactory::createToken(ProgressTokenTy
             "Masonry",
             CardEffect()
             .withMasonryEffect()
-            .withCustomDescription("Any future blue cards constructed by you will cost 2 fewer resources.")
+            .withCustomDescription("Any future blue cards constructed by you will cost 2 fewer resources."),
+			"masonry.png"
         );
     case ProgressTokenType::MATHEMATICS:
         return std::make_unique<ProgressToken>(
@@ -52,7 +57,8 @@ std::unique_ptr<ProgressToken> ProgressTokenFactory::createToken(ProgressTokenTy
             "Mathematics",
             CardEffect()
             .withMathematicsEffect()
-            .withCustomDescription("At the end of the game, score 3 victory points for each Progress token in your possession.")
+            .withCustomDescription("At the end of the game, score 3 victory points for each Progress token in your possession."),
+			"mathematics.png"
         );
 
     case ProgressTokenType::PHILOSOPHY:
@@ -61,7 +67,8 @@ std::unique_ptr<ProgressToken> ProgressTokenFactory::createToken(ProgressTokenTy
             "Philosophy",
             CardEffect()
             .withVictoryPoints(7)
-            .withCustomDescription("The token is worth 7 victory points.")
+            .withCustomDescription("The token is worth 7 victory points."),
+			"philosophy.png"
         );
 
     case ProgressTokenType::STRATEGY:
@@ -70,7 +77,8 @@ std::unique_ptr<ProgressToken> ProgressTokenFactory::createToken(ProgressTokenTy
             "Strategy",
             CardEffect()
             .withStrategyEffect()
-            .withCustomDescription("Your new military Buildings (red cards) will benefit from 1 extra Shield.")
+            .withCustomDescription("Your new military Buildings (red cards) will benefit from 1 extra Shield."),
+			"strategy.png"
         );
 
     case ProgressTokenType::THEOLOGY:
@@ -79,7 +87,8 @@ std::unique_ptr<ProgressToken> ProgressTokenFactory::createToken(ProgressTokenTy
             "Theology",
             CardEffect()
             .grantsPlayAgain()
-            .withCustomDescription("All future Wonders constructed by you are treated as though they have the 'Play Again' effect.")
+            .withCustomDescription("All future Wonders constructed by you are treated as though they have the 'Play Again' effect."),
+			"theology.png"
         );
 
     case ProgressTokenType::URBANISM:
@@ -88,13 +97,15 @@ std::unique_ptr<ProgressToken> ProgressTokenFactory::createToken(ProgressTokenTy
             "Urbanism",
             CardEffect()
             .withBaseCoins(6)
-            .withCustomDescription("Immediately take 6 coins. Linking gives 4 coins.")
+            .withCustomDescription("Immediately take 6 coins. Linking gives 4 coins."),
+			"urbanism.png"
         );
     default:
         return std::make_unique<ProgressToken>(
             ProgressTokenType::NONE,
             "Unknown",
-            CardEffect().withCustomDescription("Unknown Token")
+            CardEffect().withCustomDescription("Unknown Token"),
+			"unknown.png"
         );
     }
 }

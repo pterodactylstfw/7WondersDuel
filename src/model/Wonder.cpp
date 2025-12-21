@@ -1,11 +1,11 @@
 #include "Wonder.h"
 
-Wonder::Wonder(const std::string& name, Cost cost, CardEffect effect)
-	: m_name(name), m_cost(std::move(cost)), m_isBuilt(false), m_effect(std::move(effect)) 
+Wonder::Wonder(const std::string& name, Cost cost, CardEffect effect, std::string imagePath)
+	: m_name(name), m_cost(std::move(cost)), m_isBuilt(false), m_effect(std::move(effect)), m_imagePath(std::move(imagePath))
 { }
 
-Wonder::Wonder(const std::string& name, Cost cost)
-	: m_name(name), m_cost(std::move(cost)), m_isBuilt(false)
+Wonder::Wonder(const std::string& name, Cost cost, std::string imagePath)
+	: m_name(name), m_cost(std::move(cost)), m_isBuilt(false), m_imagePath(std::move(imagePath))
 { }
 
 std::string Wonder::getName() const {
@@ -23,6 +23,12 @@ const CardEffect& Wonder::getEffect() const {
 std::string Wonder::getDescription() const
 {
 	return m_effect.getDescription();
+}
+
+std::string Wonder::getImagePath() const
+{
+	std::string path = "assets/wonders/" + m_imagePath;
+	return m_imagePath;
 }
 
 bool Wonder::isBuilt() const {

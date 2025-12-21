@@ -15,6 +15,8 @@ private:
 	bool m_isBuilt;
 	CardEffect m_effect;
 
+	std::string m_imagePath;
+
 public:
 
 	Wonder() = default;
@@ -25,13 +27,14 @@ public:
 	Wonder(Wonder&& other) noexcept = default;
 	Wonder& operator=(Wonder&& other) noexcept = default;
 
-	Wonder(const std::string& name, Cost cost, CardEffect effect);
-	Wonder(const std::string& name, Cost cost);
+	Wonder(const std::string& name, Cost cost, CardEffect effect, std::string imagePath);
+	Wonder(const std::string& name, Cost cost, std::string imagePath);
 
 	std::string getName() const;
 	const Cost& getCost() const;
 	const CardEffect& getEffect() const;
 	std::string getDescription() const;
+	std::string getImagePath() const;
 
 	bool isBuilt() const;
 	std::string toString() const;

@@ -1,8 +1,4 @@
 #include "Cost.h"
-#include <sstream>
-#include <algorithm>
-#include <numeric>
-#include <compare>
 
 Cost::Cost() :m_coinCost(0) {}
 Cost::Cost(int coins) : m_coinCost(coins) {}

@@ -2,6 +2,7 @@
 #include "Constants.h"
 #include <map>
 #include <vector>
+#include <compare>
 #include "JsonUtils.h"
 
 class Cost {

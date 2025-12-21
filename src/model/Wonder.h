@@ -14,7 +14,6 @@ private:
 	Cost m_cost;
 	bool m_isBuilt;
 	CardEffect m_effect;
-
 	std::string m_imagePath;
 
 public:

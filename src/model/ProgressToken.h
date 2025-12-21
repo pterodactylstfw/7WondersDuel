@@ -1,7 +1,6 @@
 #pragma once
 #include "Constants.h"
 #include <string>
-#include <vector>
 #include "CardEffect.h"
 #include "JsonUtils.h"
 
@@ -11,9 +10,11 @@ private:
     std::string m_name;
     CardEffect m_effect;
     bool m_isActive;
+	std::string m_imagePath;
+
 public:
     ProgressToken() = default;
-    ProgressToken(ProgressTokenType type, const std::string& name, CardEffect effect);
+    ProgressToken(ProgressTokenType type, const std::string& name, CardEffect effect, std::string imagePath);
 
     ProgressToken(const ProgressToken&) = default;
     ProgressToken& operator=(const ProgressToken&) = default;
@@ -24,6 +25,7 @@ public:
     ProgressTokenType getType() const;
     std::string_view getName() const;
     std::string getDescription() const;
+	std::string getImagePath() const;
 
     uint8_t getVictoryPoints() const;
     bool isActive() const;

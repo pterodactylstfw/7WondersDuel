@@ -1,10 +1,8 @@
 #include "ProgressToken.h"
-#include <sstream>
 
-ProgressToken::ProgressToken(ProgressTokenType type, const std::string& name, CardEffect effect)
-	: m_tokenType(type), m_name(name), m_effect(std::move(effect)), m_isActive(false)
-{
-}
+ProgressToken::ProgressToken(ProgressTokenType type, const std::string& name, CardEffect effect, std::string imagePath)
+	: m_tokenType(type), m_name(name), m_effect(std::move(effect)), m_isActive(false), m_imagePath(std::move(imagePath))
+{}
 
 ProgressTokenType ProgressToken::getType() const {
 	return m_tokenType;
@@ -16,6 +14,12 @@ std::string_view ProgressToken::getName() const {
 
 std::string ProgressToken::getDescription() const {
 	return m_effect.getDescription();
+}
+
+std::string ProgressToken::getImagePath() const
+{
+	
+	return ":/assets/tokens/" + m_imagePath;
 }
 
 uint8_t ProgressToken::getVictoryPoints() const {

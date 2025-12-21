@@ -90,8 +90,6 @@ const std::optional<std::string>& Card::getProvidesChainTo() const
 	return m_providesChainTo;
 }
 
-
-
 void to_json(json& j, const Card& card)
 {
 	j = json{

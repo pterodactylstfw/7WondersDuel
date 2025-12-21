@@ -27,8 +27,7 @@ std::string Wonder::getDescription() const
 
 std::string Wonder::getImagePath() const
 {
-	std::string path = "assets/wonders/" + m_imagePath;
-	return m_imagePath;
+	return ":/assets/wonders/" + m_imagePath;
 }
 
 bool Wonder::isBuilt() const {

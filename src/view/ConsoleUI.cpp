@@ -129,7 +129,6 @@ void ConsoleUI::displayPyramid() const
 	if (!foundAny) {
 		std::println("   (No accessible cards right now.)");
 	}
-	std::print(Colors::RESET);
 	std::println("");
 }
 

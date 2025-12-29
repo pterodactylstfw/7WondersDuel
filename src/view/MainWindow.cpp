@@ -28,7 +28,6 @@ MainWindow::MainWindow(QWidget* parent)
         ui->stackedWidget->setCurrentIndex(0); // Inapoi la meniu
         });
 
-    setupLayouts();
     this->setWindowTitle("7 Wonders Duel");
 }
 
@@ -90,6 +89,8 @@ void MainWindow::onBtnStartClicked()
 	qDebug() << "Game UI updated";
 
 	QApplication::processEvents();
+	setupLayouts();
+	updateGameUI();
 }
 
 void MainWindow::onBtnLoadClicked()
@@ -109,6 +110,7 @@ void MainWindow::onBtnLoadClicked()
         ui->stackedWidget->setCurrentIndex(1);
         QMessageBox::information(this, "Success", "Game loaded successfully!");
 
+		setupLayouts();
 		updateGameUI();
     }
     catch (const std::exception& e) {
@@ -118,6 +120,17 @@ void MainWindow::onBtnLoadClicked()
 
 void MainWindow::onBtnExitClicked() {
     QApplication::quit();
+}
+
+void MainWindow::resizeEvent(QResizeEvent* event)
+{
+    QMainWindow::resizeEvent(event); 
+
+    setupLayouts();
+    if (ui->stackedWidget->currentIndex() == 1) 
+    {
+        updateGameUI();
+    }
 }
 
 void MainWindow::updateGameUI()
@@ -172,30 +185,35 @@ void MainWindow::updateMilitaryTrack()
     const auto& gameState = m_game.getGameState();
     int militaryPosition = gameState.getMilitaryPosition();
 
-    const int startY = ui->labelMilitaryBoard->y();     
-    const int endY = ui->labelMilitaryBoard->y() + ui->labelMilitaryBoard->height();
-    const int trackHeight = endY - startY;
+    QWidget* panel = ui->militaryPanel;
 
-    int leadX = ui->labelMilitaryBoard->x() + (ui->labelMilitaryBoard->width() / 2) - (ui->labelMilitaryLead->width() / 2) - 5;
+    const int trackHeight = panel->height();
+
+    int leadX = (panel->width() / 2) - (ui->labelMilitaryLead->width() / 2);
 
     double percentage = (militaryPosition + 9.0) / 18.0;
-
-    int leadY = startY + (trackHeight * percentage) - (ui->labelMilitaryLead->height() / 2);
+    int leadY = (trackHeight * (1.0 - percentage)) - (ui->labelMilitaryLead->height() / 2);
 
     ui->labelMilitaryLead->move(leadX, leadY);
 }
 
 void MainWindow::setupLayouts()
 {
-    const int cardH = 120;
-    const int cardW = 80;
+    const QSize containerSize = ui->cardContainer->size();
+    if (!containerSize.isValid()) return; 
 
-    const int startX = 120;
-    const int startY = 60;
+    const int availableWidth = containerSize.width();
+    const int availableHeight = containerSize.height();
 
-    const int horizontalGap = 5;
+    const int cardW = availableWidth / 9; 
+    const int cardH = cardW * 1.5;       
+
+    const int horizontalGap = cardW / 10;
     const int overlapX = cardW + horizontalGap;
-    const int overlapY = cardH / 2;
+    const int overlapY = cardH / 2.5; 
+
+    const int startX = (availableWidth - (6 * overlapX)) / 2; 
+    const int startY = (availableHeight - (5 * overlapY)) / 2; 
 
 	// age 1 layout
     for (int i = 0; i < 6; ++i) m_age1Layout[i] = { startX + i * overlapX, startY + 4 * overlapY };
@@ -235,6 +253,12 @@ void MainWindow::updateCardStructures()
         return;
     }
 
+    const QSize containerSize = ui->cardContainer->size();
+    if (!containerSize.isValid()) return;
+
+    const int cardW = containerSize.width() / 9; 
+    const int cardH = cardW * 1.5;
+
     for (auto it = pyramid.rbegin(); it != pyramid.rend(); ++it) {
         const CardNode& node = *it;
 
@@ -254,9 +278,6 @@ void MainWindow::updateCardStructures()
         else {
             imagePath = QString(":/assets/age%1/age%1_back.png").arg(currentAge);
         }
-
-        const int cardW = 80;
-        const int cardH = 120;
 
         // creeaza si scaleaza pixmap
         QPixmap originalPixmap(imagePath);
@@ -280,8 +301,9 @@ void MainWindow::updateCardStructures()
         }
         painter.end();
 
-        QPushButton* cardButton = new QPushButton(ui->pageGame);
+        QPushButton* cardButton = new QPushButton(ui->cardContainer);
         const CardPosition& pos = (*currentLayout)[node.m_index];
+
         cardButton->setGeometry(pos.x, pos.y, cardW, cardH);
         cardButton->setIcon(QIcon(scaledPixmap));
         cardButton->setIconSize(QSize(cardW, cardH));

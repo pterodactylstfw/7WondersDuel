@@ -48,6 +48,9 @@ private:
     std::array<CardPosition, GameConstants::CARDS_PER_AGE> m_age2Layout;
     std::array<CardPosition, GameConstants::CARDS_PER_AGE> m_age3Layout;
 
+protected:
+    void resizeEvent(QResizeEvent* event) override;
+
 private:
     void updateGameUI();
     void updatePlayerPanel(const Player& player, bool isOpponent);

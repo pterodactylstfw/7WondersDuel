@@ -49,6 +49,9 @@ private:
 	bool m_gameOver;
 	//std::optional<VictoryType> m_victoryType;
 
+	GamePhase m_currentPhase = GamePhase::DRAFTING;
+	std::vector<std::unique_ptr<Wonder>> m_draftedWonders;
+	
 	std::vector<CardNode> m_pyramid;
 	void buildPyramidStructure(int age);
 	std::array<bool, 2> m_militaryTokensDropped = { false, false };
@@ -60,6 +63,7 @@ public:
 
 	void switchPlayer();
 
+	std::array<std::unique_ptr<Player>, GameConstants::NUMBER_OF_PLAYERS>& getPlayers();
 	const Player& getCurrentPlayer() const;
 	const Player& getOpponent() const;
 	Player& getCurrentPlayer();
@@ -75,7 +79,16 @@ public:
 	bool isGameOver() const;
 	void setGameOver(bool over);
 
+	std::vector<std::unique_ptr<Wonder>>& getAllWonders();
 	int getAllConstructedWondersCount() const;
+
+	GamePhase getCurrentPhase() const;
+	void setCurrentPhase(GamePhase phase);
+
+	const std::vector<std::unique_ptr<Wonder>>& getDraftedWonders() const;
+	void clearDraftedWonders();
+	void addWonderToDraft(std::unique_ptr<Wonder> wonder);
+	std::unique_ptr<Wonder> extractWonderFromDraft(int index);
 
 	const std::vector<CardNode>& getPyramid() const;
 

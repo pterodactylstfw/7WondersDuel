@@ -135,6 +135,11 @@ void GameState::switchPlayer()
 	m_currentPlayerIndex = 1 - m_currentPlayerIndex;
 }
 
+std::array<std::unique_ptr<Player>, GameConstants::NUMBER_OF_PLAYERS>& GameState::getPlayers()
+{
+	return m_players;
+}
+
 const Player& GameState::getCurrentPlayer() const
 {
 	return *m_players[m_currentPlayerIndex];
@@ -167,6 +172,11 @@ bool GameState::isGameOver() const
 
 void GameState::setGameOver(bool over) { m_gameOver = over; }
 
+std::vector<std::unique_ptr<Wonder>>& GameState::getAllWonders()
+{
+	return m_allWonders;
+}
+
 int GameState::getAllConstructedWondersCount() const
 {
     int total = 0;
@@ -176,6 +186,41 @@ int GameState::getAllConstructedWondersCount() const
         }
     }
     return total;
+}
+
+GamePhase GameState::getCurrentPhase() const
+{
+	return m_currentPhase;
+}
+
+void GameState::setCurrentPhase(GamePhase phase)
+{
+	m_currentPhase = phase;
+}
+
+const std::vector<std::unique_ptr<Wonder>>& GameState::getDraftedWonders() const
+{
+	return m_draftedWonders;
+}
+
+void GameState::clearDraftedWonders()
+{
+	m_draftedWonders.clear();
+}
+
+void GameState::addWonderToDraft(std::unique_ptr<Wonder> wonder)
+{
+    if(wonder) m_draftedWonders.push_back(std::move(wonder));
+}
+
+std::unique_ptr<Wonder> GameState::extractWonderFromDraft(int index)
+{
+    if (index < 0 || index >= m_draftedWonders.size()) return nullptr;
+
+    std::unique_ptr<Wonder> w = std::move(m_draftedWonders[index]);
+    m_draftedWonders.erase(m_draftedWonders.begin() + index);
+
+    return w;
 }
 
 const std::vector<CardNode>& GameState::getPyramid() const

@@ -7,25 +7,24 @@ const GameState& GameController::getGameState() const {
 	return *m_gameState;
 }
 
+bool GameController::hasGameStarted() const
+{
+	return m_gameState != nullptr;
+}
+
 bool GameController::isGameOver() const {
+	if (!m_gameState) return false;
 	return m_gameState->isGameOver();
 }
 
 void GameController::startNewGame(const std::string& p1, const std::string& p2) {
 	m_gameState = std::make_unique<GameState>(p1, p2);
-	
-	WonderFactory wf;
-	auto& allWonders = m_gameState->getAllWonders();
-	allWonders = wf.createWonders();
-
-	std::random_device rd;
-	std::mt19937 g(rd());
-	std::shuffle(allWonders.begin(), allWonders.end(), g);
 
 	m_gameState->setCurrentPhase(GamePhase::DRAFTING);
 
+	prepareWonders();
 	prepareProgressTokens();
-	prepareAge(1);
+	prepareDraftRound();
 
 	m_view.get().onStateUpdated(); // notifica ui ca s-a inceput un joc nou
 }
@@ -482,6 +481,17 @@ void GameController::prepareAge(int age) {
 
 	
 	m_gameState->initializeAge(age, deck); // trimite datele catre storage(state)
+}
+
+void GameController::prepareWonders()
+{
+	WonderFactory wf;
+	auto& allWonders = m_gameState->getAllWonders();
+	allWonders = wf.createWonders();
+
+	std::random_device rd;
+	std::mt19937 g(rd());
+	std::shuffle(allWonders.begin(), allWonders.end(), g);
 }
 
 void GameController::prepareProgressTokens()

@@ -13,7 +13,17 @@ bool GameController::isGameOver() const {
 
 void GameController::startNewGame(const std::string& p1, const std::string& p2) {
 	m_gameState = std::make_unique<GameState>(p1, p2);
-	draftWondersAuto(); // am pus asa momentan pentru interfata grafica
+	
+	WonderFactory wf;
+	auto& allWonders = m_gameState->getAllWonders();
+	allWonders = wf.createWonders();
+
+	std::random_device rd;
+	std::mt19937 g(rd());
+	std::shuffle(allWonders.begin(), allWonders.end(), g);
+
+	m_gameState->setCurrentPhase(GamePhase::DRAFTING);
+
 	prepareProgressTokens();
 	prepareAge(1);
 
@@ -45,76 +55,18 @@ void GameController::draftWondersAuto() {
 	m_gameState->switchPlayer();
 }
 
-void GameController::selectWondersManual()
+void GameController::prepareDraftRound()
 {
-	WonderFactory wf;
-
-	auto allWonders = wf.createWonders();
-
-	std::random_device rd;
-	std::mt19937 g(rd());
-	std::shuffle(allWonders.begin(), allWonders.end(), g);
-
-	std::vector<std::unique_ptr<Wonder>> first4Wonders;
-	for (int i = 0; i < 4; ++i) {
-		if (!allWonders.empty()) {
-			first4Wonders.push_back(std::move(allWonders.back()));
-			allWonders.pop_back();
-		}
-	}
-	//displayWondersForSelection(first4Wonders);
-
-	Player& player1 = m_gameState->getCurrentPlayer();
-	int player1Wonders = 0;
-	Player& player2 = m_gameState->getOpponent();
-	int player2Wonders = 0;
-
-	// int choice = Utils::getIntRange(1, static_cast<int>(first4Wonders.size()), player1.getName() + ", select a Wonder: ");
-	// player1.addWonder(std::move(first4Wonders[choice - 1]), player1Wonders++);
-	// first4Wonders.erase(first4Wonders.begin() + (choice - 1));
-
-	int choice = m_view.get().askWonderSelection(first4Wonders, player1.getName());
-	player1.addWonder(std::move(first4Wonders[choice]), player1Wonders++);
-	first4Wonders.erase(first4Wonders.begin() + choice);
-
-
-	for (int i = 0; i < 2; i++)
-	{
-		choice = m_view.get().askWonderSelection(first4Wonders, player2.getName());
-		player2.addWonder(std::move(first4Wonders[choice]), player2Wonders++);
-		first4Wonders.erase(first4Wonders.begin() + choice);
-	}
-
-	m_view.get().onMessage(player1.getName() + " gets the last wonder: " + first4Wonders[0]->getName());
-	player1.addWonder(std::move(first4Wonders[0]), player1Wonders++);
-	first4Wonders.erase(first4Wonders.begin());
+	m_gameState->clearDraftedWonders();
+	auto& deck = m_gameState->getAllWonders();
 
 	for (int i = 0; i < 4; ++i) {
-		if (!allWonders.empty()) {
-			first4Wonders.push_back(std::move(allWonders.back()));
-			allWonders.pop_back();
+		if (!deck.empty()) {
+			m_gameState->addWonderToDraft(std::move(deck.back()));
+			deck.pop_back();
 		}
 	}
-	//displayWondersForSelection(first4Wonders);
-
-	choice = m_view.get().askWonderSelection(first4Wonders, player2.getName());
-	player1.addWonder(std::move(first4Wonders[choice]), player2Wonders++);
-	first4Wonders.erase(first4Wonders.begin() + choice);
-
-	for (int i = 0; i < 2; i++)
-	{
-		choice = m_view.get().askWonderSelection(first4Wonders, player1.getName());
-		player2.addWonder(std::move(first4Wonders[choice]), player1Wonders++);
-		first4Wonders.erase(first4Wonders.begin() + choice);
-	}
-
-
-	m_view.get().onMessage(player2.getName() + " gets the last wonder: " + first4Wonders[0]->getName());
-	player1.addWonder(std::move(first4Wonders[0]), player2Wonders++);
-	first4Wonders.erase(first4Wonders.begin());
-
 }
-
 
 void GameController::checkMilitaryLooting(int previousShields, int currentShields)
 {
@@ -697,4 +649,66 @@ void GameController::applyProgressTokenEffect(Player& player, Player& opponent, 
 			break;
 		}
 	}
+}
+
+bool GameController::pickWonder(int wonderIndex)
+{
+	if (m_gameState->getCurrentPhase() != GamePhase::DRAFTING) return false;
+	std::unique_ptr<Wonder> selectedWonder = m_gameState->extractWonderFromDraft(wonderIndex);
+
+	if (!selectedWonder) return false; 
+
+	int slot = -1;
+	auto& currentP = m_gameState->getCurrentPlayer();
+	auto& wondersArr = currentP.getWonders();
+
+	// caut slot liber
+	for (int i = 0; i < 4; ++i) {
+		if (wondersArr[i] == nullptr) {
+			slot = i;
+			break;
+		}
+	}
+
+	if (slot != -1) {
+		currentP.addWonder(std::move(selectedWonder), slot);
+	}
+	else {
+		return false;
+	}
+
+	// cate minuni au ramas in draft
+	int remaining = m_gameState->getDraftedWonders().size(); 
+
+	if (remaining == 3) {
+		// a ales primul jucator prima minune -> schimbam tura
+		m_gameState->switchPlayer();
+	}
+	else if (remaining == 2) {
+		// a ales al doilea jucator prima sa minune -> NU schimbam tura (mai alege una)
+	}
+	else if (remaining == 1) {
+		// a ales al doilea jucator a doua sa minune -> schimbam tura 
+		m_gameState->switchPlayer();
+	}
+	else if (remaining == 0) {
+		int p1Count = 0;
+		const auto& p1Wonders = m_gameState->getPlayers()[0]->getWonders();
+		for (const auto& w : p1Wonders) 
+			if (w) p1Count++;
+
+		if (p1Count == 2) {
+			prepareDraftRound();
+			m_gameState->switchPlayer();
+		}
+		else {
+			m_gameState->setCurrentPhase(GamePhase::AGE_I);
+			prepareAge(1);
+
+			m_gameState->switchPlayer();
+		}
+	}
+
+	m_view.get().onStateUpdated();
+	return true;
 }

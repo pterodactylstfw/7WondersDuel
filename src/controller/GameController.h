@@ -20,7 +20,7 @@ private:
 	void checkEndAge();
 
 	void draftWondersAuto();
-	void selectWondersManual();
+	void prepareDraftRound();
 
 	void prepareProgressTokens();
 
@@ -48,6 +48,7 @@ public:
 	void saveGame(const std::string& filename) const;
   
 	void applyProgressTokenEffect(Player& player, Player& opponent, ProgressToken& token);
+	bool pickWonder(int wonderIndex);
 
 	~GameController() = default;
 };

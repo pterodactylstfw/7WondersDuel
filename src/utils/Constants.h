@@ -192,6 +192,34 @@ enum class PlayerAction {
 	ACTION_SUCCESSFUL
 };
 
+NLOHMANN_JSON_SERIALIZE_ENUM(PlayerAction,
+    {
+        {PlayerAction::CONSTRUCT_BUILDING, "Construct Building"},
+        {PlayerAction::DISCARD_FOR_COINS, "Discard for Coins"},
+        {PlayerAction::CONSTRUCT_WONDER, "Construct Wonder"},
+        {PlayerAction::CHOOSE_ANOTHER_CARD, "Choose Another Card"},
+        {PlayerAction::ACTION_SUCCESSFUL, "Action Successful"}
+    }
+);
+
+enum class GamePhase {
+    DRAFTING,
+    AGE_I,
+    AGE_II,
+	AGE_III,
+    GAME_OVER
+};
+
+NLOHMANN_JSON_SERIALIZE_ENUM(GamePhase,
+    {
+        {GamePhase::DRAFTING, "Drafting"},
+        {GamePhase::AGE_I, "Age I"},
+        {GamePhase::AGE_II, "Age II"},
+        {GamePhase::AGE_III, "Age III"},
+        {GamePhase::GAME_OVER, "Game Over"}
+    }
+);
+
 std::string colorToString(CardColor color);
 
 std::string resourceToString(ResourceType type); 

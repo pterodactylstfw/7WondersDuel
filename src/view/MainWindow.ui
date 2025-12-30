@@ -261,6 +261,9 @@ QPushButton[class=&quot;CardButton&quot;] {
            <item>
             <widget class="QWidget" name="opponentWonders" native="true"/>
            </item>
+           <item>
+            <widget class="QWidget" name="opponentCards" native="true"/>
+           </item>
           </layout>
          </widget>
         </item>
@@ -285,6 +288,24 @@ QPushButton[class=&quot;CardButton&quot;] {
            </item>
            <item>
             <widget class="QWidget" name="militaryPanel" native="true">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>120</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>120</width>
+               <height>16777215</height>
+              </size>
+             </property>
              <layout class="QVBoxLayout" name="verticalLayout_6">
               <item>
                <widget class="QLabel" name="labelMilitaryBoard">
@@ -418,6 +439,9 @@ QPushButton[class=&quot;CardButton&quot;] {
            </item>
            <item>
             <widget class="QWidget" name="playerWonders" native="true"/>
+           </item>
+           <item>
+            <widget class="QWidget" name="playerCards" native="true"/>
            </item>
           </layout>
          </widget>

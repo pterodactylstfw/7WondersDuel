@@ -92,24 +92,92 @@ void MainWindow::onStateUpdated() {
 }
 
 int MainWindow::askInt(int min, int max, const std::string& prompt) {
-    return min; // Default
+    bool ok;
+    int val = QInputDialog::getInt(this, "Input", QString::fromStdString(prompt), min, min, max, 1, &ok);
+    return ok ? val : min;
 }
 
 ResourceType MainWindow::askResourceSelection(const std::vector<ResourceType>& options, const std::string& prompt) {
-    if(options.empty()) return ResourceType::NONE;
-    return options[0]; // Default
+    if (options.empty()) return ResourceType::NONE;
+
+    QStringList items;
+    for (const auto& r : options) {
+        items << QString::fromStdString(resourceToString(r));
+    }
+
+    bool ok;
+    QString item = QInputDialog::getItem(this, "Select Resource",
+        QString::fromStdString(prompt),
+        items, 0, false, &ok);
+
+    if (ok && !item.isEmpty()) {
+        int index = items.indexOf(item);
+        if (index >= 0 && index < options.size()) return options[index];
+    }
+    return options[0];
 }
 
 int MainWindow::askWonderSelection(const std::vector<std::unique_ptr<Wonder>>& wonders, const std::string& playerName) {
-    return 0; // Default
+    if (wonders.empty()) return -1;
+
+    QStringList items;
+    for (const auto& w : wonders) {
+        items << QString::fromStdString(w->getName());
+    }
+
+    bool ok;
+    QString item = QInputDialog::getItem(this, "Select Wonder",
+        QString::fromStdString(playerName + ", choose a Wonder:"),
+        items, 0, false, &ok);
+
+    if (ok && !item.isEmpty()) {
+        return items.indexOf(item);
+    }
+    return 0;
 }
 
 int MainWindow::askTokenSelection(const std::vector<std::unique_ptr<ProgressToken>>& tokens, const std::string& prompt) {
-    return 0; // Default
+    if (tokens.empty()) return -1;
+
+    QStringList items;
+    for (const auto& token : tokens) {
+        QString label = QString::fromStdString(std::string(token->getName()));
+        items << label;
+    }
+
+    bool ok;
+    QString item = QInputDialog::getItem(this,
+        "Select Progress Token",
+        QString::fromStdString(prompt),
+        items,
+        0,
+        false,
+        &ok);
+
+    if (ok && !item.isEmpty()) {
+        return items.indexOf(item);
+    }
+
+    return 0; // default: primul
 }
 
 int MainWindow::askCardSelectionFromList(const std::vector<std::reference_wrapper<const Card>>& cards, const std::string& prompt) {
-    return 0; // Default
+    if (cards.empty()) return -1;
+
+    QStringList items;
+    for (const auto& c : cards) {
+        items << QString::fromStdString(c.get().getName());
+    }
+
+    bool ok;
+    QString item = QInputDialog::getItem(this, "Select Card",
+        QString::fromStdString(prompt),
+        items, 0, false, &ok);
+
+    if (ok && !item.isEmpty()) {
+        return items.indexOf(item);
+    }
+    return 0;
 }
 
 
@@ -470,9 +538,30 @@ void MainWindow::resizeEvent(QResizeEvent* event)
     QMainWindow::resizeEvent(event); 
 
     setupLayouts();
-    if (ui->stackedWidget->currentIndex() == 1 && m_game.hasGameStarted()) 
+    /*if (ui->stackedWidget->currentIndex() == 1 && m_game.hasGameStarted()) 
     {
-		onStateUpdated();
+		 onStateUpdated(); //crash aici uneori
+    }*/
+}
+
+void MainWindow::closeEvent(QCloseEvent* event)
+{
+
+    if (m_game.hasGameStarted() && !m_game.isGameOver()) {
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::question(this, "Quit Game",
+            "Are you sure you want to quit? Unsaved progress will be lost.",
+            QMessageBox::Yes | QMessageBox::No);
+
+        if (reply == QMessageBox::No) {
+            event->ignore();
+        }
+        else {
+            event->accept();
+        }
+    }
+    else {
+        event->accept(); // meniu/game over -> inchid direct
     }
 }
 
@@ -543,13 +632,16 @@ void MainWindow::setupLayouts()
 {
     const QSize containerSize = ui->cardContainer->size();
     qDebug() << "SetupLayouts Container Size:" << containerSize;
-    if (!containerSize.isValid()) return; 
+
+    // Verifică validitatea containerului
+    if (!containerSize.isValid() || containerSize.width() <= 0) return;
 
     const int availableWidth = containerSize.width();
     const int availableHeight = containerSize.height();
 
+    // --- MASURILE TALE ORIGINALE ---
     const int pyramidTotalHeight = availableHeight * 0.9;
-    const int cardH = pyramidTotalHeight / 3; 
+    const int cardH = pyramidTotalHeight / 3;
     const int cardW = cardH / 1.5;
 
     const int horizontalGap = 5;
@@ -557,13 +649,14 @@ void MainWindow::setupLayouts()
     const int stepX = cardW + horizontalGap;
 
     const int totalWidthOfBottomRow = 6 * cardW + 5 * horizontalGap;
-    const int totalHeightOfPyramid = cardH + 4 * verticalOverlap;
+    const int totalHeightOfPyramid = cardH + 4 * verticalOverlap; // Inaltimea pentru 5 randuri (Age 1 & 2)
 
+    // StartY calculat pentru piramidele cu 5 rânduri (Age 1 si 2)
     const int startX = (availableWidth - totalWidthOfBottomRow) / 2;
     const int startY = (availableHeight - totalHeightOfPyramid) / 2;
 
-	// age 1 layout
-    
+    // age 1 layout
+
     // Randul 1 (jos, 6 carti)
     for (int i = 0; i < 6; ++i) m_age1Layout[i] = { startX + i * stepX, startY + 4 * verticalOverlap };
     // Randul 2 (5 carti)
@@ -575,9 +668,48 @@ void MainWindow::setupLayouts()
     // Randul 5 (sus, 2 carti)
     for (int i = 0; i < 2; ++i) m_age1Layout[i + 18] = { startX + (2 * stepX) + (i * stepX), startY };
 
-	// age 2 layout
 
-	// age 3 layout
+    // age 2 layout
+
+    // Randul 5 (jos 2 carti)
+    for (int i = 0; i < 2; ++i) m_age2Layout[i] = { startX + (2 * stepX) + i * stepX, startY + 4 * verticalOverlap };
+
+    // Randul 4 (3 carti)
+    for (int i = 0; i < 3; ++i) m_age2Layout[2 + i] = { startX + stepX + (stepX / 2) + i * stepX, startY + 3 * verticalOverlap };
+
+    // Randul 3 (4 carti)
+    for (int i = 0; i < 4; ++i) m_age2Layout[5 + i] = { startX + stepX + i * stepX, startY + 2 * verticalOverlap };
+
+    // Randul 2 (5 carti)
+    for (int i = 0; i < 5; ++i) m_age2Layout[9 + i] = { startX + (stepX / 2) + i * stepX, startY + 1 * verticalOverlap };
+
+    // Randul 1 (sus 6 carti)
+    for (int i = 0; i < 6; ++i) m_age2Layout[14 + i] = { startX + i * stepX, startY };
+
+
+    // age 3 layout
+    const int startY_Age3 = startY - verticalOverlap;
+
+    // Randul 7 (jos 2 carti)
+    for (int i = 0; i < 2; ++i) m_age3Layout[i] = { startX + (2 * stepX) + i * stepX, startY_Age3 + 6 * verticalOverlap };
+
+    // Randul 6 (3 carti)
+    for (int i = 0; i < 3; ++i) m_age3Layout[2 + i] = { startX + stepX + (stepX / 2) + i * stepX, startY_Age3 + 5 * verticalOverlap };
+
+    // Randul 5 (4 carti)
+    for (int i = 0; i < 4; ++i) m_age3Layout[5 + i] = { startX + stepX + i * stepX, startY_Age3 + 4 * verticalOverlap };
+
+    // Randul 4 (mijloc - Guilds - 2 carti)
+    for (int i = 0; i < 2; ++i) m_age3Layout[9 + i] = { startX + (2 * stepX) + i * stepX, startY_Age3 + 3 * verticalOverlap };
+
+    // Randul 3 (4 carti)
+    for (int i = 0; i < 4; ++i) m_age3Layout[11 + i] = { startX + stepX + i * stepX, startY_Age3 + 2 * verticalOverlap };
+
+    // Randul 2 (3 carti)
+    for (int i = 0; i < 3; ++i) m_age3Layout[15 + i] = { startX + stepX + (stepX / 2) + i * stepX, startY_Age3 + 1 * verticalOverlap };
+
+    // Randul 1 (sus 2 carti)
+    for (int i = 0; i < 2; ++i) m_age3Layout[18 + i] = { startX + (2 * stepX) + i * stepX, startY_Age3 };
 }
 
 void MainWindow::updateCardStructures()

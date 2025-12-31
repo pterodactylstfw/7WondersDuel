@@ -705,7 +705,7 @@ std::vector<std::unique_ptr<Card>> CardFactory::createGuildDeck()
 			  .withResourceCost(ResourceType::WOOD, 2),
 		CardEffect().withPointPerCoins(1, 3)
 					.withCustomDescription("At the end of the game, this card is worth 1 victory point for each set of 3 coins in the richest city.\n"),
-		"moneylanders_guild.png"
+		"moneylenders_guild.png"
 	));
 
 	guildDeck.push_back(std::make_unique<Card>(

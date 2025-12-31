@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <QMainWindow>
 #include <QPushButton>
+#include <QCloseEvent>
 #include <array>
 
 #include "GameController.h"
@@ -58,6 +59,7 @@ private:
 
 protected:
     void resizeEvent(QResizeEvent* event) override;
+    void closeEvent(QCloseEvent* event) override;
 
 private:
     void updateGameUI();

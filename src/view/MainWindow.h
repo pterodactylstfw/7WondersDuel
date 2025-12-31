@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <QMainWindow>
 #include <QPushButton>
+#include <QCloseEvent>
 #include <array>
 
 #include "GameController.h"
@@ -49,15 +50,16 @@ private:
     std::array<CardPosition, GameConstants::CARDS_PER_AGE> m_age3Layout;
 
     void updatePlayerArea(const Player& player, QWidget* wondersArea, QWidget* cityArea);
-    QWidget* createColorColumn(const std::vector<std::reference_wrapper<const Card>>& cards);
+    QWidget* createColorColumn(const std::vector<std::reference_wrapper<const Card>>& cards, int width, int height);
 
     void showActionDialog(int cardIndex);
-    int selectWonderIndex(const std::string& playerName);
 
     void drawDraftBoard();
+    void cleanupVisuals();
 
 protected:
     void resizeEvent(QResizeEvent* event) override;
+    void closeEvent(QCloseEvent* event) override;
 
 private:
     void updateGameUI();

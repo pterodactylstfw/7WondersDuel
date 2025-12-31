@@ -62,7 +62,8 @@ void to_json(json& j, const Wonder& wonder)
 		{"name", wonder.m_name},
 		{"cost", wonder.m_cost},
 		{"isBuilt", wonder.m_isBuilt},
-		{"effect", wonder.m_effect }
+		{"effect", wonder.m_effect },
+		{"imagePath", wonder.m_imagePath}
 	};
 }
 
@@ -72,4 +73,5 @@ void from_json(const json& j, Wonder& wonder)
 	j.at("cost").get_to(wonder.m_cost);
 	j.at("isBuilt").get_to(wonder.m_isBuilt);
 	j.at("effect").get_to(wonder.m_effect);
+	j.at("imagePath").get_to(wonder.m_imagePath);
 }

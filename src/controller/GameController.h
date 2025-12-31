@@ -22,6 +22,7 @@ private:
 	void draftWondersAuto();
 	void prepareDraftRound();
 
+	void prepareWonders();
 	void prepareProgressTokens();
 
 	void checkMilitaryLooting(int previousShields, int currentShields);
@@ -42,6 +43,8 @@ public:
 	bool executeAction(int cardIndex, PlayerAction action, int wonderIndex = -1);
 
 	const GameState& getGameState() const;
+
+	bool hasGameStarted() const;
 	bool isGameOver() const; // acestea 2 pentru Ui - readonly
 
 	void loadGame(const std::string& filename);

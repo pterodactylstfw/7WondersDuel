@@ -99,7 +99,8 @@ void to_json(json& j, const Card& card)
 		{"cost", card.m_cost},
 		{"effect", card.m_effect},
 		{"freeChainFrom", card.m_freeChainFrom},
-		{"providesChainTo", card.m_providesChainTo}
+		{"providesChainTo", card.m_providesChainTo},
+		{"imagePath", card.m_imagePath}
 	};
 }
 
@@ -114,4 +115,8 @@ void from_json(const json& j, Card& card)
 	j.at("effect").get_to(card.m_effect);
 	card.m_freeChainFrom = get_optional<std::string>(j, "freeChainFrom");
 	card.m_providesChainTo = get_optional<std::string>(j, "providesChainTo");
+	if (j.contains("imagePath") && !j["imagePath"].is_null())
+		card.m_imagePath = j["imagePath"].get<std::string>();
+	else
+		card.m_imagePath = "";
 }

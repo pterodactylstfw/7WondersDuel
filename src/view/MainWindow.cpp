@@ -16,6 +16,7 @@ MainWindow::MainWindow(QWidget* parent)
     , ui(new Ui::MainWindow)
     , m_game(*this)
 {
+    this->setWindowIcon(QIcon(":/assets/coins.png"));
     ui->setupUi(this); 
 
     ui->labelMilitaryBoard->setPixmap(QPixmap(":/assets/military_board.png"));
@@ -28,8 +29,36 @@ MainWindow::MainWindow(QWidget* parent)
 	connect(ui->btnExit, &QPushButton::clicked, this, &MainWindow::onBtnExitClicked);
 
     connect(ui->btnBack, &QPushButton::clicked, this, [this]() {
+        if (m_game.hasGameStarted() && !m_game.isGameOver()) {
+            auto reply = QMessageBox::question(this, "Confirm",
+                "Going back will end the current game. Are you sure?",
+                QMessageBox::Yes | QMessageBox::No);
+
+            if (reply == QMessageBox::No) return;
+        }
+
+		cleanupVisuals();
         ui->stackedWidget->setCurrentIndex(0); // Inapoi la meniu
         });
+
+    ui->actionSave->setEnabled(false);
+    connect(ui->actionSave, &QAction::triggered, this, [this]() {
+        QString fileName = QFileDialog::getSaveFileName(this, "Save Game", "", "JSON Files (*.json)");
+        if (!fileName.isEmpty()) {
+            try {
+                m_game.saveGame(fileName.toStdString());
+                QMessageBox::information(this, "Saved", "Game saved successfully!");
+            }
+            catch (const std::exception& e) {
+                QMessageBox::critical(this, "Error", QString("Save failed: %1").arg(e.what()));
+            }
+        }
+        });
+
+    ui->actionLoad->setVisible(false);
+    connect(ui->actionLoad, &QAction::triggered, this, &MainWindow::onBtnLoadClicked);
+
+    connect(ui->actionExit, &QAction::triggered, this, &MainWindow::onBtnExitClicked);
 
     this->setWindowTitle("7 Wonders Duel");
 }
@@ -44,43 +73,111 @@ void MainWindow::onError(const std::string& error) {
 }
 
 void MainWindow::onStateUpdated() {
+    if (!m_game.hasGameStarted()) return;
+
     updateGameUI();
 
-    bool isDrafting = false;
-    
+    const auto& state = m_game.getGameState();
 
-    if (isDrafting) {
-        drawDraftBoard(); 
+    if (state.getCurrentPhase() == GamePhase::DRAFTING) {
+        drawDraftBoard();
     }
     else {
-        setupLayouts();    
+        updateCardStructures();
+        this->setWindowTitle("7 Wonders Duel - Age " + QString::number(state.getCurrentAge()));
     }
-
-    const auto& state = m_game.getGameState();
 
     updatePlayerArea(state.getCurrentPlayer(), ui->playerWonders, ui->playerCards);
     updatePlayerArea(state.getOpponent(), ui->opponentWonders, ui->opponentCards);
 }
 
 int MainWindow::askInt(int min, int max, const std::string& prompt) {
-    return min; // Default
+    bool ok;
+    int val = QInputDialog::getInt(this, "Input", QString::fromStdString(prompt), min, min, max, 1, &ok);
+    return ok ? val : min;
 }
 
 ResourceType MainWindow::askResourceSelection(const std::vector<ResourceType>& options, const std::string& prompt) {
-    if(options.empty()) return ResourceType::NONE;
-    return options[0]; // Default
+    if (options.empty()) return ResourceType::NONE;
+
+    QStringList items;
+    for (const auto& r : options) {
+        items << QString::fromStdString(resourceToString(r));
+    }
+
+    bool ok;
+    QString item = QInputDialog::getItem(this, "Select Resource",
+        QString::fromStdString(prompt),
+        items, 0, false, &ok);
+
+    if (ok && !item.isEmpty()) {
+        int index = items.indexOf(item);
+        if (index >= 0 && index < options.size()) return options[index];
+    }
+    return options[0];
 }
 
 int MainWindow::askWonderSelection(const std::vector<std::unique_ptr<Wonder>>& wonders, const std::string& playerName) {
-    return 0; // Default
+    if (wonders.empty()) return -1;
+
+    QStringList items;
+    for (const auto& w : wonders) {
+        items << QString::fromStdString(w->getName());
+    }
+
+    bool ok;
+    QString item = QInputDialog::getItem(this, "Select Wonder",
+        QString::fromStdString(playerName + ", choose a Wonder:"),
+        items, 0, false, &ok);
+
+    if (ok && !item.isEmpty()) {
+        return items.indexOf(item);
+    }
+    return 0;
 }
 
 int MainWindow::askTokenSelection(const std::vector<std::unique_ptr<ProgressToken>>& tokens, const std::string& prompt) {
-    return 0; // Default
+    if (tokens.empty()) return -1;
+
+    QStringList items;
+    for (const auto& token : tokens) {
+        QString label = QString::fromStdString(std::string(token->getName()));
+        items << label;
+    }
+
+    bool ok;
+    QString item = QInputDialog::getItem(this,
+        "Select Progress Token",
+        QString::fromStdString(prompt),
+        items,
+        0,
+        false,
+        &ok);
+
+    if (ok && !item.isEmpty()) {
+        return items.indexOf(item);
+    }
+
+    return 0; // default: primul
 }
 
 int MainWindow::askCardSelectionFromList(const std::vector<std::reference_wrapper<const Card>>& cards, const std::string& prompt) {
-    return 0; // Default
+    if (cards.empty()) return -1;
+
+    QStringList items;
+    for (const auto& c : cards) {
+        items << QString::fromStdString(c.get().getName());
+    }
+
+    bool ok;
+    QString item = QInputDialog::getItem(this, "Select Card",
+        QString::fromStdString(prompt),
+        items, 0, false, &ok);
+
+    if (ok && !item.isEmpty()) {
+        return items.indexOf(item);
+    }
+    return 0;
 }
 
 
@@ -98,8 +195,6 @@ void MainWindow::onBtnStartClicked()
         return;
     }
 
-	m_game.startNewGame(player1Name.toStdString(), player2Name.toStdString());
-
     ui->stackedWidget->setCurrentIndex(1);
 	qDebug() << "Switched to game view";
 
@@ -108,6 +203,13 @@ void MainWindow::onBtnStartClicked()
 
 	QApplication::processEvents();
 	setupLayouts();
+    m_game.startNewGame(player1Name.toStdString(), player2Name.toStdString());
+
+    ui->actionSave->setEnabled(true);
+    ui->actionLoad->setVisible(true);
+
+
+    ui->stackedWidget->setCurrentIndex(1);
 	updateGameUI();
 }
 
@@ -125,11 +227,16 @@ void MainWindow::onBtnLoadClicked()
     try {
         m_game.loadGame(fileName.toStdString());
 
+        ui->actionSave->setEnabled(true);
+
         ui->stackedWidget->setCurrentIndex(1);
-        QMessageBox::information(this, "Success", "Game loaded successfully!");
+
+        QApplication::processEvents();
 
 		setupLayouts();
-		updateGameUI();
+        onStateUpdated();
+
+        QMessageBox::information(this, "Success", "Game loaded successfully!");
     }
     catch (const std::exception& e) {
         QMessageBox::critical(this, "Error", QString("Could not load game:\n").arg(e.what()));
@@ -144,8 +251,19 @@ void MainWindow::updatePlayerArea(const Player& player, QWidget* wondersArea, QW
 {
     if (!wondersArea || !cityArea) return;
 
+    int windowW = this->width();
+
+    int wonderW = windowW * 0.12;
+    int wonderH = wonderW * 0.66;
+    if (wonderW < 80) { wonderW = 80; wonderH = 55; }
+    if (wonderW > 250) { wonderW = 250; wonderH = 166; }
+
+    int cardW = windowW * 0.07;
+    int cardH = cardW * 1.5;
+    if (cardW < 50) { cardW = 50; cardH = 75; }
+    if (cardW > 180) { cardW = 180; cardH = 270; }
+
     // MINUNI
-    // 
     // stergem butoanele vechi
     qDeleteAll(wondersArea->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly));
 
@@ -161,17 +279,33 @@ void MainWindow::updatePlayerArea(const Player& player, QWidget* wondersArea, QW
         if (!wonder) continue; 
 
         QPushButton* btn = new QPushButton(wondersArea);
-        btn->setFixedSize(100, 60); 
-        btn->setText(QString::fromStdString(wonder->getName()));
+        btn->setFixedSize(wonderW, wonderH); 
 
-		// stil diferit daca e construita sau nu
+        QString imgPath = QString::fromStdString(wonder->getImagePath());
+        QPixmap pix(imgPath);
+
+        if (!pix.isNull()) {
+            btn->setIcon(QIcon(pix));
+            btn->setIconSize(QSize(wonderW - 6, wonderH - 6));
+        }
+        else {
+            btn->setText(QString::fromStdString(wonder->getName()));
+        }
+
         if (wonder->isBuilt()) {
-            btn->setStyleSheet("background-color: #ffd700; border: 2px solid green; color: black; font-weight: bold;");
+            btn->setStyleSheet(
+                "QPushButton { border: 3px solid #FFD700; background-color: black; border-radius: 4px; }"
+                "QPushButton:hover { border: 3px solid white; }"
+            );
             btn->setToolTip("BUILT: " + QString::fromStdString(wonder->getDescription()));
         }
         else {
-            btn->setStyleSheet("background-color: #555; border: 1px dashed white; color: white;");
-            btn->setToolTip("COST: " + QString::fromStdString(wonder->getCost().toString()) + "\nEFFECT: " + QString::fromStdString(wonder->getDescription()));
+            btn->setStyleSheet(
+                "QPushButton { border: 2px dashed gray; background-color: rgba(0, 0, 0, 50); border-radius: 4px; }"
+                "QPushButton:hover { border: 2px solid orange; }"
+            );
+            btn->setToolTip("COST: " + QString::fromStdString(wonder->getCost().toString()) +
+                "\nEFFECT: " + QString::fromStdString(wonder->getDescription()));
         }
 
         wondersArea->layout()->addWidget(btn);
@@ -199,32 +333,35 @@ void MainWindow::updatePlayerArea(const Player& player, QWidget* wondersArea, QW
         auto cards = player.getCardsOfType(color);
         if (!cards.empty()) {
 			// cream coloana pentru aceasta culoare
-            QWidget* col = createColorColumn(cards);
+            QWidget* col = createColorColumn(cards, cardW, cardH);
             cityArea->layout()->addWidget(col);
         }
     }
 }
 
-QWidget* MainWindow::createColorColumn(const std::vector<std::reference_wrapper<const Card>>& cards)
+QWidget* MainWindow::createColorColumn(const std::vector<std::reference_wrapper<const Card>>& cards, int width, int height)
 {
     QWidget* columnWidget = new QWidget();
     QVBoxLayout* layout = new QVBoxLayout(columnWidget);
 
-    // suprapunere
-    layout->setSpacing(-80);
+    int visibleHeader = height * 0.22;
+    int negativeSpacing = -(height - visibleHeader);
+
+    layout->setSpacing(negativeSpacing);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setAlignment(Qt::AlignTop);
 
     for (const auto& cardRef : cards) {
         const Card& card = cardRef.get();
         QPushButton* btn = new QPushButton(columnWidget);
-        btn->setFixedSize(70, 100); 
+
+        btn->setFixedSize(width, height); 
 
         QString imgPath = QString::fromStdString(card.getImagePath());
         QPixmap pix(imgPath);
         if (!pix.isNull()) {
             btn->setIcon(QIcon(pix));
-            btn->setIconSize(QSize(70, 100));
+            btn->setIconSize(QSize(width, height));
             btn->setStyleSheet("border: none; background: transparent;");
         }
         else {
@@ -236,6 +373,8 @@ QWidget* MainWindow::createColorColumn(const std::vector<std::reference_wrapper<
         btn->raise(); 
         layout->addWidget(btn);
     }
+
+	columnWidget->setFixedWidth(width);
     return columnWidget;
 }
 
@@ -314,32 +453,30 @@ void MainWindow::drawDraftBoard()
     }
     m_cardButtons.clear();
 
-    // 2. Obținem minunile disponibile pentru draft
-    // ATENȚIE: Aici presupunem că ai o metodă în GameController care returnează cele 4 minuni curente
-    // Deocamdată, ca să testăm vizual, vom "inventa" logica de afișare.
-    // În realitate, vei lua vectorul din m_game.getGameState().getDraftPool() (trebuie implementat în backend)
+	const auto& gameState = m_game.getGameState();
+	const auto& draftedWonders = gameState.getDraftedWonders();
+    
+	if (draftedWonders.empty()) return;
 
-    // EXEMPLU VIZUAL: Să zicem că avem 4 minuni fictive sau le luăm din factory temporar
-    // (În pasul următor vom lega asta de backend-ul real)
-
-    // Calculăm dimensiunile pentru 4 minuni mari
     int containerW = ui->cardContainer->width();
     int containerH = ui->cardContainer->height();
 
-    int wonderW = 150; // Mai late decât cărțile normale
-    int wonderH = 100;
-    int spacing = 20;
+    int wonderW = containerW * 0.20;
+    int wonderH = containerH * 0.40;
+    wonderH = wonderW * 0.66; 
 
-    // Calculăm poziția de start ca să fie centrate
-    int totalWidth = (4 * wonderW) + (3 * spacing);
-    int startX = (containerW - totalWidth) / 2;
-    int startY = (containerH - wonderH) / 2; // Centrat vertical
+    int spacing = containerW * 0.05;
 
-    // Desenăm cele 4 sloturi
-    // (Aici ar trebui să iterezi prin vectorul de minuni disponibile)
-    for (int i = 0; i < 4; ++i) {
-        // Dacă minunea a fost deja luată, sărim peste ea (nu o desenăm)
-        // if (availableWonders[i] == nullptr) continue; 
+    int totalContentWidth = (draftedWonders.size() * wonderW) + ((draftedWonders.size() - 1) * spacing);
+    int startX = (containerW - totalContentWidth) / 2;
+    int startY = (containerH - wonderH) / 2;
+
+    if (startX < 0) startX = 0;
+    if (startY < 0) startY = 0;
+
+    for (size_t i = 0; i < draftedWonders.size(); i++) {
+		const auto& wonder = draftedWonders[i];
+		if (!wonder) continue;
 
         QPushButton* btn = new QPushButton(ui->cardContainer);
         int x = startX + i * (wonderW + spacing);
@@ -347,22 +484,53 @@ void MainWindow::drawDraftBoard()
 
         btn->setGeometry(x, y, wonderW, wonderH);
 
-        // Text temporar până legăm imaginile
-        btn->setText("Wonder " + QString::number(i + 1));
-        btn->setStyleSheet("background-color: #FF9800; border: 2px solid white; color: white; font-weight: bold; font-size: 14px;");
+        QString imgPath = QString::fromStdString(wonder->getImagePath());
+        QPixmap pix(imgPath);
 
-        // Conectăm click-ul
+        if (!pix.isNull()) {
+            btn->setIcon(QIcon(pix));
+            btn->setIconSize(QSize(wonderW, wonderH));
+            btn->setStyleSheet("border: none; background: transparent;");
+        }
+        else {
+            btn->setText(QString::fromStdString(wonder->getName()));
+            btn->setStyleSheet("background-color: orange; border: 2px solid white; font-weight: bold;");
+        }
+
+        btn->setToolTip(QString::fromStdString(wonder->getDescription()));
+
         connect(btn, &QPushButton::clicked, [this, i]() {
-            // Aici vom apela funcția din controller: m_game.pickWonder(i);
-            qDebug() << "Player selected Wonder index: " << i;
+            bool success = m_game.pickWonder(i);
+            
+            if (!success) {
+                QMessageBox::warning(this, "Atenție", "Nu poți alege această minune acum.");
+            }
             });
 
         btn->show();
-        m_cardButtons.push_back(btn); // Le salvăm ca să le putem șterge la refresh
+        m_cardButtons.push_back(btn); 
     }
 
-    // Adăugăm și un titlu sus ca să știm cine alege
-    // Putem folosi un QLabel existent sau creăm unul temporar
+    this->setWindowTitle("DRAFT PHASE: " + QString::fromStdString(gameState.getCurrentPlayer().getName()) + " is choosing...");
+}
+
+void MainWindow::cleanupVisuals() // pentru resetarea UI-ului la iesirea din joc
+{
+    for (QPushButton* btn : m_cardButtons) {
+        delete btn;
+    }
+    m_cardButtons.clear();
+
+
+    if (ui->playerWonders) qDeleteAll(ui->playerWonders->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly));
+    if (ui->playerCards) qDeleteAll(ui->playerCards->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly));
+
+    if (ui->opponentWonders) qDeleteAll(ui->opponentWonders->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly));
+    if (ui->opponentCards) qDeleteAll(ui->opponentCards->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly));
+
+    ui->labelCurrentPlayerName->setText("-");
+    ui->labelOpponentName->setText("-");
+
 }
 
 void MainWindow::resizeEvent(QResizeEvent* event)
@@ -370,17 +538,38 @@ void MainWindow::resizeEvent(QResizeEvent* event)
     QMainWindow::resizeEvent(event); 
 
     setupLayouts();
-    if (ui->stackedWidget->currentIndex() == 1) 
+    /*if (ui->stackedWidget->currentIndex() == 1 && m_game.hasGameStarted()) 
     {
-        updateGameUI();
+		 onStateUpdated(); //crash aici uneori
+    }*/
+}
+
+void MainWindow::closeEvent(QCloseEvent* event)
+{
+
+    if (m_game.hasGameStarted() && !m_game.isGameOver()) {
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::question(this, "Quit Game",
+            "Are you sure you want to quit? Unsaved progress will be lost.",
+            QMessageBox::Yes | QMessageBox::No);
+
+        if (reply == QMessageBox::No) {
+            event->ignore();
+        }
+        else {
+            event->accept();
+        }
+    }
+    else {
+        event->accept(); // meniu/game over -> inchid direct
     }
 }
 
 void MainWindow::updateGameUI()
 {
-    if (m_game.isGameOver()) {
-        return;
-    }
+    if (!m_game.hasGameStarted()) return;
+    if (m_game.isGameOver()) return;
+    
 
 	const auto& gameState = m_game.getGameState();
 
@@ -388,7 +577,6 @@ void MainWindow::updateGameUI()
 	updatePlayerPanel(gameState.getOpponent(), true);
 
     updateMilitaryTrack();
-	updateCardStructures();
 }
 
 void MainWindow::updatePlayerPanel(const Player& player, bool isOpponent)
@@ -443,13 +631,17 @@ void MainWindow::updateMilitaryTrack()
 void MainWindow::setupLayouts()
 {
     const QSize containerSize = ui->cardContainer->size();
-    if (!containerSize.isValid()) return; 
+    qDebug() << "SetupLayouts Container Size:" << containerSize;
+
+    // Verifică validitatea containerului
+    if (!containerSize.isValid() || containerSize.width() <= 0) return;
 
     const int availableWidth = containerSize.width();
     const int availableHeight = containerSize.height();
 
+    // --- MASURILE TALE ORIGINALE ---
     const int pyramidTotalHeight = availableHeight * 0.9;
-    const int cardH = pyramidTotalHeight / 3; 
+    const int cardH = pyramidTotalHeight / 3;
     const int cardW = cardH / 1.5;
 
     const int horizontalGap = 5;
@@ -457,13 +649,14 @@ void MainWindow::setupLayouts()
     const int stepX = cardW + horizontalGap;
 
     const int totalWidthOfBottomRow = 6 * cardW + 5 * horizontalGap;
-    const int totalHeightOfPyramid = cardH + 4 * verticalOverlap;
+    const int totalHeightOfPyramid = cardH + 4 * verticalOverlap; // Inaltimea pentru 5 randuri (Age 1 & 2)
 
+    // StartY calculat pentru piramidele cu 5 rânduri (Age 1 si 2)
     const int startX = (availableWidth - totalWidthOfBottomRow) / 2;
     const int startY = (availableHeight - totalHeightOfPyramid) / 2;
 
-	// age 1 layout
-    
+    // age 1 layout
+
     // Randul 1 (jos, 6 carti)
     for (int i = 0; i < 6; ++i) m_age1Layout[i] = { startX + i * stepX, startY + 4 * verticalOverlap };
     // Randul 2 (5 carti)
@@ -475,17 +668,62 @@ void MainWindow::setupLayouts()
     // Randul 5 (sus, 2 carti)
     for (int i = 0; i < 2; ++i) m_age1Layout[i + 18] = { startX + (2 * stepX) + (i * stepX), startY };
 
-	// age 2 layout
 
-	// age 3 layout
+    // age 2 layout
+
+    // Randul 5 (jos 2 carti)
+    for (int i = 0; i < 2; ++i) m_age2Layout[i] = { startX + (2 * stepX) + i * stepX, startY + 4 * verticalOverlap };
+
+    // Randul 4 (3 carti)
+    for (int i = 0; i < 3; ++i) m_age2Layout[2 + i] = { startX + stepX + (stepX / 2) + i * stepX, startY + 3 * verticalOverlap };
+
+    // Randul 3 (4 carti)
+    for (int i = 0; i < 4; ++i) m_age2Layout[5 + i] = { startX + stepX + i * stepX, startY + 2 * verticalOverlap };
+
+    // Randul 2 (5 carti)
+    for (int i = 0; i < 5; ++i) m_age2Layout[9 + i] = { startX + (stepX / 2) + i * stepX, startY + 1 * verticalOverlap };
+
+    // Randul 1 (sus 6 carti)
+    for (int i = 0; i < 6; ++i) m_age2Layout[14 + i] = { startX + i * stepX, startY };
+
+
+    // age 3 layout
+    const int startY_Age3 = startY - verticalOverlap;
+
+    // Randul 7 (jos 2 carti)
+    for (int i = 0; i < 2; ++i) m_age3Layout[i] = { startX + (2 * stepX) + i * stepX, startY_Age3 + 6 * verticalOverlap };
+
+    // Randul 6 (3 carti)
+    for (int i = 0; i < 3; ++i) m_age3Layout[2 + i] = { startX + stepX + (stepX / 2) + i * stepX, startY_Age3 + 5 * verticalOverlap };
+
+    // Randul 5 (4 carti)
+    for (int i = 0; i < 4; ++i) m_age3Layout[5 + i] = { startX + stepX + i * stepX, startY_Age3 + 4 * verticalOverlap };
+
+    // Randul 4 (mijloc - Guilds - 2 carti)
+    for (int i = 0; i < 2; ++i) m_age3Layout[9 + i] = { startX + (2 * stepX) + i * stepX, startY_Age3 + 3 * verticalOverlap };
+
+    // Randul 3 (4 carti)
+    for (int i = 0; i < 4; ++i) m_age3Layout[11 + i] = { startX + stepX + i * stepX, startY_Age3 + 2 * verticalOverlap };
+
+    // Randul 2 (3 carti)
+    for (int i = 0; i < 3; ++i) m_age3Layout[15 + i] = { startX + stepX + (stepX / 2) + i * stepX, startY_Age3 + 1 * verticalOverlap };
+
+    // Randul 1 (sus 2 carti)
+    for (int i = 0; i < 2; ++i) m_age3Layout[18 + i] = { startX + (2 * stepX) + i * stepX, startY_Age3 };
 }
 
 void MainWindow::updateCardStructures()
 {
-    for (QPushButton* button : m_cardButtons) {
-		delete button;
+    /*for (QPushButton* button : m_cardButtons) {
+		delete button; // crash uneori
     }
-	m_cardButtons.clear();
+	m_cardButtons.clear();*/
+
+    for (QPushButton* button : m_cardButtons) {
+        // sterge cand revii in event loop
+        button->deleteLater();
+    }
+    m_cardButtons.clear();
 
     const auto& gameState = m_game.getGameState();
     const auto& pyramid = gameState.getPyramid();
@@ -525,16 +763,30 @@ void MainWindow::updateCardStructures()
         if (node.m_isFaceUp) {
             auto cardViewOpt = gameState.getCardView(node.m_index);
             if (!cardViewOpt) continue;
-            imagePath = QString::fromStdString(cardViewOpt->get().getImagePath());
+            const Card& card = cardViewOpt->get();
+
+            // fix image path
+            QString rawPath = QString::fromStdString(card.getImagePath());
+
+            if (!rawPath.startsWith(":/")) {
+                imagePath = QString(":/assets/age%1/%2")
+                    .arg(card.getAge())
+                    .arg(rawPath);
+            }
+            else {
+                imagePath = rawPath;
+            }
         }
         else {
             imagePath = QString(":/assets/age%1/age%1_back.png").arg(currentAge);
         }
 
         QPixmap cardPixmap(imagePath);
+
         if (cardPixmap.isNull()) {
-            qDebug() << "Failed to load image:" << imagePath;
-            continue;
+            qDebug() << "Failed to load image:" << imagePath; // de debug, imagine gri
+            cardPixmap = QPixmap(cardW, cardH);
+            cardPixmap.fill(Qt::gray);
         }
 
         QPixmap finalPixmap(cardW, cardH);

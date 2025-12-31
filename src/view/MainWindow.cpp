@@ -16,6 +16,7 @@ MainWindow::MainWindow(QWidget* parent)
     , ui(new Ui::MainWindow)
     , m_game(*this)
 {
+    this->setWindowIcon(QIcon(":/assets/coins.png"));
     ui->setupUi(this); 
 
     ui->labelMilitaryBoard->setPixmap(QPixmap(":/assets/military_board.png"));
@@ -28,8 +29,36 @@ MainWindow::MainWindow(QWidget* parent)
 	connect(ui->btnExit, &QPushButton::clicked, this, &MainWindow::onBtnExitClicked);
 
     connect(ui->btnBack, &QPushButton::clicked, this, [this]() {
+        if (m_game.hasGameStarted() && !m_game.isGameOver()) {
+            auto reply = QMessageBox::question(this, "Confirm",
+                "Going back will end the current game. Are you sure?",
+                QMessageBox::Yes | QMessageBox::No);
+
+            if (reply == QMessageBox::No) return;
+        }
+
+		cleanupVisuals();
         ui->stackedWidget->setCurrentIndex(0); // Inapoi la meniu
         });
+
+    ui->actionSave->setEnabled(false);
+    connect(ui->actionSave, &QAction::triggered, this, [this]() {
+        QString fileName = QFileDialog::getSaveFileName(this, "Save Game", "", "JSON Files (*.json)");
+        if (!fileName.isEmpty()) {
+            try {
+                m_game.saveGame(fileName.toStdString());
+                QMessageBox::information(this, "Saved", "Game saved successfully!");
+            }
+            catch (const std::exception& e) {
+                QMessageBox::critical(this, "Error", QString("Save failed: %1").arg(e.what()));
+            }
+        }
+        });
+
+    ui->actionLoad->setVisible(false);
+    connect(ui->actionLoad, &QAction::triggered, this, &MainWindow::onBtnLoadClicked);
+
+    connect(ui->actionExit, &QAction::triggered, this, &MainWindow::onBtnExitClicked);
 
     this->setWindowTitle("7 Wonders Duel");
 }
@@ -108,6 +137,11 @@ void MainWindow::onBtnStartClicked()
 	setupLayouts();
     m_game.startNewGame(player1Name.toStdString(), player2Name.toStdString());
 
+    ui->actionSave->setEnabled(true);
+    ui->actionLoad->setVisible(true);
+
+
+    ui->stackedWidget->setCurrentIndex(1);
 	updateGameUI();
 }
 
@@ -125,11 +159,16 @@ void MainWindow::onBtnLoadClicked()
     try {
         m_game.loadGame(fileName.toStdString());
 
+        ui->actionSave->setEnabled(true);
+
         ui->stackedWidget->setCurrentIndex(1);
-        QMessageBox::information(this, "Success", "Game loaded successfully!");
+
+        QApplication::processEvents();
 
 		setupLayouts();
-		updateGameUI();
+        onStateUpdated();
+
+        QMessageBox::information(this, "Success", "Game loaded successfully!");
     }
     catch (const std::exception& e) {
         QMessageBox::critical(this, "Error", QString("Could not load game:\n").arg(e.what()));
@@ -407,6 +446,25 @@ void MainWindow::drawDraftBoard()
     this->setWindowTitle("DRAFT PHASE: " + QString::fromStdString(gameState.getCurrentPlayer().getName()) + " is choosing...");
 }
 
+void MainWindow::cleanupVisuals() // pentru resetarea UI-ului la iesirea din joc
+{
+    for (QPushButton* btn : m_cardButtons) {
+        delete btn;
+    }
+    m_cardButtons.clear();
+
+
+    if (ui->playerWonders) qDeleteAll(ui->playerWonders->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly));
+    if (ui->playerCards) qDeleteAll(ui->playerCards->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly));
+
+    if (ui->opponentWonders) qDeleteAll(ui->opponentWonders->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly));
+    if (ui->opponentCards) qDeleteAll(ui->opponentCards->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly));
+
+    ui->labelCurrentPlayerName->setText("-");
+    ui->labelOpponentName->setText("-");
+
+}
+
 void MainWindow::resizeEvent(QResizeEvent* event)
 {
     QMainWindow::resizeEvent(event); 
@@ -484,6 +542,7 @@ void MainWindow::updateMilitaryTrack()
 void MainWindow::setupLayouts()
 {
     const QSize containerSize = ui->cardContainer->size();
+    qDebug() << "SetupLayouts Container Size:" << containerSize;
     if (!containerSize.isValid()) return; 
 
     const int availableWidth = containerSize.width();
@@ -523,10 +582,16 @@ void MainWindow::setupLayouts()
 
 void MainWindow::updateCardStructures()
 {
-    for (QPushButton* button : m_cardButtons) {
-		delete button;
+    /*for (QPushButton* button : m_cardButtons) {
+		delete button; // crash uneori
     }
-	m_cardButtons.clear();
+	m_cardButtons.clear();*/
+
+    for (QPushButton* button : m_cardButtons) {
+        // sterge cand revii in event loop
+        button->deleteLater();
+    }
+    m_cardButtons.clear();
 
     const auto& gameState = m_game.getGameState();
     const auto& pyramid = gameState.getPyramid();
@@ -566,16 +631,30 @@ void MainWindow::updateCardStructures()
         if (node.m_isFaceUp) {
             auto cardViewOpt = gameState.getCardView(node.m_index);
             if (!cardViewOpt) continue;
-            imagePath = QString::fromStdString(cardViewOpt->get().getImagePath());
+            const Card& card = cardViewOpt->get();
+
+            // fix image path
+            QString rawPath = QString::fromStdString(card.getImagePath());
+
+            if (!rawPath.startsWith(":/")) {
+                imagePath = QString(":/assets/age%1/%2")
+                    .arg(card.getAge())
+                    .arg(rawPath);
+            }
+            else {
+                imagePath = rawPath;
+            }
         }
         else {
             imagePath = QString(":/assets/age%1/age%1_back.png").arg(currentAge);
         }
 
         QPixmap cardPixmap(imagePath);
+
         if (cardPixmap.isNull()) {
-            qDebug() << "Failed to load image:" << imagePath;
-            continue;
+            qDebug() << "Failed to load image:" << imagePath; // de debug, imagine gri
+            cardPixmap = QPixmap(cardW, cardH);
+            cardPixmap.fill(Qt::gray);
         }
 
         QPixmap finalPixmap(cardW, cardH);

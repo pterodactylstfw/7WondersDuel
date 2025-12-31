@@ -54,6 +54,7 @@ private:
     void showActionDialog(int cardIndex);
 
     void drawDraftBoard();
+    void cleanupVisuals();
 
 protected:
     void resizeEvent(QResizeEvent* event) override;

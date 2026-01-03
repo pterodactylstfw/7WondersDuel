@@ -19,6 +19,7 @@ private:
 	int m_coins;
 	int m_militaryShields;
 	int m_victoryPoints;
+	bool m_isAI = false;
 
 	std::map<ScientificSymbol, int> m_scientificSymbols;
 	std::vector< std::unique_ptr<Card>> m_constructedCards;
@@ -28,7 +29,6 @@ private:
 
 	ResourceProduction m_resourceProduction;
 	std::map<ResourceType, int> m_tradeDiscounts;
-
 public:
 
 	Player() = default;
@@ -63,7 +63,10 @@ public:
 	std::vector<std::reference_wrapper<const Card>> getCardsOfType(const CardColor& color) const;
 
 	int getConstructedWondersCount() const;
-	int getFinalScore(const Player& opponent) const; 
+	int getFinalScore(const Player& opponent) const;
+
+	void setAI(bool isAI);
+	bool isAI() const;
 
 	bool hasScientificVictory() const;
 	int getMilitaryShields() const;

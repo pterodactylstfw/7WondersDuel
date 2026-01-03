@@ -1,7 +1,7 @@
 #include "Player.h"
 
 Player::Player(const std::string& playerName):
-	m_name(playerName), m_coins(GameConstants::STARTING_COINS), m_militaryShields(0), m_victoryPoints(0) { }
+	m_name(playerName),m_isAI(false), m_coins(GameConstants::STARTING_COINS), m_militaryShields(0), m_victoryPoints(0) { }
 
 void Player::addCard(std::unique_ptr<Card>&& card)
 {
@@ -272,6 +272,16 @@ int Player::getFinalScore(const Player& opponent) const
 	}
 
 	return score;
+}
+
+void Player::setAI(bool isAI)
+{
+	m_isAI = isAI;
+}
+
+bool Player::isAI() const
+{
+	return m_isAI;
 }
 
 bool Player::hasScientificVictory() const

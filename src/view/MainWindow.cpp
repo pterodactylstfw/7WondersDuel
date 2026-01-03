@@ -22,6 +22,11 @@ MainWindow::MainWindow(QWidget* parent)
     ui->labelMilitaryBoard->setPixmap(QPixmap(":/assets/military_board.png"));
     ui->labelMilitaryLead->setPixmap(QPixmap(":/assets/military_lead.png"));
 
+    ui->verticalLayout_6->removeWidget(ui->labelMilitaryLead);
+    ui->labelMilitaryLead->setParent(ui->militaryPanel);
+    ui->labelMilitaryLead->raise();
+    ui->labelMilitaryLead->show();
+
 	ui->stackedWidget->setCurrentIndex(0);
 
     connect(ui->btnStart, &QPushButton::clicked, this, &MainWindow::onBtnStartClicked);
@@ -251,17 +256,25 @@ void MainWindow::updatePlayerArea(const Player& player, QWidget* wondersArea, QW
 {
     if (!wondersArea || !cityArea) return;
 
-    int windowW = this->width();
+    int availableH = cityArea->height();
+    if (availableH < 50) availableH = this->height() * 0.2; 
+    int maxH = availableH - 10;
 
-    int wonderW = windowW * 0.12;
+    int wonderW = this->width() * 0.11;
     int wonderH = wonderW * 0.66;
-    if (wonderW < 80) { wonderW = 80; wonderH = 55; }
-    if (wonderW > 250) { wonderW = 250; wonderH = 166; }
 
-    int cardW = windowW * 0.07;
+    if (wonderH > maxH) {
+        wonderH = maxH;
+        wonderW = wonderH / 0.66; 
+    }
+
+    int cardW = this->width() * 0.04;
     int cardH = cardW * 1.5;
-    if (cardW < 50) { cardW = 50; cardH = 75; }
-    if (cardW > 180) { cardW = 180; cardH = 270; }
+
+    if (cardH > maxH) {
+        cardH = maxH;
+        cardW = cardH / 1.5; 
+    }
 
     // MINUNI
     // stergem butoanele vechi
@@ -285,7 +298,9 @@ void MainWindow::updatePlayerArea(const Player& player, QWidget* wondersArea, QW
         QPixmap pix(imgPath);
 
         if (!pix.isNull()) {
-            btn->setIcon(QIcon(pix));
+            QPixmap labeledPix = addTextToImage(pix, QString::fromStdString(wonder->getName()), wonderW, wonderH);
+
+            btn->setIcon(QIcon(labeledPix));
             btn->setIconSize(QSize(wonderW - 6, wonderH - 6));
         }
         else {
@@ -319,7 +334,7 @@ void MainWindow::updatePlayerArea(const Player& player, QWidget* wondersArea, QW
 	// asiguram layout orizontal
     if (!cityArea->layout()) {
         QHBoxLayout* l = new QHBoxLayout(cityArea);
-        l->setSpacing(5);
+        l->setSpacing(cardW * 0.1);
         l->setContentsMargins(0, 0, 0, 0);
     }
 
@@ -339,28 +354,26 @@ void MainWindow::updatePlayerArea(const Player& player, QWidget* wondersArea, QW
     }
 }
 
+
 QWidget* MainWindow::createColorColumn(const std::vector<std::reference_wrapper<const Card>>& cards, int width, int height)
 {
     QWidget* columnWidget = new QWidget();
-    QVBoxLayout* layout = new QVBoxLayout(columnWidget);
 
-    int visibleHeader = height * 0.22;
-    int negativeSpacing = -(height - visibleHeader);
-
-    layout->setSpacing(negativeSpacing);
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->setAlignment(Qt::AlignTop);
+    int visibleHeader = height * 0.25;
+    int currentY = 30; // top margin pentru banda maro
 
     for (const auto& cardRef : cards) {
         const Card& card = cardRef.get();
         QPushButton* btn = new QPushButton(columnWidget);
 
-        btn->setFixedSize(width, height); 
+        btn->setGeometry(0, currentY, width, height);
 
         QString imgPath = QString::fromStdString(card.getImagePath());
         QPixmap pix(imgPath);
         if (!pix.isNull()) {
-            btn->setIcon(QIcon(pix));
+            QPixmap labeledPix = addTextToImage(pix, QString::fromStdString(card.getName()), width, height);
+
+            btn->setIcon(QIcon(labeledPix));
             btn->setIconSize(QSize(width, height));
             btn->setStyleSheet("border: none; background: transparent;");
         }
@@ -370,12 +383,43 @@ QWidget* MainWindow::createColorColumn(const std::vector<std::reference_wrapper<
         }
 
         btn->setToolTip(QString::fromStdString(card.displayCardInfo()));
+		btn->show();
         btn->raise(); 
-        layout->addWidget(btn);
+        currentY += visibleHeader;
     }
 
-	columnWidget->setFixedWidth(width);
+    int totalHeight = currentY + ((cards.size() - 1) * visibleHeader) + height;
+    columnWidget->setFixedSize(width, totalHeight);
     return columnWidget;
+}
+
+QPixmap MainWindow::addTextToImage(const QPixmap& baseImage, const QString& text, int width, int height)
+{
+	if (baseImage.isNull()) return QPixmap();
+
+	QPixmap textPixmap(width, height);
+	textPixmap.fill(Qt::transparent);
+
+	QPainter painter(&textPixmap);
+	painter.drawPixmap(0, 0, baseImage.scaled(width, height, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+
+	QFont font = painter.font();
+
+    int textAreaHeight = height * 0.20;
+    int fontSize = textAreaHeight / 3;
+    font.setPixelSize(fontSize);
+	font.setBold(true);
+
+	painter.setFont(font);
+	painter.setPen(Qt::black);
+
+    int textHeight = fontSize * 2.5;
+	QRect textRect(2, height - textAreaHeight, width - 4, textAreaHeight);
+
+    painter.drawText(textRect, Qt::AlignCenter | Qt::TextWordWrap, text);
+
+    painter.end();
+    return textPixmap;
 }
 
 void MainWindow::showActionDialog(int cardIndex)
@@ -488,7 +532,9 @@ void MainWindow::drawDraftBoard()
         QPixmap pix(imgPath);
 
         if (!pix.isNull()) {
-            btn->setIcon(QIcon(pix));
+            QPixmap labeledPix = addTextToImage(pix, QString::fromStdString(wonder->getName()), wonderW, wonderH);
+
+            btn->setIcon(QIcon(labeledPix));
             btn->setIconSize(QSize(wonderW, wonderH));
             btn->setStyleSheet("border: none; background: transparent;");
         }
@@ -503,7 +549,7 @@ void MainWindow::drawDraftBoard()
             bool success = m_game.pickWonder(i);
             
             if (!success) {
-                QMessageBox::warning(this, "Atenție", "Nu poți alege această minune acum.");
+                QMessageBox::warning(this, "Warning", "You can't choose this Wonder now.");
             }
             });
 
@@ -618,14 +664,25 @@ void MainWindow::updateMilitaryTrack()
 
     QWidget* panel = ui->militaryPanel;
 
-    const int trackHeight = panel->height();
+    int panelW = panel->width();
+    int panelH = panel->height();
 
-    int leadX = (panel->width() / 2) - (ui->labelMilitaryLead->width() / 2);
+    int pawnW = panelW * 0.4;
+    int pawnH = pawnW / 2;
+	ui->labelMilitaryLead->resize(pawnW, pawnH);
+
+	int leadX = (panelW - pawnW) / 2 - panelW * 0.05;
 
     double percentage = (militaryPosition + 9.0) / 18.0;
-    int leadY = (trackHeight * (1.0 - percentage)) - (ui->labelMilitaryLead->height() / 2);
+    int availableHeight = panelH * 0.90;
+    int topMargin = panelH * 0.05;
+
+    int centerY = topMargin + (availableHeight * (1.0 - percentage));
+
+    int leadY = centerY - (pawnH / 2);
 
     ui->labelMilitaryLead->move(leadX, leadY);
+	ui->labelMilitaryLead->raise();
 }
 
 void MainWindow::setupLayouts()
@@ -633,13 +690,11 @@ void MainWindow::setupLayouts()
     const QSize containerSize = ui->cardContainer->size();
     qDebug() << "SetupLayouts Container Size:" << containerSize;
 
-    // Verifică validitatea containerului
     if (!containerSize.isValid() || containerSize.width() <= 0) return;
 
     const int availableWidth = containerSize.width();
     const int availableHeight = containerSize.height();
 
-    // --- MASURILE TALE ORIGINALE ---
     const int pyramidTotalHeight = availableHeight * 0.9;
     const int cardH = pyramidTotalHeight / 3;
     const int cardW = cardH / 1.5;
@@ -649,9 +704,8 @@ void MainWindow::setupLayouts()
     const int stepX = cardW + horizontalGap;
 
     const int totalWidthOfBottomRow = 6 * cardW + 5 * horizontalGap;
-    const int totalHeightOfPyramid = cardH + 4 * verticalOverlap; // Inaltimea pentru 5 randuri (Age 1 & 2)
+    const int totalHeightOfPyramid = cardH + 4 * verticalOverlap; 
 
-    // StartY calculat pentru piramidele cu 5 rânduri (Age 1 si 2)
     const int startX = (availableWidth - totalWidthOfBottomRow) / 2;
     const int startY = (availableHeight - totalHeightOfPyramid) / 2;
 
@@ -789,27 +843,17 @@ void MainWindow::updateCardStructures()
             cardPixmap.fill(Qt::gray);
         }
 
-        QPixmap finalPixmap(cardW, cardH);
-        finalPixmap.fill(Qt::transparent);
-
-        QPainter painter(&finalPixmap);
-        painter.drawPixmap(0, 0, cardW, cardH, cardPixmap);
+        QPixmap finalPixmap;
 
         if (node.m_isFaceUp) {
             auto cardViewOpt = gameState.getCardView(node.m_index);
             const Card& card = cardViewOpt->get();
 
-            QFont font = painter.font();
-            int fontSize = cardH / 16; 
-            font.setPixelSize(fontSize);
-            font.setBold(true);
-            painter.setFont(font);
-
-            painter.setPen(QPen(Qt::black));
-            painter.drawText(QRect(2, cardH - (fontSize * 2.2), cardW - 4, fontSize * 2), Qt::AlignCenter | Qt::TextWordWrap, QString::fromStdString(card.getName()));
+            finalPixmap = addTextToImage(cardPixmap, QString::fromStdString(card.getName()), cardW, cardH);
         }
-
-        painter.end();
+        else{
+            finalPixmap = cardPixmap.scaled(cardW, cardH, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        }
 
         QPushButton* cardButton = new QPushButton(ui->cardContainer);
         const CardPosition& pos = (*currentLayout)[node.m_index];

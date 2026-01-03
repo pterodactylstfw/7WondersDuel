@@ -51,6 +51,7 @@ private:
 
     void updatePlayerArea(const Player& player, QWidget* wondersArea, QWidget* cityArea);
     QWidget* createColorColumn(const std::vector<std::reference_wrapper<const Card>>& cards, int width, int height);
+    QPixmap addTextToImage(const QPixmap& baseImage, const QString& text, int width, int height);
 
     void showActionDialog(int cardIndex);
 

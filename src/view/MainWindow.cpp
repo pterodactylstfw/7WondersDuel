@@ -69,8 +69,10 @@ MainWindow::MainWindow(QWidget* parent)
 }
 
 void MainWindow::onMessage(const std::string& message) {
-    // Implementare temporara
     qDebug() << "Message:" << QString::fromStdString(message);
+
+    QString text = QString::fromStdString(message);
+    showFloatingText(text, "color: #ffffff; font-weight: bold; font-size: 16px;");
 }
 
 void MainWindow::onError(const std::string& error) {
@@ -420,6 +422,22 @@ QPixmap MainWindow::addTextToImage(const QPixmap& baseImage, const QString& text
 
     painter.end();
     return textPixmap;
+}
+
+void MainWindow::showFloatingText(const QString& text, const QString& colorStyle)
+{
+    QLabel* label = new QLabel(this);
+    label->setText(text);
+    label->setStyleSheet(colorStyle);
+    label->adjustSize();
+
+    int x = this->width() * 0.10;
+    int y = (this->height() - label->height()) / 2;
+    label->move(x, y);
+    label->show();
+    label->raise();
+
+    QTimer::singleShot(2500, label, &QLabel::deleteLater);
 }
 
 void MainWindow::showActionDialog(int cardIndex)

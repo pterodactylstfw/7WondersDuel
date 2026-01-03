@@ -332,11 +332,18 @@ bool GameController::handleConstructBuilding(int cardIndex)
 	if (!takenCard) return false;
 
 	grantCardToPlayer(currentPlayer, std::move(takenCard));
+	if (buildForFreeByChain) {
+		m_view.get().onMessage("Built " + card.getName() + " for FREE (Chain)!");
+	}
+	else {
+		m_view.get().onMessage("Built " + card.getName() + ".");
+	}
 
 	if (buildForFreeByChain &&
 		currentPlayer.hasProgressToken(ProgressTokenType::URBANISM))
 	{
 		currentPlayer.addCoins(4);
+		m_view.get().onMessage("+4 Coins (Urbanism Bonus)");
 	}
 
 	// 5. Verificam efectele militare imediate
@@ -434,12 +441,14 @@ bool GameController::handleConstructWonders(int cardIndex, int wonderIndex, bool
 	// de mutat minunea in minuni realizate(daca facem) sau marcata ca realizata
 
 	auto& builtWonder = currentPlayer.getConstructedWonders().back();
+	m_view.get().onMessage("Wonder Constructed: " + builtWonder->getName() + "!");
 
 	bool hasTheology = currentPlayer.hasProgressToken(ProgressTokenType::THEOLOGY);
 	bool wonderReplay = builtWonder->getEffect().getGrantsPlayAgain();
 
 	if (hasTheology || wonderReplay) {
 		outPlayAgain = true;
+		m_view.get().onMessage("Play Again granted!");
 	}
 
 	int oldShields = currentPlayer.getMilitaryShields();

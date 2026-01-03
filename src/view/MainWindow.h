@@ -2,6 +2,7 @@
 #include <QMainWindow>
 #include <QPushButton>
 #include <QCloseEvent>
+#include <QTimer>
 #include <array>
 
 #include "GameController.h"
@@ -52,6 +53,8 @@ private:
     void updatePlayerArea(const Player& player, QWidget* wondersArea, QWidget* cityArea);
     QWidget* createColorColumn(const std::vector<std::reference_wrapper<const Card>>& cards, int width, int height);
     QPixmap addTextToImage(const QPixmap& baseImage, const QString& text, int width, int height);
+
+    void showFloatingText(const QString& text, const QString& colorStyle);
 
     void showActionDialog(int cardIndex);
 

@@ -18,6 +18,8 @@ private:
 
 	void displayAccessibleCards() const;
 
+	void displayDraftingPhase() const;
+
 	int showMainMenu();
 	int showActionMenu();
 	void showVictoryScreen(const std::string& winnerName);

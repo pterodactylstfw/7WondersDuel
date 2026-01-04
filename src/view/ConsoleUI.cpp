@@ -15,6 +15,12 @@ void ConsoleUI::displayHeader() const
 void ConsoleUI::displayGameState() const
 {
 	const auto& state = m_game.getGameState();
+
+	if (state.getCurrentPhase() == GamePhase::DRAFTING) {
+		displayDraftingPhase();
+		return;
+	}
+
 	const auto& currentPlayer = state.getCurrentPlayer();
 	const auto& opponent = state.getOpponent();
 
@@ -173,6 +179,27 @@ void ConsoleUI::displayAccessibleCards() const
 			}
 		}
 	}
+}
+
+void ConsoleUI::displayDraftingPhase() const
+{
+	displayHeader();
+	const auto& state = m_game.getGameState();
+	const auto& player = state.getCurrentPlayer();
+	const auto& draftedWonders = state.getDraftedWonders();
+
+	std::println("\n========== WONDER DRAFTING PHASE ==========");
+	std::println("It is {}'s turn to pick a Wonder.", player.getName());
+	std::println("-------------------------------------------");
+
+	int idx = 1;
+	for (const auto& w : draftedWonders) {
+		if (w) {
+			std::println("{}. {} (Cost: {})", idx, w->getName(), w->getCost().toShortString());
+		}
+		idx++;
+	}
+	std::println("-------------------------------------------");
 }
 
 void ConsoleUI::displayWonderBoard() const
@@ -498,9 +525,25 @@ void ConsoleUI::run()
 		{
 			displayGameState();
 
-			int choice = showHighLevelMenu();
+			if (m_game.getGameState().getCurrentPhase() == GamePhase::DRAFTING)
+			{
+				int count = m_game.getGameState().getDraftedWonders().size();
 
-			switch (choice) {
+				int choice = Utils::getIntRange(1, count, "Select a wonder index to keep: ");
+
+				bool ok = m_game.pickWonder(choice - 1);
+
+				if (!ok) {
+					std::println("[!] Error picking wonder. Try again.");
+					Utils::waitForEnter();
+				}
+			}
+
+			else {
+
+				int choice = showHighLevelMenu();
+
+				switch (choice) {
 				case 1:
 					handlePlayCard();
 					break;
@@ -524,6 +567,7 @@ void ConsoleUI::run()
 					}
 					gameIsRunning = false;
 					break;
+				}
 			}
 		}
 

@@ -4,8 +4,9 @@
 #include <map>
 #include "Constants.h"
 #include "JsonUtils.h"
+#include "CoreExport.h"
 
-class ResourceProduction
+class CORE_API ResourceProduction
 {
 private:
 	std::map<ResourceType, int> m_fixedResources;

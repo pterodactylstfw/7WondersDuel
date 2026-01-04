@@ -3,8 +3,9 @@
 #include <string>
 #include "CardEffect.h"
 #include "JsonUtils.h"
+#include "CoreExport.h"
 
-class ProgressToken {
+class CORE_API ProgressToken {
 private:
     ProgressTokenType m_tokenType;
     std::string m_name;

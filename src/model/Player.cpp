@@ -169,6 +169,7 @@ void to_json(json& j, const Player& player)
 {
 	j = json{
 		{"name", player.m_name},
+		{"isAI", player.m_isAI},
 		{"coins", player.m_coins},
 		{"militaryShields", player.m_militaryShields},
 		{"victoryPoints", player.m_victoryPoints},
@@ -187,6 +188,7 @@ void to_json(json& j, const Player& player)
 void from_json(const json& j, Player& player)
 {
 	j.at("name").get_to(player.m_name);
+	player.m_isAI = j.value("isAI", false);
 	j.at("coins").get_to(player.m_coins);
 	j.at("militaryShields").get_to(player.m_militaryShields);
 	j.at("victoryPoints").get_to(player.m_victoryPoints);

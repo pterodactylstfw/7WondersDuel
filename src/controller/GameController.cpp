@@ -176,75 +176,77 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 				chosenIndex = m_view.get().askTokenSelection(
 					discardedTokens,
 					"Select a Progress Token to claim:"
-			);
+				);
+			}
 			if (chosenIndex >= 0 && chosenIndex < discardedTokens.size()) {
 				player.addProgressToken(std::move(discardedTokens[chosenIndex]));
 				discardedTokens.erase(discardedTokens.begin() + chosenIndex);
 				applyProgressTokenEffect(player, opponent, *player.getProgressTokens().back());
-			
-		}
-	}
 
-	if (effect.getOpponentLosesCoins().has_value())
-	{
-		opponent.removeCoins(effect.getOpponentLosesCoins().value());
-	}
-
-	if (effect.getOpponentLosesCard().has_value())
-	{
-		auto cardsOfColor = opponent.getCardsOfType(effect.getOpponentLosesCard().value());
-		if (cardsOfColor.empty()) {
-			m_view.get().onMessage("The opponent doesn't have a card of this color.");
+			}
 		}
-		else {
-			int chosenIndex = -1;
-			if (m_gameState->getCurrentPlayer().isAI()) {
-				chosenIndex = 0;
-				m_view.get().onMessage("AI discarded one of your cards");
+
+		if (effect.getOpponentLosesCoins().has_value())
+		{
+			opponent.removeCoins(effect.getOpponentLosesCoins().value());
+		}
+
+		if (effect.getOpponentLosesCard().has_value())
+		{
+			auto cardsOfColor = opponent.getCardsOfType(effect.getOpponentLosesCard().value());
+			if (cardsOfColor.empty()) {
+				m_view.get().onMessage("The opponent doesn't have a card of this color.");
 			}
 			else {
-				chosenIndex = m_view.get().askCardSelectionFromList(
+				int chosenIndex = -1;
+				if (m_gameState->getCurrentPlayer().isAI()) {
+					chosenIndex = 0;
+					m_view.get().onMessage("AI discarded one of your cards");
+				}
+				else {
+					chosenIndex = m_view.get().askCardSelectionFromList(
 						cardsOfColor,
 						"Select a card to remove from opponent:"
-				);
-			}
-			if (chosenIndex >= 0 && chosenIndex < cardsOfColor.size()) {
-				auto removedCard = opponent.removeCard(cardsOfColor[chosenIndex].get());
-				if (removedCard != nullptr)
-					m_gameState->addToDiscardCards(std::move(removedCard));
+					);
+				}
+				if (chosenIndex >= 0 && chosenIndex < cardsOfColor.size()) {
+					auto removedCard = opponent.removeCard(cardsOfColor[chosenIndex].get());
+					if (removedCard != nullptr)
+						m_gameState->addToDiscardCards(std::move(removedCard));
+				}
 			}
 		}
-	}
 
-	if (effect.getGrantsDiscardedCard())
-	{
-		auto& discardedCards = m_gameState->getDiscardedCards();
-		if (discardedCards.empty()) {
-			m_view.get().onMessage("The discarded pile is empty.");
-		}
-		else {
-			// Trebuie să construim un vector de referințe pentru UI
-			std::vector<std::reference_wrapper<const Card>> cardOptions;
-			for(const auto& cPtr : discardedCards) {
-				cardOptions.push_back(std::cref(*cPtr));
-			}
-			
-			int chosenIndex = -1;
-			if (player.isAI()){
-				chosenIndex = 0;
-				m_view.get().onMessage("AI retrieved a card from discarded cards");
+		if (effect.getGrantsDiscardedCard())
+		{
+			auto& discardedCards = m_gameState->getDiscardedCards();
+			if (discardedCards.empty()) {
+				m_view.get().onMessage("The discarded pile is empty.");
 			}
 			else {
-				chosenIndex = m_view.get().askCardSelectionFromList(
-					cardOptions,
-					"Select a card to retrieve from the discarded pile and play for FREE:"
-				);
-			}
+				// Trebuie să construim un vector de referințe pentru UI
+				std::vector<std::reference_wrapper<const Card>> cardOptions;
+				for (const auto& cPtr : discardedCards) {
+					cardOptions.push_back(std::cref(*cPtr));
+				}
 
-			if (chosenIndex >= 0 && chosenIndex < discardedCards.size()) {
-				auto cardFromDiscard = m_gameState->extractDiscardedCard(chosenIndex);
-				if (cardFromDiscard)
-					grantCardToPlayer(player, std::move(cardFromDiscard));
+				int chosenIndex = -1;
+				if (player.isAI()) {
+					chosenIndex = 0;
+					m_view.get().onMessage("AI retrieved a card from discarded cards");
+				}
+				else {
+					chosenIndex = m_view.get().askCardSelectionFromList(
+						cardOptions,
+						"Select a card to retrieve from the discarded pile and play for FREE:"
+					);
+				}
+
+				if (chosenIndex >= 0 && chosenIndex < discardedCards.size()) {
+					auto cardFromDiscard = m_gameState->extractDiscardedCard(chosenIndex);
+					if (cardFromDiscard)
+						grantCardToPlayer(player, std::move(cardFromDiscard));
+				}
 			}
 		}
 	}
@@ -305,6 +307,7 @@ bool GameController::handleConstructBuilding(int cardIndex)
 
 			if (options.empty()) break;
 			ResourceType chosen = ResourceType::NONE;
+
 			if (currentPlayer.isAI()) {
 				chosen = options[0];
 			}
@@ -428,16 +431,22 @@ bool GameController::handleConstructWonders(int cardIndex, int wonderIndex, bool
 			if(options.empty()) break;
 
 			// 2. Cerem UI-ului fara input output
-			ResourceType chosen = m_view.get().askResourceSelection(
-				options,
-				"Architecture Effect: Choose a resource to reduce cost (-1):"
-			);
-
+			ResourceType chosen = ResourceType::NONE;
+			if (currentPlayer.isAI()) {
+				chosen = options[0];
+			}
+			else {
+				chosen = m_view.get().askResourceSelection(
+					options,
+					"Architecture Effect: Choose a resource to reduce cost (-1):"
+				);
+			}
 			// 3. Aplicam reducerea
-			resourceCosts[chosen]--;
-			if (resourceCosts[chosen] <= 0)
-				resourceCosts.erase(chosen);
-
+			if (resourceCosts.count(chosen)) {
+				resourceCosts[chosen]--;
+				if (resourceCosts[chosen] <= 0)
+					resourceCosts.erase(chosen);
+			}
 			discount--;
 		}
 		finalCost = Cost(baseCost.getCoinCost(), resourceCosts);
@@ -699,7 +708,7 @@ bool GameController::pickWonder(int wonderIndex)
 	if (m_gameState->getCurrentPhase() != GamePhase::DRAFTING) return false;
 	std::unique_ptr<Wonder> selectedWonder = m_gameState->extractWonderFromDraft(wonderIndex);
 
-	if (!selectedWonder) return false; 
+	if (!selectedWonder) return false;
 
 	int slot = -1;
 	auto& currentP = m_gameState->getCurrentPlayer();
@@ -721,23 +730,23 @@ bool GameController::pickWonder(int wonderIndex)
 	}
 
 	// cate minuni au ramas in draft
-	int remaining = m_gameState->getDraftedWonders().size(); 
+	int remaining = m_gameState->getDraftedWonders().size();
 
 	if (remaining == 3) {
 		// a ales primul jucator prima minune -> schimbam tura
 		m_gameState->switchPlayer();
 	}
 	else if (remaining == 2) {
-		// a ales al doilea jucator prima sa minune -> NU schimbam tura (mai alege una)
+		// a ales al doilea jucator prima sa minune -> NU schimbam tura(mai alege una)
 	}
 	else if (remaining == 1) {
-		// a ales al doilea jucator a doua sa minune -> schimbam tura 
+		// a ales al doilea jucator a doua sa minune -> schimbam tura
 		m_gameState->switchPlayer();
 	}
 	else if (remaining == 0) {
 		int p1Count = 0;
 		const auto& p1Wonders = m_gameState->getPlayers()[0]->getWonders();
-		for (const auto& w : p1Wonders) 
+		for (const auto& w : p1Wonders)
 			if (w) p1Count++;
 
 		if (p1Count == 2) {

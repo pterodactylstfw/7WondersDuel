@@ -1,15 +1,17 @@
 ﻿#include "MainWindow.h"
-#include "./ui_MainWindow.h" 
-#include <QFileDialog> 
+#include "./ui_MainWindow.h"
+#include <QFileDialog>
 #include <QMessageBox>
 #include <QInputDialog>
-#include <QString> 
+#include <QString>
 #include <QDebug>
 #include <QApplication>
 #include <qpainter.h>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
+#include "AIController.h"
+#include <QThread>
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
@@ -17,7 +19,7 @@ MainWindow::MainWindow(QWidget* parent)
     , m_game(*this)
 {
     this->setWindowIcon(QIcon(":/assets/coins.png"));
-    ui->setupUi(this); 
+    ui->setupUi(this);
 
     ui->labelMilitaryBoard->setPixmap(QPixmap(":/assets/military_board.png"));
     ui->labelMilitaryLead->setPixmap(QPixmap(":/assets/military_lead.png"));
@@ -38,7 +40,6 @@ MainWindow::MainWindow(QWidget* parent)
             auto reply = QMessageBox::question(this, "Confirm",
                 "Going back will end the current game. Are you sure?",
                 QMessageBox::Yes | QMessageBox::No);
-
             if (reply == QMessageBox::No) return;
         }
 
@@ -62,7 +63,6 @@ MainWindow::MainWindow(QWidget* parent)
 
     ui->actionLoad->setVisible(false);
     connect(ui->actionLoad, &QAction::triggered, this, &MainWindow::onBtnLoadClicked);
-
     connect(ui->actionExit, &QAction::triggered, this, &MainWindow::onBtnExitClicked);
 
     this->setWindowTitle("7 Wonders Duel");
@@ -70,7 +70,6 @@ MainWindow::MainWindow(QWidget* parent)
 
 void MainWindow::onMessage(const std::string& message) {
     qDebug() << "Message:" << QString::fromStdString(message);
-
     QString text = QString::fromStdString(message);
     showFloatingText(text, "color: #ffffff; font-weight: bold; font-size: 16px;");
 }
@@ -112,7 +111,6 @@ ResourceType MainWindow::askResourceSelection(const std::vector<ResourceType>& o
     for (const auto& r : options) {
         items << QString::fromStdString(resourceToString(r));
     }
-
     bool ok;
     QString item = QInputDialog::getItem(this, "Select Resource",
         QString::fromStdString(prompt),
@@ -191,34 +189,50 @@ int MainWindow::askCardSelectionFromList(const std::vector<std::reference_wrappe
 
 void MainWindow::onBtnStartClicked()
 {
-    bool ok1, ok2;
+    QStringList modes;
+    modes << "Player vs Player" << "Player vs AI";
 
-    QString player1Name = QInputDialog::getText(this, "Player 1", "Enter name for Player 1:", QLineEdit::Normal, "Player 1", &ok1);
-    if (!ok1 || player1Name.isEmpty()) {
-        return;
+    bool okMode;
+    QString mode = QInputDialog::getItem(this, "Game Mode",
+        "Select Game Mode:",
+        modes, 0, false, &okMode);
+
+    if (!okMode || mode.isEmpty()) return;
+
+    bool isVsAI = (mode == "Player vs AI");
+    bool ok1;
+    QString player1Name = QInputDialog::getText(this, "Player 1",
+        "Enter name for Player 1:",
+        QLineEdit::Normal, "Player 1", &ok1);
+    if (!ok1 || player1Name.isEmpty()) return;
+
+    QString player2Name;
+    if (isVsAI) {
+        player2Name = "AI";
     }
-
-    QString player2Name = QInputDialog::getText(this, "Player 2", "Enter name for Player 2:", QLineEdit::Normal, "Player 2", &ok2);
-    if (!ok2 || player2Name.isEmpty()) {
-        return;
+    else {
+        bool ok2;
+        player2Name = QInputDialog::getText(this, "Player 2",
+            "Enter name for Player 2:",
+            QLineEdit::Normal, "Player 2", &ok2);
+        if (!ok2 || player2Name.isEmpty()) return;
     }
-
     ui->stackedWidget->setCurrentIndex(1);
-	qDebug() << "Switched to game view";
+    qDebug() << "Switched to game view";
 
-	updateGameUI();
-	qDebug() << "Game UI updated";
-
-	QApplication::processEvents();
-	setupLayouts();
+    updateGameUI();
+    QApplication::processEvents();
+    setupLayouts();
     m_game.startNewGame(player1Name.toStdString(), player2Name.toStdString());
 
+    if (isVsAI) {
+        const_cast<GameState&>(m_game.getGameState()).getPlayers()[1]->setAI(true);
+    }
     ui->actionSave->setEnabled(true);
     ui->actionLoad->setVisible(true);
 
-
     ui->stackedWidget->setCurrentIndex(1);
-	updateGameUI();
+    updateGameUI();
 }
 
 void MainWindow::onBtnLoadClicked()
@@ -446,6 +460,7 @@ void MainWindow::showActionDialog(int cardIndex)
     auto cardView = m_game.getGameState().getCardView(cardIndex);
     if (!cardView.has_value()) return;
     const Card& card = cardView->get();
+    bool actionTaken = false;
 
     // cream o fereastra separata pentru cele 3 butoane
     QDialog dialog(this);
@@ -478,6 +493,7 @@ void MainWindow::showActionDialog(int cardIndex)
 		// apelam controllerul sa execute actiunea
         bool success = m_game.executeAction(cardIndex, PlayerAction::CONSTRUCT_BUILDING);
         if (success) {
+            actionTaken = true;
             dialog.accept(); 
         }
         else {
@@ -488,8 +504,12 @@ void MainWindow::showActionDialog(int cardIndex)
 	// DISCARD FOR COINS
     connect(btnDiscard, &QPushButton::clicked, [&]() {
         bool success = m_game.executeAction(cardIndex, PlayerAction::DISCARD_FOR_COINS);
-        if (success) dialog.accept();
-        else dialog.reject();
+        if (success) {
+            dialog.accept();
+            actionTaken = true;
+        }
+        else
+            dialog.reject();
         });
 
 	// CONSTRUCT WONDER
@@ -500,13 +520,41 @@ void MainWindow::showActionDialog(int cardIndex)
 
         if (wonderIndex != -1) { 
             bool success = m_game.executeAction(cardIndex, PlayerAction::CONSTRUCT_WONDER, wonderIndex);
-            if (success) dialog.accept();
+            if (success) {
+                actionTaken = true;
+                dialog.accept();
+            }
         }
         });
         */
 
     // afisam fereastra
     dialog.exec();
+
+    if (actionTaken) {
+        onStateUpdated(); 
+        QApplication::processEvents();
+        while (!m_game.isGameOver() && m_game.getGameState().getCurrentPlayer().isAI())
+        {
+            QThread::msleep(1000);
+            AIController ai(AIDifficulty::HARD);
+            AIMove move = ai.decideMove(m_game.getGameState());
+            bool aiSuccess = m_game.executeAction(move.cardIndex, move.action, move.wonderIndex);
+
+            if (!aiSuccess) {
+                qDebug() << "AI Move failed, forcing discard";
+                const auto& pyramid = m_game.getGameState().getPyramid();
+                for (const auto& node : pyramid) {
+                    if (!node.m_isRemoved && m_game.getGameState().isCardAccessible(node.m_index)) {
+                        m_game.executeAction(node.m_index, PlayerAction::DISCARD_FOR_COINS);
+                        break;
+                    }
+                }
+            }
+            onStateUpdated();
+            QApplication::processEvents();
+        }
+    }
 }
 
 void MainWindow::drawProgressTokens()

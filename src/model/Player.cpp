@@ -22,7 +22,17 @@ void Player::addProgressToken(std::unique_ptr<ProgressToken>&& token)
 
 void Player::addResourceProduction(ResourceProduction resourceProduction)
 {
-	m_resourceProduction = resourceProduction;
+	const auto& newFixed = resourceProduction.getFixedResources();
+	for (const auto& pair : newFixed)
+	{
+		m_resourceProduction.addFixedResource(pair.first, pair.second);
+	}
+
+	const auto& newChoices = resourceProduction.getChoices();
+	for (const auto& choice : newChoices)
+	{
+		m_resourceProduction.addChoice(choice);
+	}
 }
 
 void Player::addCoins(int amount)

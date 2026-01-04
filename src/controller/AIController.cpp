@@ -2,6 +2,9 @@
 #include <random>
 #include <algorithm>
 #include <iostream>
+#include <ranges>
+
+AIController::AIController(AIDifficulty difficulty) : m_difficulty(difficulty){}
 
 AIMove AIController::getRandomMove(const GameState& state)
 {
@@ -44,18 +47,19 @@ AIMove AIController::getGreedyMove(const GameState& state)
 	PlayerAction bestAction = PlayerAction::DISCARD_FOR_COINS;
 	int bestWonderIndex = -1;
 
-	for (int i = 0; i < pyramid.size(); i++) {
-		if (!state.isCardAccessible(i))
-			continue;
+	auto accessibleIndices = std::views::iota(0, (int)pyramid.size())
+		| std::views::filter([&](int i) { return state.isCardAccessible(i); });
+
+	for (int i : accessibleIndices) {
 		auto cardView = state.getCardView(i);
-		if (!cardView.has_value())
-			continue;
+		if (!cardView.has_value()) continue;
 		const Card& card = cardView.value().get();
 
 		if (player.canBuildCard(card, opponent)) {
 			double score = evaluateCardValue(card, player, opponent, state);
 			if (player.hasChainForCard(card) || card.getCost().isFree())
 				score += 2.0;
+
 			if (score > maxScore) {
 				maxScore = score;
 				bestCardIndex = i;
@@ -67,13 +71,14 @@ AIMove AIController::getGreedyMove(const GameState& state)
 		for (int wonderID = 0; wonderID < 4; wonderID++) {
 			if (wonders[wonderID] && !wonders[wonderID]->isBuilt()) {
 				const Wonder& wonder = *wonders[wonderID];
-				if (player.canAfford(wonder.getCost(), opponent)) {
+				int tradeCost = player.calculateTradeCost(wonder.getCost(), opponent);
+				
+				if (player.getCoins() >= tradeCost) {
 					double wonderScore = 15.0;
 					if (wonder.getEffect().getGrantsPlayAgain())
-						wonderScore += 10;
+						wonderScore += 10.0;
 					if (wonder.getEffect().getShields().has_value())
-						wonderScore += 5;
-
+						wonderScore += 5.0;
 					double sacrificedCardValue = evaluateCardValue(card, player, opponent, state);
 					wonderScore -= (sacrificedCardValue * 0.5);
 
@@ -89,6 +94,7 @@ AIMove AIController::getGreedyMove(const GameState& state)
 		double discardScore = 1.0;
 		if (player.getCoins() < 4)
 			discardScore += 4.0;
+
 		double valueForOpponent = evaluateCardValue(card, opponent, player, state);
 		if (valueForOpponent > 8.0) {
 			discardScore += 3.0;
@@ -121,21 +127,24 @@ double AIController::evaluateCardValue(const Card& card, const Player& player, c
 			return 1000.0;
 
 		if (opponent.getMilitaryShields() - player.getMilitaryShields() > 6)
-			score += 10.0;
+			score += 15.0;
 	}
 
 	if (effect.getScienceSymbol().has_value())
-		score += 4.0;
+		score += 6.0;
 
 	if (effect.getVictoryPointsPerCard().has_value())
 		score += effect.getVictoryPointsPerCard().value() * 1.5;
 
+	if (card.getColor() == CardColor::PURPLE)
+		score += 5.0;
+
 	if (!effect.getProduction().isEmpty()){
 		int age = state.getCurrentAge();
 		if (age == 1)
-			score += 4.5;
+			score += 5.5;
 		else if (age == 2)
-			score += 2.0;
+			score += 2.5;
 		else
 			score += 0.1;
 	}
@@ -148,7 +157,6 @@ double AIController::evaluateCardValue(const Card& card, const Player& player, c
 
 	return score;
 }
-AIController::AIController(AIDifficulty difficulty): m_difficulty(difficulty){}
 
 AIMove AIController::decideMove(const GameState& state){
 	if (m_difficulty == AIDifficulty::EASY)

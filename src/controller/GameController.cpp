@@ -166,11 +166,17 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 	{
 		auto& discardedTokens = m_gameState->getDiscardedTokens();
 
-
-		int chosenIndex = m_view.get().askTokenSelection(
-			discardedTokens,
-			"Select a Progress Token to claim:"
-		);
+		int chosenIndex = -1;
+		if (player.isAI()) {
+			chosenIndex = 0;
+			m_view.get().onMessage(player.getName() + "AI chose a Progress Token");
+		}
+		else {
+			chosenIndex = m_view.get().askTokenSelection(
+					discardedTokens,
+					"Select a Progress Token to claim:"
+			);
+		}
 
 		if (chosenIndex >= 0 && chosenIndex < discardedTokens.size()) {
 			player.addProgressToken(std::move(discardedTokens[chosenIndex]));
@@ -191,12 +197,17 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 			m_view.get().onMessage("The opponent doesn't have a card of this color.");
 		}
 		else {
-
-			int chosenIndex = m_view.get().askCardSelectionFromList(
-				cardsOfColor,
-				"Select a card to remove from opponent:"
-			);
-
+			int chosenIndex = -1;
+			if (m_gameState->getCurrentPlayer().isAI()) {
+				chosenIndex = 0;
+				m_view.get().onMessage("AI discarded one of your cards");
+			}
+			else {
+				int chosenIndex = m_view.get().askCardSelectionFromList(
+						cardsOfColor,
+						"Select a card to remove from opponent:"
+				);
+			}
 			if (chosenIndex >= 0 && chosenIndex < cardsOfColor.size()) {
 				auto removedCard = opponent.removeCard(cardsOfColor[chosenIndex].get());
 				if (removedCard != nullptr)

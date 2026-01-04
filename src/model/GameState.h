@@ -9,6 +9,7 @@
 #include "Wonder.h"
 #include "ProgressToken.h"
 #include "JsonUtils.h"
+#include "CoreExport.h"
 
 //class Player;
 //class Card;
@@ -24,7 +25,7 @@ struct CardNode {
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(CardNode, m_index, m_isFaceUp, m_isRemoved, m_blockedBy)
 
-class GameState
+class CORE_API GameState
 {
 private:	
 

@@ -3,8 +3,9 @@
 #include <string>
 #include "CardEffect.h"
 #include "JsonUtils.h"
+#include "CoreExport.h"
 
-class ProgressToken {
+class CORE_API ProgressToken {
 private:
     ProgressTokenType m_tokenType;
     std::string m_name;
@@ -23,7 +24,7 @@ public:
     ~ProgressToken() = default;
 
     ProgressTokenType getType() const;
-    std::string_view getName() const;
+    std::string getName() const;
     std::string getDescription() const;
 	std::string getImagePath() const;
 

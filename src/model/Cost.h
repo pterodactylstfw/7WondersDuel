@@ -4,8 +4,9 @@
 #include <vector>
 #include <compare>
 #include "JsonUtils.h"
+#include "CoreExport.h"
 
-class Cost {
+class CORE_API Cost {
 private:
 	int m_coinCost;
 	std::map<ResourceType, int> m_resourceCosts;

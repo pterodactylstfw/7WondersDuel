@@ -8,9 +8,10 @@
 #include "WonderFactory.h"
 #include "Utils.h"
 #include "ProgressTokenFactory.h"
+#include "CoreExport.h"
 
 
-class GameController
+class CORE_API GameController
 {
 private:
 	std::unique_ptr<GameState> m_gameState;

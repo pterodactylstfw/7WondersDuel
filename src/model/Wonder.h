@@ -6,8 +6,9 @@
 #include "CardEffect.h"
 #include "Constants.h"
 #include "JsonUtils.h"
+#include "CoreExport.h"
 
-class Wonder
+class CORE_API Wonder
 {
 private:
 	std::string m_name;

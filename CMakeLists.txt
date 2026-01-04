@@ -72,7 +72,6 @@ set(SRC_VIEW_GUI
         src/view/MainWindow.cpp src/view/MainWindow.h
         src/view/MainWindow.ui
         src/view/IGameView.h
-        src/utils/Utils.cpp
 )
 
 # reuniune surse comune
@@ -84,24 +83,37 @@ set(CORE_SOURCES
 )
 
 
+add_library(7WondersCore SHARED
+        ${SRC_MODEL}
+        ${SRC_FACTORIES}
+        ${SRC_CONTROLLER}
+        ${SRC_UTILS}
+        ${SRC_VIEW_GUI}
+)
+
+target_compile_definitions(7WondersCore PRIVATE SEVEN_WONDERS_CORE_LIBRARY)
+
+target_include_directories(7WondersCore PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/model
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/view
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/controller
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/factories
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/utils
+)
+
+target_link_libraries(7WondersCore PRIVATE Qt6::Widgets)
+
 # exec consola
 
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/view/ConsoleUI.cpp")
     add_executable(7WondersConsole
-            ${CORE_SOURCES}
             src/view/ConsoleUI.cpp src/view/ConsoleUI.h
             src/main.cpp
-    )
+     "include/CoreExport.h")
 
-    target_include_directories(7WondersConsole PRIVATE
-            include
-            src
-            src/model
-            src/view
-            src/controller
-            src/factories
-            src/utils
-    )
+target_link_libraries(7WondersConsole PRIVATE 7WondersCore)
 endif()
 
 
@@ -110,30 +122,19 @@ endif()
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/main_gui.cpp")
     add_executable(7WondersGUI
             ${GUI_TYPE} # WIN32 / macOS X Bundle
-            ${CORE_SOURCES}
             ${SRC_VIEW_GUI}
             src/main_gui.cpp
             src/resources.qrc
-    )
+     "include/CoreExport.h")
 
-    target_link_libraries(7WondersGUI PRIVATE Qt6::Widgets)
+    target_link_libraries(7WondersGUI PRIVATE Qt6::Widgets 7WondersCore)
 
-    # Incl toate folderele pt GUI
-    target_include_directories(7WondersGUI PRIVATE
-            include
-            src
-            src/model
-            src/view
-            src/controller
-            src/factories
-            src/utils
-    )
 
     # Configurare specifica Mac (iconita si nume)
     if(APPLE)
         set_target_properties(7WondersGUI PROPERTIES
                 MACOSX_BUNDLE_BUNDLE_NAME "7 Wonders Duel"
-                MACOSX_BUNDLE_GUI_IDENTIFIER "com.pterodactyl.7wonders"
+                MACOSX_BUNDLE_GUI_IDENTIFIER "com.constructorii.7wonders"
                 MACOSX_BUNDLE_SHORT_VERSION_STRING "1.0"
         )
     endif()

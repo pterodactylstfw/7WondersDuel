@@ -2,12 +2,13 @@
 #include <string>
 
 #include "Constants.h"
+#include "CoreExport.h"
 
 class Card;
 class ProgressToken;
 class Wonder;
 
-class IGameView {
+class CORE_API IGameView {
 public:
     virtual ~IGameView() = default;
 

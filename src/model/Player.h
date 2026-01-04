@@ -11,8 +11,9 @@
 #include "ResourceProduction.h"
 #include "ProgressToken.h"
 #include "JsonUtils.h"
+#include "CoreExport.h"
 
-class Player
+class CORE_API Player
 {
 private:
 	std::string m_name;

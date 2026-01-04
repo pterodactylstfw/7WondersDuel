@@ -668,11 +668,28 @@ void MainWindow::drawDraftBoard()
         connect(btn, &QPushButton::clicked, [this, i]() {
             bool success = m_game.pickWonder(i);
             
-            if (!success) {
+            if (success) {
+                onStateUpdated();
+                QApplication::processEvents();
+                while (!m_game.isGameOver() &&
+                    m_game.getGameState().getCurrentPhase() == GamePhase::DRAFTING &&
+                    m_game.getGameState().getCurrentPlayer().isAI())
+                {
+                    QThread::msleep(1000);
+                    AIController ai(AIDifficulty::HARD);
+                    int bestIndex = ai.pickWonder(m_game.getGameState());
+                    bool aiSuccess = m_game.pickWonder(bestIndex);
+                    if (!aiSuccess) {
+                        m_game.pickWonder(0);
+                    }
+                    onStateUpdated();
+                    QApplication::processEvents();
+                }
+            }
+            else {
                 QMessageBox::warning(this, "Warning", "You can't choose this Wonder now.");
             }
             });
-
         btn->show();
         m_cardButtons.push_back(btn); 
     }

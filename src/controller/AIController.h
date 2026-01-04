@@ -17,12 +17,12 @@ struct AIMove {
 class CORE_API AIController {
 private:
 	AIDifficulty m_difficulty;
-	int pickWonder(const GameState& state);
+	
 	AIMove getRandomMove(const GameState& state);
 	AIMove getGreedyMove(const GameState& state);
 	double evaluateCardValue(const Card& card, const Player& player, const Player& opponent, const GameState& state);
 public:
 	AIController(AIDifficulty difficulty);
 	AIMove decideMove(const GameState& state);
-
+	int pickWonder(const GameState& state);
 };

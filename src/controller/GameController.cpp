@@ -165,23 +165,23 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 	if (effect.getGrantsProgressToken())
 	{
 		auto& discardedTokens = m_gameState->getDiscardedTokens();
+		if (!discardedTokens.empty()) {
+			int chosenIndex = -1;
 
-		int chosenIndex = -1;
-		if (player.isAI()) {
-			chosenIndex = 0;
-			m_view.get().onMessage(player.getName() + "AI chose a Progress Token");
-		}
-		else {
-			chosenIndex = m_view.get().askTokenSelection(
+			if (player.isAI()) {
+				chosenIndex = 0;
+				m_view.get().onMessage(player.getName() + "AI chose a Progress Token");
+			}
+			else {
+				chosenIndex = m_view.get().askTokenSelection(
 					discardedTokens,
 					"Select a Progress Token to claim:"
 			);
-		}
-
-		if (chosenIndex >= 0 && chosenIndex < discardedTokens.size()) {
-			player.addProgressToken(std::move(discardedTokens[chosenIndex]));
-			discardedTokens.erase(discardedTokens.begin() + chosenIndex);
-			applyProgressTokenEffect(player, opponent, *player.getProgressTokens().back());
+			if (chosenIndex >= 0 && chosenIndex < discardedTokens.size()) {
+				player.addProgressToken(std::move(discardedTokens[chosenIndex]));
+				discardedTokens.erase(discardedTokens.begin() + chosenIndex);
+				applyProgressTokenEffect(player, opponent, *player.getProgressTokens().back());
+			
 		}
 	}
 
@@ -203,7 +203,7 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 				m_view.get().onMessage("AI discarded one of your cards");
 			}
 			else {
-				int chosenIndex = m_view.get().askCardSelectionFromList(
+				chosenIndex = m_view.get().askCardSelectionFromList(
 						cardsOfColor,
 						"Select a card to remove from opponent:"
 				);
@@ -232,7 +232,7 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 			int chosenIndex = -1;
 			if (player.isAI()){
 				chosenIndex = 0;
-				m_view.get().onMessage("AI retrieved a card from discard pile.");
+				m_view.get().onMessage("AI retrieved a card from discarded cards");
 			}
 			else {
 				chosenIndex = m_view.get().askCardSelectionFromList(

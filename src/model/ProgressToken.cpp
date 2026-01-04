@@ -8,7 +8,7 @@ ProgressTokenType ProgressToken::getType() const {
 	return m_tokenType;
 }
 
-std::string_view ProgressToken::getName() const {
+std::string ProgressToken::getName() const {
 	return m_name;
 }
 

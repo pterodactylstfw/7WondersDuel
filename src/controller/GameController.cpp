@@ -126,7 +126,13 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 		player.addCoins(effect.getBaseCoins().value());
 
 	if (effect.getScienceSymbol().has_value())
-		player.addScientificSymbol(effect.getScienceSymbol().value());
+	{
+		ScientificSymbol sym = effect.getScienceSymbol().value();
+		if (player.addScientificSymbol(sym)) {
+			m_gameState->setPendingScientificReward(true);
+			m_view.get().onMessage("--- SCIENCE PAIR! You earned a Progress Token! ---");
+		}
+	}
 
 	if (!effect.getDiscounts().empty())
 	{
@@ -245,14 +251,6 @@ void GameController::grantCardToPlayer(Player& player, std::unique_ptr<Card> car
 			m_view.get().onMessage("Strategy Token active: +1 Extra Shield!");
 		}
 	}
-	if (scienceSymbol.has_value()) {
-		ScientificSymbol sym =effect.getScienceSymbol().value();
-		if (player.addScientificSymbol(sym)) {
-			m_gameState->setPendingScientificReward(true);
-			m_view.get().onMessage("--- SCIENCE PAIR! You earned a Progress Token! ---");
-		}
-	}
-
 }
 
 bool GameController::handleConstructBuilding(int cardIndex)
@@ -633,8 +631,10 @@ void GameController::applyProgressTokenEffect(Player& player, Player& opponent, 
 		}
 		case ProgressTokenType::LAW:
 		{
-			player.addScientificSymbol(ScientificSymbol::SCALES);
-			break;
+			if (player.addScientificSymbol(ScientificSymbol::SCALES)) {
+				m_gameState->setPendingScientificReward(true);
+				m_view.get().onMessage("LAW TOKEN PAIR! You earned another Progress Token!");
+			}
 		}
 		case ProgressTokenType::MASONRY:
 		{

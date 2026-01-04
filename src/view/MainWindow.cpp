@@ -83,6 +83,7 @@ void MainWindow::onStateUpdated() {
     if (!m_game.hasGameStarted()) return;
 
     updateGameUI();
+    drawProgressTokens();
 
     const auto& state = m_game.getGameState();
 
@@ -508,6 +509,59 @@ void MainWindow::showActionDialog(int cardIndex)
     dialog.exec();
 }
 
+void MainWindow::drawProgressTokens()
+{
+    for (QPushButton* btn : m_progressTokenButtons) {
+        btn->deleteLater();
+    }
+    m_progressTokenButtons.clear();
+
+	const auto& tokens = m_game.getGameState().getAvailableTokens();
+
+    if (tokens.empty() || !ui->labelMilitaryBoard->isVisible()) return;
+
+    int boardW = ui->labelMilitaryBoard->width(); 
+    int boardH = ui->labelMilitaryBoard->height();
+
+    int tokenSize = boardW * 0.28;
+    int xPos = boardW * 0.67;
+
+    std::vector<double> yRatios = { 0.25, 0.35, 0.46, 0.56, 0.67 };
+
+    for (size_t i = 0; i < tokens.size() && i < yRatios.size(); ++i) {
+        const auto& token = tokens[i];
+
+        QPushButton* btn = new QPushButton(ui->labelMilitaryBoard);
+        int yPos = boardH * yRatios[i];
+        btn->setGeometry(xPos, yPos, tokenSize, tokenSize);
+
+        QString imgPath = QString::fromStdString(token->getImagePath());
+        QPixmap pix(imgPath);
+
+        if (!pix.isNull()) {
+            btn->setIcon(QIcon(pix));
+            btn->setIconSize(QSize(tokenSize, tokenSize));
+            btn->setStyleSheet(
+                "QPushButton { "
+                "  border: none; "
+                "  background-color: transparent; "
+                "  border-radius: " + QString::number(tokenSize / 2) + "px;"
+                "}"
+                "QPushButton:hover { border: 2px solid white; }"
+            );
+        }
+        else {
+            btn->setText(QString::fromStdString(token->getName().substr(0, 2)));
+            btn->setStyleSheet("background-color: green; color: white; border-radius: 10px; font-size: 8px;");
+        }
+
+        btn->setToolTip(QString::fromStdString(token->getName() + ":\n" + token->getDescription()));
+
+        btn->show();
+        m_progressTokenButtons.push_back(btn);
+    }
+}
+
 void MainWindow::drawDraftBoard()
 {
     for (auto btn : m_cardButtons) {
@@ -602,10 +656,11 @@ void MainWindow::resizeEvent(QResizeEvent* event)
     QMainWindow::resizeEvent(event); 
 
     setupLayouts();
-    /*if (ui->stackedWidget->currentIndex() == 1 && m_game.hasGameStarted()) 
+    if (ui->stackedWidget->currentIndex() == 1 && m_game.hasGameStarted()) 
     {
-		 onStateUpdated(); //crash aici uneori
-    }*/
+        updateMilitaryTrack(); 
+        drawProgressTokens();
+    }
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)
@@ -689,7 +744,7 @@ void MainWindow::updateMilitaryTrack()
     int pawnH = pawnW / 2;
 	ui->labelMilitaryLead->resize(pawnW, pawnH);
 
-	int leadX = (panelW - pawnW) / 2 - panelW * 0.05;
+	int leadX = (panelW - pawnW) / 2 - panelW * 0.15;
 
     double percentage = (militaryPosition + 9.0) / 18.0;
     int availableHeight = panelH * 0.90;

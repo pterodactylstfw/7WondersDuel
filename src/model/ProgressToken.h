@@ -24,7 +24,7 @@ public:
     ~ProgressToken() = default;
 
     ProgressTokenType getType() const;
-    std::string_view getName() const;
+    std::string getName() const;
     std::string getDescription() const;
 	std::string getImagePath() const;
 

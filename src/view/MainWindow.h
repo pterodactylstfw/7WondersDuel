@@ -45,6 +45,7 @@ private:
     GameController m_game;
 
     std::vector<QPushButton*> m_cardButtons;
+    std::vector<QPushButton*> m_progressTokenButtons;
 
     std::array<CardPosition, GameConstants::CARDS_PER_AGE> m_age1Layout;
     std::array<CardPosition, GameConstants::CARDS_PER_AGE> m_age2Layout;
@@ -58,6 +59,7 @@ private:
 
     void showActionDialog(int cardIndex);
 
+    void drawProgressTokens();
     void drawDraftBoard();
     void cleanupVisuals();
 

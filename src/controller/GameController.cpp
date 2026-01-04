@@ -228,11 +228,18 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 			for(const auto& cPtr : discardedCards) {
 				cardOptions.push_back(std::cref(*cPtr));
 			}
-
-			int chosenIndex = m_view.get().askCardSelectionFromList(
-				cardOptions,
-				"Select a card to retrieve from the discarded pile and play for FREE:"
-			);
+			
+			int chosenIndex = -1;
+			if (player.isAI()){
+				chosenIndex = 0;
+				m_view.get().onMessage("AI retrieved a card from discard pile.");
+			}
+			else {
+				chosenIndex = m_view.get().askCardSelectionFromList(
+					cardOptions,
+					"Select a card to retrieve from the discarded pile and play for FREE:"
+				);
+			}
 
 			if (chosenIndex >= 0 && chosenIndex < discardedCards.size()) {
 				auto cardFromDiscard = m_gameState->extractDiscardedCard(chosenIndex);
@@ -297,16 +304,22 @@ bool GameController::handleConstructBuilding(int cardIndex)
 				if (it.second > 0) options.push_back(it.first);
 
 			if (options.empty()) break;
-			ResourceType chosen = m_view.get().askResourceSelection(
-	options,
-	"Masonry Effect: Choose a resource to reduce cost (-1):"
-);
+			ResourceType chosen = ResourceType::NONE;
+			if (currentPlayer.isAI()) {
+				chosen = options[0];
+			}
+			else{
+				chosen = m_view.get().askResourceSelection(
+					options,
+					"Masonry Effect: Choose a resource to reduce cost (-1):"
+				);
+			}
 
-			resourceCosts[chosen]--;
-
-			if (resourceCosts[chosen] <= 0)
-				resourceCosts.erase(chosen);
-
+			if (resourceCosts.count(chosen)) {
+				resourceCosts[chosen]--;
+				if (resourceCosts[chosen] <= 0)
+					resourceCosts.erase(chosen);
+			}
 			discount--;
 		}
 

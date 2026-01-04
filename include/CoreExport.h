@@ -6,6 +6,6 @@
 	#else
 		#define CORE_API __declspec(dllimport)
 	#endif
-#else
+#else // macOS
 	#define CORE_API __attribute__((visibility("default")))
 #endif

@@ -72,7 +72,6 @@ set(SRC_VIEW_GUI
         src/view/MainWindow.cpp src/view/MainWindow.h
         src/view/MainWindow.ui
         src/view/IGameView.h
-        src/utils/Utils.cpp
 )
 
 # reuniune surse comune
@@ -135,7 +134,7 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/main_gui.cpp")
     if(APPLE)
         set_target_properties(7WondersGUI PROPERTIES
                 MACOSX_BUNDLE_BUNDLE_NAME "7 Wonders Duel"
-                MACOSX_BUNDLE_GUI_IDENTIFIER "com.pterodactyl.7wonders"
+                MACOSX_BUNDLE_GUI_IDENTIFIER "com.constructorii.7wonders"
                 MACOSX_BUNDLE_SHORT_VERSION_STRING "1.0"
         )
     endif()

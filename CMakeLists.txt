@@ -30,7 +30,7 @@ else()
 endif()
 
 # Cautare pachet qt6
-find_package(Qt6 REQUIRED COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Network)
 
 
 # organizare fisiere source
@@ -65,21 +65,11 @@ set(SRC_UTILS
         src/utils/Constants.cpp src/utils/Constants.h
         src/utils/JsonUtils.cpp src/utils/JsonUtils.h
         src/utils/Utils.cpp src/utils/Utils.h
+        include/CoreExport.h
 )
-
-# view
-set(SRC_VIEW_GUI
-        src/view/MainWindow.cpp src/view/MainWindow.h
-        src/view/MainWindow.ui
+# viewInterface
+set(SRC_VIEW_INTERFACE
         src/view/IGameView.h
-)
-
-# reuniune surse comune
-set(CORE_SOURCES
-        ${SRC_MODEL}
-        ${SRC_FACTORIES}
-        ${SRC_CONTROLLER}
-        ${SRC_UTILS}
 )
 
 
@@ -88,7 +78,7 @@ add_library(7WondersCore SHARED
         ${SRC_FACTORIES}
         ${SRC_CONTROLLER}
         ${SRC_UTILS}
-        ${SRC_VIEW_GUI}
+        ${SRC_VIEW_INTERFACE}
 )
 
 target_compile_definitions(7WondersCore PRIVATE SEVEN_WONDERS_CORE_LIBRARY)
@@ -103,7 +93,7 @@ target_include_directories(7WondersCore PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/src/utils
 )
 
-target_link_libraries(7WondersCore PRIVATE Qt6::Widgets)
+target_link_libraries(7WondersCore PRIVATE Qt6::Widgets Qt6::Network)
 
 # exec consola
 
@@ -111,24 +101,29 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/view/ConsoleUI.cpp")
     add_executable(7WondersConsole
             src/view/ConsoleUI.cpp src/view/ConsoleUI.h
             src/main.cpp
-     "include/CoreExport.h")
+    )
 
-target_link_libraries(7WondersConsole PRIVATE 7WondersCore)
+    target_link_libraries(7WondersConsole PRIVATE 7WondersCore)
 endif()
 
 
 # exec qt gui
 
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/main_gui.cpp")
+
+    set(SRC_VIEW_IMPL
+            src/view/MainWindow.cpp src/view/MainWindow.h
+            src/view/MainWindow.ui
+    )
+
     add_executable(7WondersGUI
             ${GUI_TYPE} # WIN32 / macOS X Bundle
-            ${SRC_VIEW_GUI}
+            ${SRC_VIEW_IMPL}
             src/main_gui.cpp
             src/resources.qrc
-     "include/CoreExport.h")
+    )
 
-    target_link_libraries(7WondersGUI PRIVATE Qt6::Widgets 7WondersCore)
-
+    target_link_libraries(7WondersGUI PRIVATE Qt6::Widgets Qt6::Network 7WondersCore)
 
     # Configurare specifica Mac (iconita si nume)
     if(APPLE)
@@ -138,4 +133,16 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/main_gui.cpp")
                 MACOSX_BUNDLE_SHORT_VERSION_STRING "1.0"
         )
     endif()
+
+endif()
+
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/server/main_server.cpp")
+    add_executable(7WondersServer
+                src/server/main_server.cpp
+                src/server/GameServer.cpp
+                src/server/GameServer.h
+    )
+
+    target_link_libraries(7WondersServer PRIVATE Qt6::Network 7WondersCore)
 endif()

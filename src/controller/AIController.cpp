@@ -164,3 +164,35 @@ AIMove AIController::decideMove(const GameState& state){
 	else
 		return getGreedyMove(state);
 }
+int AIController::pickWonder(const GameState& state)
+{
+	const auto& draftedWonders = state.getDraftedWonders();
+	if (draftedWonders.empty()) return -1;
+
+	int bestIndex = 0;
+	double maxScore = -1.0;
+
+	for (int i = 0; i < draftedWonders.size(); ++i) {
+		const auto& wonder = draftedWonders[i];
+		if (!wonder) continue;
+		double score = 5.0;
+
+		if (wonder->getEffect().getGrantsPlayAgain())
+			score += 20.0;
+
+		if (wonder->getEffect().getVictoryPointsPerCard().has_value())
+			score += wonder->getEffect().getVictoryPointsPerCard().value() * 2.0;
+
+		if (wonder->getEffect().getShields().has_value())
+			score += wonder->getEffect().getShields().value() * 3.0;
+
+		if (wonder->getEffect().getOpponentLosesCoins().has_value())
+			score += 4.0;
+
+		if (score > maxScore) {
+			maxScore = score;
+			bestIndex = i;
+		}
+	}
+	return bestIndex;
+}

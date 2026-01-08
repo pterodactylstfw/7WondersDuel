@@ -83,7 +83,7 @@ MainWindow::MainWindow(QWidget* parent)
     );
 
     connect(m_btnHint, &QPushButton::clicked, this, &MainWindow::onBtnHintClicked);
-    m_btnHint->show();
+    m_btnHint->hide();
     this->setWindowTitle("7 Wonders Duel");
 }
 
@@ -98,7 +98,11 @@ void MainWindow::onError(const std::string& error) {
 }
 
 void MainWindow::onStateUpdated() {
-    if (!m_game.hasGameStarted()) return;
+    if (!m_game.hasGameStarted()) {
+        if (m_btnHint) 
+            m_btnHint->hide();
+        return;
+    }
 
     updateGameUI();
     drawProgressTokens();
@@ -106,11 +110,21 @@ void MainWindow::onStateUpdated() {
     const auto& state = m_game.getGameState();
 
     if (state.getCurrentPhase() == GamePhase::DRAFTING) {
+        if (m_btnHint)
+            m_btnHint->hide();
         drawDraftBoard();
     }
     else {
         updateCardStructures();
         this->setWindowTitle("7 Wonders Duel - Age " + QString::number(state.getCurrentAge()));
+        
+        if (m_btnHint) {
+            if (!state.getCurrentPlayer().isAI()) {
+                m_btnHint->show();
+            }
+            else 
+                m_btnHint->hide();
+        }
     }
 
     updatePlayerArea(state.getCurrentPlayer(), ui->playerWonders, ui->playerCards);
@@ -320,7 +334,7 @@ void MainWindow::onBtnHintClicked() {
             case PlayerAction::DISCARD_FOR_COINS:actionText = "Sell this!"; break;
             case PlayerAction::CONSTRUCT_WONDER:actionText = "Build Wonder!"; break;
         }
-        showFloatingText("Hint: " + actionText, "color: cyan; font-weight: bold; font-size: 24px;");
+        showHintText(actionText);
     }
 }
 
@@ -394,7 +408,6 @@ void MainWindow::updatePlayerArea(const Player& player, QWidget* wondersArea, QW
             btn->setToolTip("COST: " + QString::fromStdString(wonder->getCost().toString()) +
                 "\nEFFECT: " + QString::fromStdString(wonder->getDescription()));
         }
-
         wondersArea->layout()->addWidget(btn);
     }
 
@@ -496,31 +509,19 @@ QPixmap MainWindow::addTextToImage(const QPixmap& baseImage, const QString& text
 
 void MainWindow::showFloatingText(const QString& text, const QString& colorStyle)
 {
-    QList<QLabel*> existingLabels = this->findChildren<QLabel*>("hintLabel");
-    qDeleteAll(existingLabels);
-
     QLabel* label = new QLabel(this);
-    label->setObjectName("hintLabel");
     label->setText(text);
-    label->setStyleSheet(colorStyle + "background-color: rgba(0,0,0,180); padding: 5px; border-radius: 5px;");
+    label->setStyleSheet(colorStyle);
     label->adjustSize();
 
-    int x, y;
-    if (m_btnHint && m_btnHint->isVisible()) {
-        int spacing = 15;
-        x = m_btnHint->x() + m_btnHint->width() + spacing;
-        y = m_btnHint->y() + (m_btnHint->height() - label->height()) / 2;
-    }
-    else {
-        x = (this->width() - label->width()) / 2;
-        y = (this->height() - label->height()) / 2;
-    }
+    int x = this->width() * 0.10;
+    int y = (this->height() - label->height()) / 2;
 
     label->move(x, y);
     label->show();
     label->raise();
 
-    QTimer::singleShot(3500, label, &QLabel::deleteLater);
+    QTimer::singleShot(2500, label, &QLabel::deleteLater);
 }
 void MainWindow::showActionDialog(int cardIndex)
 {
@@ -789,8 +790,8 @@ void MainWindow::highlightCardUI(int cardIndex){
         if (id == cardIndex) {
             btn->setStyleSheet(
                 "QPushButton { "
-                "  border: 8px solid #32CD32; "
-                "  border-radius: 10px; "
+                "  border: 12px solid #32CD32; "
+                "  border-radius: 8px; "
                 "  background-color: rgba(50, 205, 50, 150); "
                 "}"
             );
@@ -798,7 +799,7 @@ void MainWindow::highlightCardUI(int cardIndex){
         }
         else {
             btn->setStyleSheet(
-                "QPushButton { border: 1px solid rgba(0,0,0,150); background-color: transparent; border-radius: 5px; }"
+                "QPushButton { border: 2px solid rgba(0,0,0,150); background-color: transparent; border-radius: 5px; }"
                 "QPushButton:hover { border: 2px solid yellow; }"
             );
         }
@@ -1003,6 +1004,27 @@ void MainWindow::setupLayouts()
 
     // Randul 1 (sus 2 carti)
     for (int i = 0; i < 2; ++i) m_age3Layout[18 + i] = { startX + (2 * stepX) + i * stepX, startY_Age3 };
+}
+
+void MainWindow::showHintText(const QString& text)
+{
+    QList<QLabel*> existingLabels = this->findChildren<QLabel*>("hintLabel");
+    qDeleteAll(existingLabels);
+
+    QLabel* label = new QLabel(this);
+    label->setObjectName("hintLabel");
+    label->setText(text);
+    label->setStyleSheet("font-size: 20px; font-weight: bold; color: #FFFFFF; background-color: rgba(0,0,0,200); padding: 10px; border-radius: 8px; border: 2px");
+    label->adjustSize();
+
+    int x = (this->width() - label->width()) / 2; 
+    int y = this->height() - 75;
+
+    label->move(x, y);
+    label->show();
+    label->raise();
+
+    QTimer::singleShot(4000, label, &QLabel::deleteLater);
 }
 
 void MainWindow::updateCardStructures()

@@ -59,7 +59,7 @@ private:
     QPixmap addTextToImage(const QPixmap& baseImage, const QString& text, int width, int height);
 
     void showFloatingText(const QString& text, const QString& colorStyle);
-
+    void showHintText(const QString& text);
     void showActionDialog(int cardIndex);
 
     void drawProgressTokens();

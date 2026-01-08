@@ -1,5 +1,7 @@
 #include "Cost.h"
 
+#include <sstream>
+
 Cost::Cost() :m_coinCost(0) {}
 Cost::Cost(int coins) : m_coinCost(coins) {}
 Cost::Cost(int coins, const std::map<ResourceType, int>& resources)

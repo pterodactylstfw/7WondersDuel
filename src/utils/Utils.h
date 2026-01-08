@@ -22,7 +22,7 @@ namespace Utils {
     
     template <typename Container, typename NameExtractor>
     int getUserSelection(const Container& items, const std::string& prompt, NameExtractor getNameFunc) {
-        if (!items.empty()) {
+        if (items.empty()) {
             std::println("[!] List is empty!");
             return -1;
         }

@@ -496,6 +496,7 @@ void to_json(json& j, const GameState& state)
         {"ageIIIDeck", state.m_ageIIIDeck},
         {"currentAge", state.m_currentAge},
         {"currentPhase", state.m_currentPhase},
+            {"draftedWonders", state.m_draftedWonders},
         {"currentAgeCards", state.m_currentAgeCards},
         {"pyramid", state.m_pyramid},
         {"allWonders", state.m_allWonders},
@@ -516,7 +517,11 @@ void from_json(const json& j, GameState& state)
     j.at("ageIIDeck").get_to(state.m_ageIIDeck);
     j.at("ageIIIDeck").get_to(state.m_ageIIIDeck);
     j.at("currentAge").get_to(state.m_currentAge);
-    state.m_currentPhase = j.value("currentPhase", GamePhase::AGE_I);
+    //state.m_currentPhase = j.value("currentPhase", GamePhase::DRAFTING);
+    if(j.contains("currentPhase"))
+        j.at("currentPhase").get_to(state.m_currentPhase);
+    if(j.contains("draftedWonders"))
+        j.at("draftedWonders").get_to(state.m_draftedWonders);
     j.at("currentAgeCards").get_to(state.m_currentAgeCards);
     j.at("pyramid").get_to(state.m_pyramid);
     j.at("allWonders").get_to(state.m_allWonders);

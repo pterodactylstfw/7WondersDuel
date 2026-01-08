@@ -616,11 +616,32 @@ ResourceType ConsoleUI::askResourceSelection(const std::vector<ResourceType>& op
 	return options[index];
 }
 
-int ConsoleUI::askWonderSelection(const std::vector<std::unique_ptr<Wonder>>& wonders, const std::string& playerName) {
-	return Utils::getUserSelection(wonders,
+int ConsoleUI::askWonderSelection(const std::array<std::unique_ptr<Wonder>, GameConstants::WONDERS_PER_PLAYER>& wonders, const std::string& playerName) {
+	std::vector<const Wonder*> validWonders;
+	std::vector<int> originalIndices;
+
+	for (size_t i = 0; i < wonders.size(); ++i) {
+		if (wonders[i]) {
+			validWonders.push_back(wonders[i].get());
+			originalIndices.push_back(i);
+		}
+	}
+
+	if (validWonders.empty()) {
+		std::println("[!] No wonders available to select.");
+		return -1;
+	}
+
+	int selection = Utils::getUserSelection(validWonders,
 		std::format("{}, select a Wonder:", playerName),
-		[](const auto& w) { return w->getName(); }
+		[](const Wonder* w) { return w->getName(); }
 	);
+
+	if (selection >= 0 && selection < originalIndices.size()) {
+		return originalIndices[selection];
+	}
+
+	return -1;
 }
 
 int ConsoleUI::askTokenSelection(const std::vector<std::unique_ptr<ProgressToken>>& tokens, const std::string& prompt) {

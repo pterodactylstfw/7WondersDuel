@@ -20,10 +20,10 @@ bool GameController::isGameOver() const {
 void GameController::startNewGame(const std::string& p1, const std::string& p2) {
 	m_gameState = std::make_unique<GameState>(p1, p2);
 
-	m_gameState->setCurrentPhase(GamePhase::DRAFTING);
-
 	prepareWonders();
 	prepareProgressTokens();
+
+	m_gameState->setCurrentPhase(GamePhase::DRAFTING);
 	prepareDraftRound();
 
 	m_view.get().onStateUpdated(); // notifica ui ca s-a inceput un joc nou

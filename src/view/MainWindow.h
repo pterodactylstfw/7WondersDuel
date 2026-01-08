@@ -8,7 +8,9 @@
 #include "GameController.h"
 #include "IGameView.h"
 #include "Constants.h"
+#include "NetworkClient.h"
 #include "AIController.h"
+
 namespace Ui {
     class MainWindow;
 }
@@ -26,7 +28,7 @@ public:
     void onStateUpdated() override;
     int askInt(int min, int max, const std::string& prompt) override;
     ResourceType askResourceSelection(const std::vector<ResourceType>& options, const std::string& prompt) override;
-    int askWonderSelection(const std::vector<std::unique_ptr<Wonder>>& wonders, const std::string& playerName) override;
+    int askWonderSelection(const std::array<std::unique_ptr<Wonder>,GameConstants::WONDERS_PER_PLAYER>& wonders, const std::string& playerName) override;
     int askTokenSelection(const std::vector<std::unique_ptr<ProgressToken>>& tokens, const std::string& prompt) override;
     int askCardSelectionFromList(const std::vector<std::reference_wrapper<const Card>>& cards, const std::string& prompt) override;
 
@@ -47,7 +49,16 @@ private:
     AIDifficulty m_aiDifficulty = AIDifficulty::HARD;
     QPushButton* m_btnHint = nullptr;
 
+    NetworkClient* m_netClient;
+    std::unique_ptr<GameState> m_networkState;
+    int m_myIndex = -1;
+
+    bool m_isOnlineMode = false;
+
+    const GameState& getCurrentGameState() const;
+
     std::vector<QPushButton*> m_cardButtons;
+    std::vector<QPushButton*> m_myWonderButtons;
     std::vector<QPushButton*> m_progressTokenButtons;
 
     std::array<CardPosition, GameConstants::CARDS_PER_AGE> m_age1Layout;
@@ -77,5 +88,7 @@ private:
 
     void setupLayouts();
     void updateCardStructures();
+
+    void nonBlockingWait(int milliseconds);
 
 };

@@ -126,8 +126,8 @@ public:
 	bool hasPendingScientificReward() const;
 	void setPendingScientificReward(bool pending);
 
-	friend void to_json(json& j, const GameState& state);
-	friend void from_json(const json& j, GameState& state);
+	friend CORE_API void to_json(json& j, const GameState& state);
+	friend CORE_API void from_json(const json& j, GameState& state);
 
 	~GameState();
 

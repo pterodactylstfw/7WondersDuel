@@ -26,7 +26,7 @@ public:
         return options.empty() ? ResourceType::NONE : options[0];
     }
 
-    int askWonderSelection(const std::vector<std::unique_ptr<Wonder>>&, const std::string&) override {
+    int askWonderSelection(const std::array<std::unique_ptr<Wonder>, GameConstants::WONDERS_PER_PLAYER>&, const std::string&) override {
         return 0;
     }
 

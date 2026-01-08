@@ -9,6 +9,7 @@
 #include "IGameView.h"
 #include "Constants.h"
 #include "NetworkClient.h"
+#include "AIController.h"
 
 namespace Ui {
     class MainWindow;
@@ -35,6 +36,7 @@ private slots:
     void onBtnStartClicked();
     void onBtnLoadClicked();
 	void onBtnExitClicked();
+    void onBtnHintClicked();
 
 private:
     struct CardPosition {
@@ -44,6 +46,8 @@ private:
 
     Ui::MainWindow* ui;
     GameController m_game;
+    AIDifficulty m_aiDifficulty = AIDifficulty::HARD;
+    QPushButton* m_btnHint = nullptr;
 
     NetworkClient* m_netClient;
     std::unique_ptr<GameState> m_networkState;
@@ -66,13 +70,13 @@ private:
     QPixmap addTextToImage(const QPixmap& baseImage, const QString& text, int width, int height);
 
     void showFloatingText(const QString& text, const QString& colorStyle);
-
+    void showHintText(const QString& text);
     void showActionDialog(int cardIndex);
 
     void drawProgressTokens();
     void drawDraftBoard();
     void cleanupVisuals();
-
+    void highlightCardUI(int cardIndex);
 protected:
     void resizeEvent(QResizeEvent* event) override;
     void closeEvent(QCloseEvent* event) override;

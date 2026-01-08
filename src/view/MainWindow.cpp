@@ -17,6 +17,9 @@ MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , m_game(*this)
+    , m_age1Layout{}
+    , m_age2Layout{}
+    , m_age3Layout{}
 {
     this->setWindowIcon(QIcon(":/assets/coins.png"));
     ui->setupUi(this);
@@ -128,6 +131,22 @@ MainWindow::MainWindow(QWidget* parent)
     connect(ui->actionLoad, &QAction::triggered, this, &MainWindow::onBtnLoadClicked);
     connect(ui->actionExit, &QAction::triggered, this, &MainWindow::onBtnExitClicked);
 
+    m_btnHint = new QPushButton("HINT", this);
+    m_btnHint->setStyleSheet(
+        "QPushButton {"
+        "  background-color: #2E7D32;"
+        "  color: white;"
+        "  font-weight: bold;"
+        "  border-radius: 5px;"
+        "  border: 1px solid #1B5E20;"
+        "  font-size: 13px;"
+        "}"
+        "QPushButton:hover { background-color: #388E3C; }"
+        "QPushButton:pressed { background-color: #1B5E20; }"
+    );
+
+    connect(m_btnHint, &QPushButton::clicked, this, &MainWindow::onBtnHintClicked);
+    m_btnHint->hide();
     this->setWindowTitle("7 Wonders Duel");
 }
 
@@ -153,16 +172,30 @@ void MainWindow::onStateUpdated() {
     }
 
     const auto& state = getCurrentGameState();
-
+    if (!m_game.hasGameStarted()) {
+        if (m_btnHint) 
+            m_btnHint->hide();
+        return;
+    }
     updateGameUI();
     drawProgressTokens();
 
     if (state.getCurrentPhase() == GamePhase::DRAFTING) {
+        if (m_btnHint)
+            m_btnHint->hide();
         drawDraftBoard();
     }
     else {
         updateCardStructures();
         this->setWindowTitle("7 Wonders Duel - Age " + QString::number(state.getCurrentAge()));
+        
+        if (m_btnHint) {
+            if (!state.getCurrentPlayer().isAI()) {
+                m_btnHint->show();
+            }
+            else 
+                m_btnHint->hide();
+        }
     }
 
     updatePlayerArea(state.getCurrentPlayer(), ui->playerWonders, ui->playerCards);
@@ -282,7 +315,6 @@ int MainWindow::askCardSelectionFromList(const std::vector<std::reference_wrappe
     return 0;
 }
 
-
 void MainWindow::onBtnStartClicked()
 {
     QStringList modes;
@@ -319,6 +351,22 @@ void MainWindow::onBtnStartClicked()
     m_isOnlineMode = false; // Ne asiguram ca e false
 
     bool isVsAI = (mode == "Player vs AI");
+
+    if (isVsAI) {
+        QStringList levels;
+        levels << "Easy" << "Hard";
+        bool okDiff;
+        QString level = QInputDialog::getItem(this, "Difficulty",
+            "Select AI Difficulty:",
+            levels, 1, false, &okDiff);
+        if (!okDiff) return;
+
+        if (level == "Easy")
+            m_aiDifficulty = AIDifficulty::EASY;
+        else
+            m_aiDifficulty = AIDifficulty::HARD;
+    }
+
     bool ok1;
     QString player1Name = QInputDialog::getText(this, "Player 1",
         "Enter name for Player 1:",
@@ -327,7 +375,8 @@ void MainWindow::onBtnStartClicked()
 
     QString player2Name;
     if (isVsAI) {
-        player2Name = "AI";
+        QString diffLabel = (m_aiDifficulty == AIDifficulty::EASY) ? "Easy" : "Hard";
+        player2Name = "AI (" + diffLabel + ")";
     }
     else {
         bool ok2;
@@ -387,6 +436,7 @@ void MainWindow::onBtnExitClicked() {
     QApplication::quit();
 }
 
+
 const GameState & MainWindow::getCurrentGameState() const {
     if (m_isOnlineMode) {
         if (m_networkState)
@@ -395,6 +445,26 @@ const GameState & MainWindow::getCurrentGameState() const {
     }
     else
         return m_game.getGameState();
+}
+
+void MainWindow::onBtnHintClicked() {
+    if (!m_game.hasGameStarted() || m_game.isGameOver()) return;
+    if (m_game.getGameState().getCurrentPlayer().isAI()) {
+        showFloatingText("Wait for your turn!", "color: red; font-size: 20px;");
+    }
+    AIController hintAI(AIDifficulty::HARD);
+    AIMove bestMove = hintAI.decideMove(m_game.getGameState());
+
+    if (bestMove.cardIndex != -1) {
+        highlightCardUI(bestMove.cardIndex);
+        QString actionText;
+        switch (bestMove.action) {
+            case PlayerAction::CONSTRUCT_BUILDING:actionText = "Build this!"; break;
+            case PlayerAction::DISCARD_FOR_COINS:actionText = "Sell this!"; break;
+            case PlayerAction::CONSTRUCT_WONDER:actionText = "Build Wonder!"; break;
+        }
+        showHintText(actionText);
+    }
 }
 
 void MainWindow::updatePlayerArea(const Player& player, QWidget* wondersArea, QWidget* cityArea)
@@ -468,7 +538,6 @@ void MainWindow::updatePlayerArea(const Player& player, QWidget* wondersArea, QW
             btn->setToolTip("COST: " + QString::fromStdString(wonder->getCost().toString()) +
                 "\nEFFECT: " + QString::fromStdString(wonder->getDescription()));
         }
-
         wondersArea->layout()->addWidget(btn);
 
         if (isCurrentPlayer) {
@@ -603,6 +672,7 @@ void MainWindow::showFloatingText(const QString& text, const QString& colorStyle
 
     int x = this->width() * 0.10;
     int y = (this->height() - label->height()) / 2;
+
     label->move(x, y);
     label->show();
     label->raise();
@@ -743,7 +813,7 @@ void MainWindow::showActionDialog(int cardIndex)
         while (!m_game.isGameOver() && getCurrentGameState().getCurrentPlayer().isAI())
         {
             QThread::msleep(1000);
-            AIController ai(AIDifficulty::HARD);
+            AIController ai(m_aiDifficulty);
             AIMove move = ai.decideMove(getCurrentGameState());
             bool aiSuccess = m_game.executeAction(move.cardIndex, move.action, move.wonderIndex);
 
@@ -880,8 +950,20 @@ void MainWindow::drawDraftBoard()
             }
             else {
                 bool success = m_game.pickWonder(i);
-            
-                if (success) {
+            if (success) {
+                onStateUpdated();
+                QApplication::processEvents();
+                while (!m_game.isGameOver() &&
+                    m_game.getGameState().getCurrentPhase() == GamePhase::DRAFTING &&
+                    m_game.getGameState().getCurrentPlayer().isAI())
+                {
+                    QThread::msleep(1000);
+                    AIController ai(m_aiDifficulty);
+                    int bestIndex = ai.pickWonder(m_game.getGameState());
+                    bool aiSuccess = m_game.pickWonder(bestIndex);
+                    if (!aiSuccess) {
+                        m_game.pickWonder(0);
+                    }
                     onStateUpdated();
                     QApplication::processEvents();
                     while (!m_game.isGameOver() &&
@@ -930,11 +1012,45 @@ void MainWindow::cleanupVisuals() // pentru resetarea UI-ului la iesirea din joc
 
 }
 
+void MainWindow::highlightCardUI(int cardIndex){
+    for (QPushButton* btn : m_cardButtons) {
+        int id = btn->property("myCardIndex").toInt();
+        if (id == cardIndex) {
+            btn->setStyleSheet(
+                "QPushButton { "
+                "  border: 12px solid #32CD32; "
+                "  border-radius: 8px; "
+                "  background-color: rgba(50, 205, 50, 150); "
+                "}"
+            );
+            btn->raise();
+        }
+        else {
+            btn->setStyleSheet(
+                "QPushButton { border: 2px solid rgba(0,0,0,150); background-color: transparent; border-radius: 5px; }"
+                "QPushButton:hover { border: 2px solid yellow; }"
+            );
+        }
+    }
+}
+
 void MainWindow::resizeEvent(QResizeEvent* event)
 {
     QMainWindow::resizeEvent(event); 
 
     setupLayouts();
+    if (m_btnHint) {
+        int btnW = 90;
+        int btnH = 35;
+        int marginX = 30;
+        int marginY = 40;
+
+        int xPos = marginX;
+        int yPos = this->height() - btnH - marginY;
+
+        m_btnHint->setGeometry(xPos, yPos, btnW, btnH);
+        m_btnHint->raise();
+    }
     if (ui->stackedWidget->currentIndex() == 1 && m_game.hasGameStarted()) 
     {
         updateMilitaryTrack(); 
@@ -1124,6 +1240,27 @@ void MainWindow::setupLayouts()
     for (int i = 0; i < 2; ++i) m_age3Layout[18 + i] = { startX + (2 * stepX) + i * stepX, startY_Age3 };
 }
 
+void MainWindow::showHintText(const QString& text)
+{
+    QList<QLabel*> existingLabels = this->findChildren<QLabel*>("hintLabel");
+    qDeleteAll(existingLabels);
+
+    QLabel* label = new QLabel(this);
+    label->setObjectName("hintLabel");
+    label->setText(text);
+    label->setStyleSheet("font-size: 20px; font-weight: bold; color: #FFFFFF; background-color: rgba(0,0,0,200); padding: 10px; border-radius: 8px; border: 2px");
+    label->adjustSize();
+
+    int x = (this->width() - label->width()) / 2; 
+    int y = this->height() - 75;
+
+    label->move(x, y);
+    label->show();
+    label->raise();
+
+    QTimer::singleShot(4000, label, &QLabel::deleteLater);
+}
+
 void MainWindow::updateCardStructures()
 {
     /*for (QPushButton* button : m_cardButtons) {
@@ -1216,6 +1353,7 @@ void MainWindow::updateCardStructures()
         QPushButton* cardButton = new QPushButton(ui->cardContainer);
         const CardPosition& pos = (*currentLayout)[node.m_index];
 
+        cardButton->setProperty("myCardIndex", node.m_index);
         cardButton->setGeometry(pos.x, pos.y, cardW, cardH);
         cardButton->setIcon(QIcon(finalPixmap)); 
         cardButton->setIconSize(QSize(cardW, cardH));

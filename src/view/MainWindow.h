@@ -8,7 +8,7 @@
 #include "GameController.h"
 #include "IGameView.h"
 #include "Constants.h"
-
+#include "AIController.h"
 namespace Ui {
     class MainWindow;
 }
@@ -43,7 +43,7 @@ private:
 
     Ui::MainWindow* ui;
     GameController m_game;
-
+    AIDifficulty m_aiDifficulty = AIDifficulty::HARD;
     std::vector<QPushButton*> m_cardButtons;
     std::vector<QPushButton*> m_progressTokenButtons;
 

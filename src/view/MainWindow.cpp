@@ -186,7 +186,6 @@ int MainWindow::askCardSelectionFromList(const std::vector<std::reference_wrappe
     return 0;
 }
 
-
 void MainWindow::onBtnStartClicked()
 {
     QStringList modes;
@@ -200,6 +199,22 @@ void MainWindow::onBtnStartClicked()
     if (!okMode || mode.isEmpty()) return;
 
     bool isVsAI = (mode == "Player vs AI");
+
+    if (isVsAI) {
+        QStringList levels;
+        levels << "Easy" << "Hard";
+        bool okDiff;
+        QString level = QInputDialog::getItem(this, "Difficulty",
+            "Select AI Difficulty:",
+            levels, 1, false, &okDiff);
+        if (!okDiff) return;
+
+        if (level == "Easy")
+            m_aiDifficulty = AIDifficulty::EASY;
+        else
+            m_aiDifficulty = AIDifficulty::HARD;
+    }
+
     bool ok1;
     QString player1Name = QInputDialog::getText(this, "Player 1",
         "Enter name for Player 1:",
@@ -208,7 +223,8 @@ void MainWindow::onBtnStartClicked()
 
     QString player2Name;
     if (isVsAI) {
-        player2Name = "AI";
+        QString diffLabel = (m_aiDifficulty == AIDifficulty::EASY) ? "Easy" : "Hard";
+        player2Name = "AI (" + diffLabel + ")";
     }
     else {
         bool ok2;
@@ -537,7 +553,7 @@ void MainWindow::showActionDialog(int cardIndex)
         while (!m_game.isGameOver() && m_game.getGameState().getCurrentPlayer().isAI())
         {
             QThread::msleep(1000);
-            AIController ai(AIDifficulty::HARD);
+            AIController ai(m_aiDifficulty);
             AIMove move = ai.decideMove(m_game.getGameState());
             bool aiSuccess = m_game.executeAction(move.cardIndex, move.action, move.wonderIndex);
 
@@ -676,7 +692,7 @@ void MainWindow::drawDraftBoard()
                     m_game.getGameState().getCurrentPlayer().isAI())
                 {
                     QThread::msleep(1000);
-                    AIController ai(AIDifficulty::HARD);
+                    AIController ai(m_aiDifficulty);
                     int bestIndex = ai.pickWonder(m_game.getGameState());
                     bool aiSuccess = m_game.pickWonder(bestIndex);
                     if (!aiSuccess) {

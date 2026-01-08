@@ -34,6 +34,7 @@ private slots:
     void onBtnStartClicked();
     void onBtnLoadClicked();
 	void onBtnExitClicked();
+    void onBtnHintClicked();
 
 private:
     struct CardPosition {
@@ -62,7 +63,7 @@ private:
     void drawProgressTokens();
     void drawDraftBoard();
     void cleanupVisuals();
-
+    void highlightCardUI(int cardIndex);
 protected:
     void resizeEvent(QResizeEvent* event) override;
     void closeEvent(QCloseEvent* event) override;

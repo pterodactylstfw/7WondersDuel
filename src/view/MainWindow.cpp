@@ -285,6 +285,26 @@ void MainWindow::onBtnExitClicked() {
     QApplication::quit();
 }
 
+void MainWindow::onBtnHintClicked() {
+    if (!m_game.hasGameStarted() || m_game.isGameOver()) return;
+    if (m_game.getGameState().getCurrentPlayer().isAI()) {
+        showFloatingText("Wait for your turn!", "color: red; font-size: 20px;");
+    }
+    AIController hintAI(AIDifficulty::HARD);
+    AIMove bestMove = hintAI.decideMove(m_game.getGameState());
+
+    if (bestMove.cardIndex != -1) {
+        highlightCardUI(bestMove.cardIndex);
+        QString actionText;
+        switch (bestMove.action) {
+            case PlayerAction::CONSTRUCT_BUILDING:actionText = "Build this!"; break;
+            case PlayerAction::DISCARD_FOR_COINS:actionText = "Sell this!"; break;
+            case PlayerAction::CONSTRUCT_WONDER:actionText = "Build Wonder!"; break;
+        }
+        showFloatingText("Hint: " + actionText, "color: cyan; font-weight: bold; font-size: 24px;");
+    }
+}
+
 void MainWindow::updatePlayerArea(const Player& player, QWidget* wondersArea, QWidget* cityArea)
 {
     if (!wondersArea || !cityArea) return;
@@ -1012,6 +1032,7 @@ void MainWindow::updateCardStructures()
         QPushButton* cardButton = new QPushButton(ui->cardContainer);
         const CardPosition& pos = (*currentLayout)[node.m_index];
 
+        cardButton->setProperty("myCardIndex", node.m_index);
         cardButton->setGeometry(pos.x, pos.y, cardW, cardH);
         cardButton->setIcon(QIcon(finalPixmap)); 
         cardButton->setIconSize(QSize(cardW, cardH));

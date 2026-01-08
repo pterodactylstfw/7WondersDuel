@@ -17,6 +17,9 @@ MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , m_game(*this)
+    , m_age1Layout{}
+    , m_age2Layout{}
+    , m_age3Layout{}
 {
     this->setWindowIcon(QIcon(":/assets/coins.png"));
     ui->setupUi(this);
@@ -65,6 +68,22 @@ MainWindow::MainWindow(QWidget* parent)
     connect(ui->actionLoad, &QAction::triggered, this, &MainWindow::onBtnLoadClicked);
     connect(ui->actionExit, &QAction::triggered, this, &MainWindow::onBtnExitClicked);
 
+    m_btnHint = new QPushButton("HINT", this);
+    m_btnHint->setStyleSheet(
+        "QPushButton {"
+        "  background-color: #2E7D32;"
+        "  color: white;"
+        "  font-weight: bold;"
+        "  border-radius: 5px;"
+        "  border: 1px solid #1B5E20;"
+        "  font-size: 13px;"
+        "}"
+        "QPushButton:hover { background-color: #388E3C; }"
+        "QPushButton:pressed { background-color: #1B5E20; }"
+    );
+
+    connect(m_btnHint, &QPushButton::clicked, this, &MainWindow::onBtnHintClicked);
+    m_btnHint->show();
     this->setWindowTitle("7 Wonders Duel");
 }
 
@@ -477,20 +496,32 @@ QPixmap MainWindow::addTextToImage(const QPixmap& baseImage, const QString& text
 
 void MainWindow::showFloatingText(const QString& text, const QString& colorStyle)
 {
+    QList<QLabel*> existingLabels = this->findChildren<QLabel*>("hintLabel");
+    qDeleteAll(existingLabels);
+
     QLabel* label = new QLabel(this);
+    label->setObjectName("hintLabel");
     label->setText(text);
-    label->setStyleSheet(colorStyle);
+    label->setStyleSheet(colorStyle + "background-color: rgba(0,0,0,180); padding: 5px; border-radius: 5px;");
     label->adjustSize();
 
-    int x = this->width() * 0.10;
-    int y = (this->height() - label->height()) / 2;
+    int x, y;
+    if (m_btnHint && m_btnHint->isVisible()) {
+        int spacing = 15;
+        x = m_btnHint->x() + m_btnHint->width() + spacing;
+        y = m_btnHint->y() + (m_btnHint->height() - label->height()) / 2;
+    }
+    else {
+        x = (this->width() - label->width()) / 2;
+        y = (this->height() - label->height()) / 2;
+    }
+
     label->move(x, y);
     label->show();
     label->raise();
 
-    QTimer::singleShot(2500, label, &QLabel::deleteLater);
+    QTimer::singleShot(3500, label, &QLabel::deleteLater);
 }
-
 void MainWindow::showActionDialog(int cardIndex)
 {
     auto cardView = m_game.getGameState().getCardView(cardIndex);
@@ -752,11 +783,45 @@ void MainWindow::cleanupVisuals() // pentru resetarea UI-ului la iesirea din joc
 
 }
 
+void MainWindow::highlightCardUI(int cardIndex){
+    for (QPushButton* btn : m_cardButtons) {
+        int id = btn->property("myCardIndex").toInt();
+        if (id == cardIndex) {
+            btn->setStyleSheet(
+                "QPushButton { "
+                "  border: 8px solid #32CD32; "
+                "  border-radius: 10px; "
+                "  background-color: rgba(50, 205, 50, 150); "
+                "}"
+            );
+            btn->raise();
+        }
+        else {
+            btn->setStyleSheet(
+                "QPushButton { border: 1px solid rgba(0,0,0,150); background-color: transparent; border-radius: 5px; }"
+                "QPushButton:hover { border: 2px solid yellow; }"
+            );
+        }
+    }
+}
+
 void MainWindow::resizeEvent(QResizeEvent* event)
 {
     QMainWindow::resizeEvent(event); 
 
     setupLayouts();
+    if (m_btnHint) {
+        int btnW = 90;
+        int btnH = 35;
+        int marginX = 30;
+        int marginY = 40;
+
+        int xPos = marginX;
+        int yPos = this->height() - btnH - marginY;
+
+        m_btnHint->setGeometry(xPos, yPos, btnW, btnH);
+        m_btnHint->raise();
+    }
     if (ui->stackedWidget->currentIndex() == 1 && m_game.hasGameStarted()) 
     {
         updateMilitaryTrack(); 

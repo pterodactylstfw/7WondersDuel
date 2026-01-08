@@ -45,6 +45,8 @@ private:
     Ui::MainWindow* ui;
     GameController m_game;
     AIDifficulty m_aiDifficulty = AIDifficulty::HARD;
+    QPushButton* m_btnHint = nullptr;
+
     std::vector<QPushButton*> m_cardButtons;
     std::vector<QPushButton*> m_progressTokenButtons;
 

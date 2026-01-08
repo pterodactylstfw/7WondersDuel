@@ -13,6 +13,8 @@ class GameServer: public QTcpServer {
 private:
     std::vector<QTcpSocket*> m_clients;
 
+    std::map<QTcpSocket*, int> m_playerIndices;
+
     ServerGameView m_serverView;
 
     GameController m_gameController;
@@ -26,4 +28,10 @@ protected:
 private slots:
     void onReadyRead(); // cand primesc date
     void onDisconnected(); // cand pleaca jucatorul
+
+private:
+    void broadcastGameState();
+    void processClientAction(QTcpSocket* sender, const json& actionJson);
+
+    void sendIdentity(QTcpSocket* client, int index, const std::string& name);
 };

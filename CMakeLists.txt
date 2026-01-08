@@ -114,6 +114,7 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/main_gui.cpp")
     set(SRC_VIEW_IMPL
             src/view/MainWindow.cpp src/view/MainWindow.h
             src/view/MainWindow.ui
+            src/view/NetworkClient.cpp src/view/NetworkClient.h
     )
 
     add_executable(7WondersGUI

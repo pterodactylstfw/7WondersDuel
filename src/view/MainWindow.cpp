@@ -950,35 +950,36 @@ void MainWindow::drawDraftBoard()
             }
             else {
                 bool success = m_game.pickWonder(i);
-            if (success) {
-                onStateUpdated();
-                QApplication::processEvents();
-                while (!m_game.isGameOver() &&
-                    m_game.getGameState().getCurrentPhase() == GamePhase::DRAFTING &&
-                    m_game.getGameState().getCurrentPlayer().isAI())
-                {
-                    QThread::msleep(1000);
-                    AIController ai(m_aiDifficulty);
-                    int bestIndex = ai.pickWonder(m_game.getGameState());
-                    bool aiSuccess = m_game.pickWonder(bestIndex);
-                    if (!aiSuccess) {
-                        m_game.pickWonder(0);
-                    }
+                if (success) {
                     onStateUpdated();
                     QApplication::processEvents();
                     while (!m_game.isGameOver() &&
-                        getCurrentGameState().getCurrentPhase() == GamePhase::DRAFTING &&
-                        getCurrentGameState().getCurrentPlayer().isAI())
+                        m_game.getGameState().getCurrentPhase() == GamePhase::DRAFTING &&
+                        m_game.getGameState().getCurrentPlayer().isAI())
                     {
                         QThread::msleep(1000);
-                        AIController ai(AIDifficulty::HARD);
-                        int bestIndex = ai.pickWonder(getCurrentGameState());
+                        AIController ai(m_aiDifficulty);
+                        int bestIndex = ai.pickWonder(m_game.getGameState());
                         bool aiSuccess = m_game.pickWonder(bestIndex);
                         if (!aiSuccess) {
                             m_game.pickWonder(0);
                         }
                         onStateUpdated();
                         QApplication::processEvents();
+                        while (!m_game.isGameOver() &&
+                            getCurrentGameState().getCurrentPhase() == GamePhase::DRAFTING &&
+                            getCurrentGameState().getCurrentPlayer().isAI())
+                        {
+                            QThread::msleep(1000);
+                            AIController ai(AIDifficulty::HARD);
+                            int bestIndex = ai.pickWonder(getCurrentGameState());
+                            bool aiSuccess = m_game.pickWonder(bestIndex);
+                            if (!aiSuccess) {
+                                m_game.pickWonder(0);
+                            }
+                            onStateUpdated();
+                            QApplication::processEvents();
+                        }
                     }
                 }
                 else {

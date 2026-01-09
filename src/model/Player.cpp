@@ -1,4 +1,5 @@
 #include "Player.h"
+#include "Player.h"
 
 Player::Player(const std::string& playerName):
 	m_name(playerName),m_isAI(false), m_coins(GameConstants::STARTING_COINS), m_militaryShields(0), m_victoryPoints(0) { }
@@ -240,20 +241,6 @@ int Player::getFinalScore(const Player& opponent) const
 	int score = 0;
 
 	score += m_victoryPoints;
-
-	for (const auto& card : m_constructedCards) {
-		if (card->getEffect().getVictoryPointsPerCard().has_value()) {
-			score += card->getEffect().getVictoryPointsPerCard().value();
-		}
-	}
-
-	for (const auto& wonder : m_constructedWonders)
-	{
-		if (wonder->getEffect().getVictoryPointsPerCard().has_value()) {
-			score += wonder->getEffect().getVictoryPointsPerCard().value();
-		}
-	}
-
 	score += m_coins / 3;
 
 	if (hasProgressToken(ProgressTokenType::MATHEMATICS)) {
@@ -284,6 +271,19 @@ int Player::getFinalScore(const Player& opponent) const
 	}
 
 	return score;
+}
+
+int Player::getCivilianVictoryPoints(const Player& opponent) const
+{
+	int points = 0;
+	for (const auto& card : m_constructedCards)
+	{
+		if (card->getColor() == CardColor::BLUE)
+		{
+			points += card->getEffect().getVictoryPointsPerCard().value_or(0);
+		}
+	}
+	return points;
 }
 
 void Player::setAI(bool isAI)

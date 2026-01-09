@@ -36,6 +36,8 @@ private:
 	bool handleDiscardCard(int cardIndex);
 	bool handleConstructWonders(int cardIndex, int wonderIndex, bool & outPlayAgain);
 
+	void handleCivilianVictory();
+
 public:
 	explicit GameController(IGameView& view);
 

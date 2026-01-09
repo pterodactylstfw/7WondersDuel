@@ -1,6 +1,5 @@
 ﻿#include "GameController.h"
 
-
 GameController::GameController(IGameView &view): m_view(view) {}
 
 const GameState& GameController::getGameState() const {
@@ -108,6 +107,36 @@ void GameController::checkInstantVictory()
 		m_view.get().onMessage("\n--- SCIENTIFIC VICTORY ---\n");
 		return;
 	}
+}
+
+void GameController::handleCivilianVictory()
+{
+	Player& player1 = m_gameState->getCurrentPlayer();
+	Player& player2 = m_gameState->getOpponent();
+
+	int score1 = player1.getFinalScore(player2);
+	int score2 = player2.getFinalScore(player1);
+
+	if(score1>score2)
+		m_gameState->setWinner(m_gameState->getCurrentPlayerIndex());
+	else if(score1<score2)
+		m_gameState->setWinner(1 - m_gameState->getCurrentPlayerIndex());
+	else
+	{
+		int civilianPoints1 = player1.getCivilianVictoryPoints(player2);
+		int civilianPoints2 = player2.getCivilianVictoryPoints(player1);
+
+		if (civilianPoints1 > civilianPoints2)
+			m_gameState->setWinner(m_gameState->getCurrentPlayerIndex());
+		else if (civilianPoints1 < civilianPoints2)
+			m_gameState->setWinner(1 - m_gameState->getCurrentPlayerIndex());
+		else
+		{
+			m_gameState->setWinner(std::nullopt);
+
+		}
+	}
+	m_gameState->setGameOver(true);
 }
 
 void GameController::applyEffect(Player& player, const CardEffect& effect)
@@ -618,7 +647,7 @@ void GameController::checkEndAge() {
 		prepareAge(currentAge + 1);
 	}
 	else {
-		m_gameState->setGameOver(true);
+		handleCivilianVictory();
 	}
 }
 

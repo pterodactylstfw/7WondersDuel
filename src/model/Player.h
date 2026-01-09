@@ -65,6 +65,7 @@ public:
 
 	int getConstructedWondersCount() const;
 	int getFinalScore(const Player& opponent) const;
+	int getCivilianVictoryPoints(const Player& opponent) const;
 
 	void setAI(bool isAI);
 	bool isAI() const;

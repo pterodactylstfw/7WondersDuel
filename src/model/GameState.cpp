@@ -1,4 +1,5 @@
 ﻿#include "GameState.h"
+#include "GameState.h"
 #include <fstream>
 
 void GameState::buildPyramidStructure(int age) {
@@ -136,6 +137,11 @@ void GameState::switchPlayer()
 }
 
 std::array<std::unique_ptr<Player>, GameConstants::NUMBER_OF_PLAYERS>& GameState::getPlayers()
+{
+	return m_players;
+}
+
+const std::array<std::unique_ptr<Player>, GameConstants::NUMBER_OF_PLAYERS>& GameState::getPlayers() const
 {
 	return m_players;
 }
@@ -464,7 +470,7 @@ uint8_t GameState::getCurrentPlayerIndex() const
 {
     return m_currentPlayerIndex;
 }
-void GameState::setWinner(uint8_t index)
+void GameState::setWinner(std::optional<uint8_t> index)
 {
     m_winnerIndex = index;
 }

@@ -161,8 +161,18 @@ void MainWindow::onError(const std::string& error) {
 }
 
 void MainWindow::onStateUpdated() {
+    if (!m_isOnlineMode && !m_game.hasGameStarted()) {
+        if (m_btnHint) m_btnHint->hide();
+        return;
+    }
+    if (m_isOnlineMode && !m_networkState) {
+        return;
+    }
+
+    const auto& state = getCurrentGameState();
+
     if (m_isOnlineMode) {
-        if (getCurrentGameState().getCurrentPlayerIndex() == m_myIndex) {
+        if (state.getCurrentPlayerIndex() == m_myIndex) {
             ui->cardContainer->setEnabled(true);
             ui->label->setText("YOUR TURN!");
         } else {
@@ -171,35 +181,41 @@ void MainWindow::onStateUpdated() {
         }
     }
 
-    const auto& state = getCurrentGameState();
-    if (!m_game.hasGameStarted()) {
-        if (m_btnHint) 
-            m_btnHint->hide();
-        return;
-    }
     updateGameUI();
     drawProgressTokens();
+    updatePlayerArea(state.getCurrentPlayer(), ui->playerWonders, ui->playerCards);
+    updatePlayerArea(state.getOpponent(), ui->opponentWonders, ui->opponentCards);
 
     if (state.getCurrentPhase() == GamePhase::DRAFTING) {
-        if (m_btnHint)
-            m_btnHint->hide();
         drawDraftBoard();
+
+        // La drafting nu avem hint
+        if (m_btnHint) m_btnHint->hide();
     }
     else {
         updateCardStructures();
         this->setWindowTitle("7 Wonders Duel - Age " + QString::number(state.getCurrentAge()));
-        
+
         if (m_btnHint) {
-            if (!state.getCurrentPlayer().isAI()) {
-                m_btnHint->show();
+            bool showHint = false;
+
+            if (m_isOnlineMode) {
+                // Online: Aratam hint doar daca e randul meu
+                if (state.getCurrentPlayerIndex() == m_myIndex) {
+                    showHint = true;
+                }
             }
-            else 
-                m_btnHint->hide();
+            else {
+                // Offline: Aratam hint doar daca jucatorul curent NU e AI
+                if (!state.getCurrentPlayer().isAI()) {
+                    showHint = true;
+                }
+            }
+
+            if (showHint) m_btnHint->show();
+            else m_btnHint->hide();
         }
     }
-
-    updatePlayerArea(state.getCurrentPlayer(), ui->playerWonders, ui->playerCards);
-    updatePlayerArea(state.getOpponent(), ui->opponentWonders, ui->opponentCards);
 }
 
 int MainWindow::askInt(int min, int max, const std::string& prompt) {
@@ -448,12 +464,30 @@ const GameState & MainWindow::getCurrentGameState() const {
 }
 
 void MainWindow::onBtnHintClicked() {
-    if (!m_game.hasGameStarted() || m_game.isGameOver()) return;
-    if (m_game.getGameState().getCurrentPlayer().isAI()) {
-        showFloatingText("Wait for your turn!", "color: red; font-size: 20px;");
+
+    const auto& state = getCurrentGameState();
+
+    if (m_isOnlineMode) {
+        if (!m_networkState) return;
+    } else {
+        if (!m_game.hasGameStarted()) return;
+    }
+
+    if (state.isGameOver()) return;
+
+    if (m_isOnlineMode) {
+        if (state.getCurrentPlayerIndex() != m_myIndex) {
+            showFloatingText("Wait for your turn!", "color: red; font-size: 20px;");
+            return;
+        }
+    } else {
+        if (state.getCurrentPlayer().isAI()) {
+            showFloatingText("Wait for AI turn!", "color: red; font-size: 20px;");
+            return;
+        }
     }
     AIController hintAI(AIDifficulty::HARD);
-    AIMove bestMove = hintAI.decideMove(m_game.getGameState());
+    AIMove bestMove = hintAI.decideMove(state);
 
     if (bestMove.cardIndex != -1) {
         highlightCardUI(bestMove.cardIndex);

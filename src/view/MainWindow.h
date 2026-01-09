@@ -67,11 +67,15 @@ private:
 
     void updatePlayerArea(const Player& player, QWidget* wondersArea, QWidget* cityArea);
     QWidget* createColorColumn(const std::vector<std::reference_wrapper<const Card>>& cards, int width, int height);
+	void fillWondersArea(const Player& player, QWidget* container, int width, int height, bool isInteractive);
     QPixmap addTextToImage(const QPixmap& baseImage, const QString& text, int width, int height);
+
+    QWidget* createPlayerEndGameWidget(const Player& player, int totalScore, bool isWinner);
 
     void showFloatingText(const QString& text, const QString& colorStyle);
     void showHintText(const QString& text);
     void showActionDialog(int cardIndex);
+    void showGameOverScreen();
 
     void drawProgressTokens();
     void drawDraftBoard();

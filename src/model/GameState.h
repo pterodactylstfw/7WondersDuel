@@ -65,12 +65,14 @@ public:
 	void switchPlayer();
 
 	std::array<std::unique_ptr<Player>, GameConstants::NUMBER_OF_PLAYERS>& getPlayers();
+	const std::array<std::unique_ptr<Player>, GameConstants::NUMBER_OF_PLAYERS>& getPlayers() const;
+
 	const Player& getCurrentPlayer() const;
 	const Player& getOpponent() const;
 	Player& getCurrentPlayer();
 	Player& getOpponent();
 	uint8_t getCurrentPlayerIndex() const;
-	void setWinner(uint8_t index);
+	void setWinner(std::optional<uint8_t> index);
 
 	int getMilitaryPosition() const;
 

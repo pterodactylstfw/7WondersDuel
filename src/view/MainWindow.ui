@@ -71,7 +71,7 @@ QLabel {
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="pageMenu">
        <property name="styleSheet">
@@ -657,6 +657,9 @@ color: #f0f0f0;</string>
          </widget>
         </item>
        </layout>
+      </widget>
+      <widget class="QWidget" name="pageGameOver">
+       <layout class="QVBoxLayout" name="verticalLayout_7"/>
       </widget>
      </widget>
     </item>

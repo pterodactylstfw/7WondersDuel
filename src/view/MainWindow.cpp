@@ -161,52 +161,67 @@ void MainWindow::onError(const std::string& error) {
 }
 
 void MainWindow::onStateUpdated() {
-	if (m_isOnlineMode) {
-		if (getCurrentGameState().getCurrentPlayerIndex() == m_myIndex) {
-			ui->cardContainer->setEnabled(true);
-			ui->label->setText("YOUR TURN!");
-		}
-		else {
-			ui->cardContainer->setEnabled(false);
-			ui->label->setText("Opponent's Turn...");
-		}
-	}
+    // 1. Verificari de siguranta (LOGICA TA - Hibrida)
+    if (m_isOnlineMode) {
+        if (!m_networkState) return;
+    } else {
+        if (!m_game.hasGameStarted()) {
+            if (m_btnHint) m_btnHint->hide();
+            return;
+        }
+    }
 
-	const auto& state = getCurrentGameState();
+    const auto& state = getCurrentGameState();
 
-	if (state.isGameOver()) {
-		showGameOverScreen();
-		return;
-	}
+    // 2. Verificare GAME OVER (LOGICA COLEGEI - Adaugata aici)
+    if (state.isGameOver()) {
+        showGameOverScreen();
+        return; // Iesim, nu mai desenam tabla de joc daca s-a terminat
+    }
 
-	if (!m_game.hasGameStarted()) {
-		if (m_btnHint)
-			m_btnHint->hide();
-		return;
-	}
-	updateGameUI();
-	drawProgressTokens();
+    // 3. Gestionare tura Online (LOGICA TA)
+    if (m_isOnlineMode) {
+        if (state.getCurrentPlayerIndex() == m_myIndex) {
+            ui->cardContainer->setEnabled(true);
+            ui->label->setText("YOUR TURN!");
+        } else {
+            ui->cardContainer->setEnabled(false);
+            ui->label->setText("Opponent's Turn...");
+        }
+    }
 
-	if (state.getCurrentPhase() == GamePhase::DRAFTING) {
-		if (m_btnHint)
-			m_btnHint->hide();
-		drawDraftBoard();
-	}
-	else {
-		updateCardStructures();
-		this->setWindowTitle("7 Wonders Duel - Age " + QString::number(state.getCurrentAge()));
+    // 4. Desenare (Combinat)
+    updateGameUI();
+    drawProgressTokens();
+    
+    // Folosim pointerii catre widget-uri corect
+    updatePlayerArea(state.getCurrentPlayer(), ui->playerWonders, ui->playerCards);
+    updatePlayerArea(state.getOpponent(), ui->opponentWonders, ui->opponentCards);
 
-		if (m_btnHint) {
-			if (!state.getCurrentPlayer().isAI()) {
-				m_btnHint->show();
-			}
-			else
-				m_btnHint->hide();
-		}
-	}
+    if (state.getCurrentPhase() == GamePhase::DRAFTING) {
+        drawDraftBoard();
+        // La drafting nu avem hint
+        if (m_btnHint) m_btnHint->hide();
+    }
+    else {
+        updateCardStructures();
+        this->setWindowTitle("7 Wonders Duel - Age " + QString::number(state.getCurrentAge()));
 
-	updatePlayerArea(state.getCurrentPlayer(), ui->playerWonders, ui->playerCards);
-	updatePlayerArea(state.getOpponent(), ui->opponentWonders, ui->opponentCards);
+        // Logica Hint (Adaptata pentru Online/Offline)
+        if (m_btnHint) {
+            bool showHint = false;
+            if (m_isOnlineMode) {
+                // Online: Aratam hint doar daca e randul meu
+                if (state.getCurrentPlayerIndex() == m_myIndex) showHint = true;
+            } else {
+                // Offline: Aratam hint doar daca jucatorul curent NU e AI
+                if (!state.getCurrentPlayer().isAI()) showHint = true;
+            }
+
+            if (showHint) m_btnHint->show();
+            else m_btnHint->hide();
+        }
+    }
 }
 
 int MainWindow::askInt(int min, int max, const std::string& prompt) {
@@ -455,23 +470,43 @@ const GameState& MainWindow::getCurrentGameState() const {
 }
 
 void MainWindow::onBtnHintClicked() {
-	if (!m_game.hasGameStarted() || m_game.isGameOver()) return;
-	if (m_game.getGameState().getCurrentPlayer().isAI()) {
-		showFloatingText("Wait for your turn!", "color: red; font-size: 20px;");
-	}
-	AIController hintAI(AIDifficulty::HARD);
-	AIMove bestMove = hintAI.decideMove(m_game.getGameState());
+    const auto& state = getCurrentGameState();
 
-	if (bestMove.cardIndex != -1) {
-		highlightCardUI(bestMove.cardIndex);
-		QString actionText;
-		switch (bestMove.action) {
-		case PlayerAction::CONSTRUCT_BUILDING:actionText = "Build this!"; break;
-		case PlayerAction::DISCARD_FOR_COINS:actionText = "Sell this!"; break;
-		case PlayerAction::CONSTRUCT_WONDER:actionText = "Build Wonder!"; break;
-		}
-		showHintText(actionText);
-	}
+    // Verificari de siguranta (Hibrid)
+    if (m_isOnlineMode) {
+        if (!m_networkState) return;
+    } else {
+        if (!m_game.hasGameStarted()) return;
+    }
+
+    if (state.isGameOver()) return;
+
+    // Verificam daca avem voie sa cerem Hint
+    if (m_isOnlineMode) {
+        if (state.getCurrentPlayerIndex() != m_myIndex) {
+            showFloatingText("Wait for your turn!", "color: red; font-size: 20px;");
+            return;
+        }
+    } else {
+        if (state.getCurrentPlayer().isAI()) {
+            showFloatingText("Wait for AI turn!", "color: red; font-size: 20px;");
+            return;
+        }
+    }
+
+    AIController hintAI(AIDifficulty::HARD);
+    AIMove bestMove = hintAI.decideMove(state);
+
+    if (bestMove.cardIndex != -1) {
+        highlightCardUI(bestMove.cardIndex);
+        QString actionText;
+        switch (bestMove.action) {
+            case PlayerAction::CONSTRUCT_BUILDING:actionText = "Build this!"; break;
+            case PlayerAction::DISCARD_FOR_COINS:actionText = "Sell this!"; break;
+            case PlayerAction::CONSTRUCT_WONDER:actionText = "Build Wonder!"; break;
+        }
+        showHintText(actionText);
+    }
 }
 
 void MainWindow::updatePlayerArea(const Player& player, QWidget* wondersArea, QWidget* cityArea)

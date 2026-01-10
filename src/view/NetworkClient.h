@@ -22,6 +22,8 @@ public:
 
     bool isConnected() const;
 
+	void disconnectFromHost();
+
 signals:
     void connected();
     void disconnected();

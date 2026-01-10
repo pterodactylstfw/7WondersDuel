@@ -36,6 +36,8 @@ private:
 	bool handleDiscardCard(int cardIndex);
 	bool handleConstructWonders(int cardIndex, int wonderIndex, bool & outPlayAgain);
 
+	void handleCivilianVictory();
+
 public:
 	explicit GameController(IGameView& view);
 
@@ -53,6 +55,8 @@ public:
   
 	void applyProgressTokenEffect(Player& player, Player& opponent, ProgressToken& token);
 	bool pickWonder(int wonderIndex);
+
+	void debugTriggerVictory(); // Cheat
 
 	~GameController() = default;
 };

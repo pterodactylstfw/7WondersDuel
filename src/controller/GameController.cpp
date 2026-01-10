@@ -1,5 +1,5 @@
 ﻿#include "GameController.h"
-
+#include "GameController.h"
 
 GameController::GameController(IGameView &view): m_view(view) {}
 
@@ -108,6 +108,36 @@ void GameController::checkInstantVictory()
 		m_view.get().onMessage("\n--- SCIENTIFIC VICTORY ---\n");
 		return;
 	}
+}
+
+void GameController::handleCivilianVictory()
+{
+	Player& player1 = m_gameState->getCurrentPlayer();
+	Player& player2 = m_gameState->getOpponent();
+
+	int score1 = player1.getFinalScore(player2);
+	int score2 = player2.getFinalScore(player1);
+
+	if(score1>score2)
+		m_gameState->setWinner(m_gameState->getCurrentPlayerIndex());
+	else if(score1<score2)
+		m_gameState->setWinner(1 - m_gameState->getCurrentPlayerIndex());
+	else
+	{
+		int civilianPoints1 = player1.getCivilianVictoryPoints(player2);
+		int civilianPoints2 = player2.getCivilianVictoryPoints(player1);
+
+		if (civilianPoints1 > civilianPoints2)
+			m_gameState->setWinner(m_gameState->getCurrentPlayerIndex());
+		else if (civilianPoints1 < civilianPoints2)
+			m_gameState->setWinner(1 - m_gameState->getCurrentPlayerIndex());
+		else
+		{
+			m_gameState->setWinner(std::nullopt);
+
+		}
+	}
+	m_gameState->setGameOver(true);
 }
 
 void GameController::applyEffect(Player& player, const CardEffect& effect)
@@ -358,10 +388,10 @@ bool GameController::handleConstructBuilding(int cardIndex)
 
 	grantCardToPlayer(currentPlayer, std::move(takenCard));
 	if (buildForFreeByChain) {
-		m_view.get().onMessage("Built " + card.getName() + " for FREE (Chain)!");
+		m_view.get().onMessage(getGameState().getCurrentPlayer().getName() + ": Built " + card.getName() + " for FREE (Chain)!");
 	}
 	else {
-		m_view.get().onMessage("Built " + card.getName() + ".");
+		m_view.get().onMessage(getGameState().getCurrentPlayer().getName() + ": Built " + card.getName() + ".");
 	}
 
 	if (buildForFreeByChain &&
@@ -391,7 +421,7 @@ bool GameController::handleDiscardCard(int cardIndex)
 	m_gameState->addToDiscardCards(std::move(discardedCard));
 
 	currentPlayer.addCoins(coinsGained);
-	m_view.get().onMessage("Discarded card for " + std::to_string(coinsGained) + " coins.");
+	m_view.get().onMessage(getGameState().getCurrentPlayer().getName() + ": Discarded card for " + std::to_string(coinsGained) + " coins.");
 
 	return true;
 }
@@ -472,7 +502,7 @@ bool GameController::handleConstructWonders(int cardIndex, int wonderIndex, bool
 	// de mutat minunea in minuni realizate(daca facem) sau marcata ca realizata
 
 	auto& builtWonder = currentPlayer.getConstructedWonders().back();
-	m_view.get().onMessage("Wonder Constructed: " + builtWonder->getName() + "!");
+	m_view.get().onMessage(getGameState().getCurrentPlayer().getName() + ": Wonder Constructed: " + builtWonder->getName() + "!");
 
 	bool hasTheology = currentPlayer.hasProgressToken(ProgressTokenType::THEOLOGY);
 	bool wonderReplay = builtWonder->getEffect().getGrantsPlayAgain();
@@ -618,7 +648,7 @@ void GameController::checkEndAge() {
 		prepareAge(currentAge + 1);
 	}
 	else {
-		m_gameState->setGameOver(true);
+		handleCivilianVictory();
 	}
 }
 
@@ -763,4 +793,22 @@ bool GameController::pickWonder(int wonderIndex)
 
 	m_view.get().onStateUpdated();
 	return true;
+}
+
+void GameController::debugTriggerVictory() {
+	if (!m_gameState) return;
+	Player& current = m_gameState->getCurrentPlayer();
+	const Player& opponent = m_gameState->getOpponent();
+
+	int currentDiff = current.getMilitaryShields() - opponent.getMilitaryShields();
+	int needed = GameConstants::MILITARY_SUPREMACY_DISTANCE - currentDiff;
+
+	if (needed > 0) {
+		current.addMilitaryShields(needed);
+
+		checkInstantVictory();
+
+		m_view.get().onStateUpdated();
+		m_view.get().onMessage("DEBUG: Military Victory Triggered!");
+	}
 }

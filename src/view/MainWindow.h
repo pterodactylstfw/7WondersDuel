@@ -4,6 +4,7 @@
 #include <QCloseEvent>
 #include <QTimer>
 #include <array>
+#include <QLabel>
 
 #include "GameController.h"
 #include "IGameView.h"
@@ -60,6 +61,7 @@ private:
     std::vector<QPushButton*> m_cardButtons;
     std::vector<QPushButton*> m_myWonderButtons;
     std::vector<QPushButton*> m_progressTokenButtons;
+    QList<QLabel*> m_activeMessages;
 
     std::array<CardPosition, GameConstants::CARDS_PER_AGE> m_age1Layout;
     std::array<CardPosition, GameConstants::CARDS_PER_AGE> m_age2Layout;
@@ -67,11 +69,15 @@ private:
 
     void updatePlayerArea(const Player& player, QWidget* wondersArea, QWidget* cityArea);
     QWidget* createColorColumn(const std::vector<std::reference_wrapper<const Card>>& cards, int width, int height);
+	void fillWondersArea(const Player& player, QWidget* container, int width, int height, bool isInteractive);
     QPixmap addTextToImage(const QPixmap& baseImage, const QString& text, int width, int height);
+
+    QWidget* createPlayerEndGameWidget(const Player& player, int totalScore, bool isWinner);
 
     void showFloatingText(const QString& text, const QString& colorStyle);
     void showHintText(const QString& text);
     void showActionDialog(int cardIndex);
+    void showGameOverScreen();
 
     void drawProgressTokens();
     void drawDraftBoard();
@@ -89,6 +95,6 @@ private:
     void setupLayouts();
     void updateCardStructures();
 
+    void removeMessageLabel(QLabel* label);
     void nonBlockingWait(int milliseconds);
-
 };

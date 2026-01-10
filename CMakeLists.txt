@@ -147,3 +147,51 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/server/main_server.cpp")
 
     target_link_libraries(7WondersServer PRIVATE Qt6::Network 7WondersCore)
 endif()
+
+# =========================================================
+#  SECTIUNE NOUA: UNIT TESTS (GOOGLE TEST)
+# =========================================================
+
+enable_testing()
+
+# 1. Descarc? Google Test automat
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+)
+# Setare pentru Windows
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+
+# 2. Definim executabilul de teste
+# ATEN?IE: Aici NU mai includem ${SRC_...}. Includem doar fi?ierele de test.
+add_executable(7WondersTests
+    tests/main_test.cpp
+    tests/TestPlayer.cpp
+    tests/MockGameView.h
+)
+
+# 3. Leg?m testele de libr?ria principal? (7WondersCore)
+# Astfel, testele vor folosi codul deja compilat în DLL.
+target_link_libraries(7WondersTests
+    PRIVATE
+    GTest::gtest_main
+    7WondersCore      # <--- Aici e cheia: folosim libr?ria ta
+    Qt6::Core         # Necesar pentru QCoreApplication din main_test.cpp
+)
+
+# 4. Includem directoarele necesare (ca s? g?seasc? headerele)
+target_include_directories(7WondersTests PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/model
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/view
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/controller
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/factories
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/utils
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests
+)
+
+# 5. Înregistrarea testelor
+include(GoogleTest)
+gtest_discover_tests(7WondersTests)

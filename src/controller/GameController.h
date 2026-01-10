@@ -56,5 +56,7 @@ public:
 	void applyProgressTokenEffect(Player& player, Player& opponent, ProgressToken& token);
 	bool pickWonder(int wonderIndex);
 
+	void debugTriggerVictory(); // Cheat
+
 	~GameController() = default;
 };

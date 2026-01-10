@@ -1,4 +1,5 @@
 ﻿#include "GameController.h"
+#include "GameController.h"
 
 GameController::GameController(IGameView &view): m_view(view) {}
 
@@ -792,4 +793,22 @@ bool GameController::pickWonder(int wonderIndex)
 
 	m_view.get().onStateUpdated();
 	return true;
+}
+
+void GameController::debugTriggerVictory() {
+	if (!m_gameState) return;
+	Player& current = m_gameState->getCurrentPlayer();
+	const Player& opponent = m_gameState->getOpponent();
+
+	int currentDiff = current.getMilitaryShields() - opponent.getMilitaryShields();
+	int needed = GameConstants::MILITARY_SUPREMACY_DISTANCE - currentDiff;
+
+	if (needed > 0) {
+		current.addMilitaryShields(needed);
+
+		checkInstantVictory();
+
+		m_view.get().onStateUpdated();
+		m_view.get().onMessage("DEBUG: Military Victory Triggered!");
+	}
 }

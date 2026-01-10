@@ -12,6 +12,7 @@
 #include <QLabel>
 #include "AIController.h"
 #include <QThread>
+#include <QNetworkInterface>
 
 MainWindow::MainWindow(QWidget* parent)
 	: QMainWindow(parent)
@@ -147,10 +148,59 @@ MainWindow::MainWindow(QWidget* parent)
 
 	connect(m_btnHint, &QPushButton::clicked, this, &MainWindow::onBtnHintClicked);
 	m_btnHint->hide();
+
+	connect(ui->actShowIP, &QAction::triggered, this, [this]() {
+		QString ipAddress;
+		const QHostAddress& localhost = QHostAddress(QHostAddress::LocalHost);
+		for (const QHostAddress& address : QNetworkInterface::allAddresses()) {
+			if (address.protocol() == QAbstractSocket::IPv4Protocol && address != localhost) {
+				ipAddress = address.toString();
+				}
+		}
+
+		// Lista completa (mai sigur)
+		/*QString allIPs;
+		for (const QHostAddress& address : QNetworkInterface::allAddresses()) {
+			if (address.protocol() == QAbstractSocket::IPv4Protocol && address != localhost)
+				allIPs += address.toString() + "\n";
+		}*/
+
+		QMessageBox::information(this, "My IP Address",
+			"Share this IP with Player 2:\n\n" + (ipAddress.isEmpty() ? "No network found" : ipAddress));
+		});
+
+	connect(ui->actForceWin, &QAction::triggered, this, [this]() {
+		if (!m_isOnlineMode && m_game.hasGameStarted()) {
+			m_game.debugTriggerVictory();
+			}
+		else {
+			QMessageBox::warning(this, "Cheat", "Cheats disabled in Online Mode or Menu.");
+		}
+		});
+
+	connect(ui->actionAbout, &QAction::triggered, this, [this]() {
+		QMessageBox::about(this, "About 7 Wonders Duel",
+			"<h3>7 Wonders Duel - C++ Project</h3>"
+			"<p><b>Version:</b> 1.0 (Release)</p>"
+			"<p>Built with <b>Qt 6</b> and <b>Modern C++</b>.</p>"
+			"<hr>"
+			"<p><b>Developers:</b></p>"
+			"<ul>"
+			"<li>Rebeka</li>"
+			"<li>Cristian</li>"
+			"<li>Raul</li>"
+			"<li>Denisa</li>"
+			"</ul>"
+			"<p><i>Project for Modern C++ Course 2025.</i></p>"
+		);
+		});
+
 	this->setWindowTitle("7 Wonders Duel");
 }
 
 void MainWindow::onMessage(const std::string& message) {
+	if (m_game.isGameOver() || (m_networkState && m_networkState->isGameOver())) {
+		return;}
 	qDebug() << "Message:" << QString::fromStdString(message);
 	QString text = QString::fromStdString(message);
 	showFloatingText(text, "color: #ffffff; font-weight: bold; font-size: 16px;");
@@ -161,7 +211,6 @@ void MainWindow::onError(const std::string& error) {
 }
 
 void MainWindow::onStateUpdated() {
-    // 1. Verificari de siguranta (LOGICA TA - Hibrida)
     if (m_isOnlineMode) {
         if (!m_networkState) return;
     } else {
@@ -173,13 +222,12 @@ void MainWindow::onStateUpdated() {
 
     const auto& state = getCurrentGameState();
 
-    // 2. Verificare GAME OVER (LOGICA COLEGEI - Adaugata aici)
     if (state.isGameOver()) {
+		if (m_btnHint) m_btnHint->hide();
         showGameOverScreen();
-        return; // Iesim, nu mai desenam tabla de joc daca s-a terminat
+        return;
     }
 
-    // 3. Gestionare tura Online (LOGICA TA)
     if (m_isOnlineMode) {
         if (state.getCurrentPlayerIndex() == m_myIndex) {
             ui->cardContainer->setEnabled(true);
@@ -190,31 +238,25 @@ void MainWindow::onStateUpdated() {
         }
     }
 
-    // 4. Desenare (Combinat)
     updateGameUI();
     drawProgressTokens();
     
-    // Folosim pointerii catre widget-uri corect
     updatePlayerArea(state.getCurrentPlayer(), ui->playerWonders, ui->playerCards);
     updatePlayerArea(state.getOpponent(), ui->opponentWonders, ui->opponentCards);
 
     if (state.getCurrentPhase() == GamePhase::DRAFTING) {
         drawDraftBoard();
-        // La drafting nu avem hint
         if (m_btnHint) m_btnHint->hide();
     }
     else {
         updateCardStructures();
         this->setWindowTitle("7 Wonders Duel - Age " + QString::number(state.getCurrentAge()));
 
-        // Logica Hint (Adaptata pentru Online/Offline)
         if (m_btnHint) {
             bool showHint = false;
             if (m_isOnlineMode) {
-                // Online: Aratam hint doar daca e randul meu
                 if (state.getCurrentPlayerIndex() == m_myIndex) showHint = true;
             } else {
-                // Offline: Aratam hint doar daca jucatorul curent NU e AI
                 if (!state.getCurrentPlayer().isAI()) showHint = true;
             }
 
@@ -349,9 +391,8 @@ void MainWindow::onBtnStartClicked()
 
 	if (!okMode || mode.isEmpty()) return;
 
-	// --- RAMURA ONLINE ---
 	if (mode == "Online Multiplayer") {
-		m_isOnlineMode = true; // Setam flag-ul
+		m_isOnlineMode = true;
 
 		bool ok;
 		QString ipAddress = QInputDialog::getText(this, "Connect to Server",
@@ -365,7 +406,6 @@ void MainWindow::onBtnStartClicked()
 
 		ui->label->setText("Connecting to " + ipAddress + "...");
 
-		// Putem dezactiva butonul de start ca sa nu apese de 2 ori
 		ui->btnStart->setEnabled(false);
 		return;
 	}
@@ -472,7 +512,6 @@ const GameState& MainWindow::getCurrentGameState() const {
 void MainWindow::onBtnHintClicked() {
     const auto& state = getCurrentGameState();
 
-    // Verificari de siguranta (Hibrid)
     if (m_isOnlineMode) {
         if (!m_networkState) return;
     } else {
@@ -481,7 +520,6 @@ void MainWindow::onBtnHintClicked() {
 
     if (state.isGameOver()) return;
 
-    // Verificam daca avem voie sa cerem Hint
     if (m_isOnlineMode) {
         if (state.getCurrentPlayerIndex() != m_myIndex) {
             showFloatingText("Wait for your turn!", "color: red; font-size: 20px;");
@@ -1003,7 +1041,15 @@ void MainWindow::showActionDialog(int cardIndex)
 
 void MainWindow::showGameOverScreen()
 {
+	if (!QFile::exists(":/assets/game_over.png")) {
+		qDebug() << "ERROR: Image :/assets/game_over.png NOT FOUND in resources!";
+	}
 	const auto& state = getCurrentGameState();
+
+	for (QLabel* lbl : m_activeMessages) {
+		lbl->deleteLater();
+	}
+	m_activeMessages.clear();
 
 	if (ui->pageGameOver->layout()) {
 		QLayoutItem* item;
@@ -1016,6 +1062,8 @@ void MainWindow::showGameOverScreen()
 
 	QVBoxLayout* mainLayout = new QVBoxLayout(ui->pageGameOver);
 	mainLayout->setAlignment(Qt::AlignCenter);
+
+	mainLayout->setContentsMargins(50, 50, 50, 100);
 
 	int winnerIndex = -1;
 	if (state.getWinnerIndex().has_value()) {
@@ -1040,12 +1088,30 @@ void MainWindow::showGameOverScreen()
 	}
 
 	QLabel* lblTitle = new QLabel(titleText);
-	lblTitle->setStyleSheet("color:#FF0000; font-size: 36px; font-weight: bold;");
+	lblTitle->setStyleSheet(
+		"color: #FF0000; "
+		"font-size: 64px; "
+		"font-weight: 900; "
+		"font-family: 'Arial Black';"
+		"text-transform: uppercase;"
+		"margin-bottom: 10px;"
+	);
 	lblTitle->setAlignment(Qt::AlignCenter);
 	mainLayout->addWidget(lblTitle);
 
 	QLabel* lblWinner = new QLabel(winnerText);
-	lblWinner->setStyleSheet("color: white; font-size: 20px; font-weight: bold; margin-bottom: 20px;");
+	lblWinner->setStyleSheet(
+		"color: #FFD700; "
+		"font-size: 32px; "
+		"font-weight: bold; "
+		"margin-bottom: 50px;"
+
+		"background-color: rgba(0, 0, 0, 80); "
+		"padding: 2px 8px; "
+		"border-radius: 10px;"
+		"border: none;"
+	);
+	lblWinner->adjustSize();
 	lblWinner->setAlignment(Qt::AlignCenter);
 	mainLayout->addWidget(lblWinner);
 
@@ -1265,6 +1331,9 @@ void MainWindow::cleanupVisuals() // pentru resetarea UI-ului la iesirea din joc
 	}
 	m_cardButtons.clear();
 
+	if(m_btnHint) {
+		m_btnHint->hide();
+	}
 
 	if (ui->playerWonders) qDeleteAll(ui->playerWonders->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly));
 	if (ui->playerCards) qDeleteAll(ui->playerCards->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly));

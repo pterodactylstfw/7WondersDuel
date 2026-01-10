@@ -4,6 +4,7 @@
 #include <QCloseEvent>
 #include <QTimer>
 #include <array>
+#include <QLabel>
 
 #include "GameController.h"
 #include "IGameView.h"
@@ -60,6 +61,7 @@ private:
     std::vector<QPushButton*> m_cardButtons;
     std::vector<QPushButton*> m_myWonderButtons;
     std::vector<QPushButton*> m_progressTokenButtons;
+    QList<QLabel*> m_activeMessages;
 
     std::array<CardPosition, GameConstants::CARDS_PER_AGE> m_age1Layout;
     std::array<CardPosition, GameConstants::CARDS_PER_AGE> m_age2Layout;
@@ -93,5 +95,6 @@ private:
     void setupLayouts();
     void updateCardStructures();
 
+    void removeMessageLabel(QLabel* label);
     void nonBlockingWait(int milliseconds);
 };

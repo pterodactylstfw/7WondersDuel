@@ -387,10 +387,10 @@ bool GameController::handleConstructBuilding(int cardIndex)
 
 	grantCardToPlayer(currentPlayer, std::move(takenCard));
 	if (buildForFreeByChain) {
-		m_view.get().onMessage("Built " + card.getName() + " for FREE (Chain)!");
+		m_view.get().onMessage(getGameState().getCurrentPlayer().getName() + ": Built " + card.getName() + " for FREE (Chain)!");
 	}
 	else {
-		m_view.get().onMessage("Built " + card.getName() + ".");
+		m_view.get().onMessage(getGameState().getCurrentPlayer().getName() + ": Built " + card.getName() + ".");
 	}
 
 	if (buildForFreeByChain &&
@@ -420,7 +420,7 @@ bool GameController::handleDiscardCard(int cardIndex)
 	m_gameState->addToDiscardCards(std::move(discardedCard));
 
 	currentPlayer.addCoins(coinsGained);
-	m_view.get().onMessage("Discarded card for " + std::to_string(coinsGained) + " coins.");
+	m_view.get().onMessage(getGameState().getCurrentPlayer().getName() + ": Discarded card for " + std::to_string(coinsGained) + " coins.");
 
 	return true;
 }
@@ -501,7 +501,7 @@ bool GameController::handleConstructWonders(int cardIndex, int wonderIndex, bool
 	// de mutat minunea in minuni realizate(daca facem) sau marcata ca realizata
 
 	auto& builtWonder = currentPlayer.getConstructedWonders().back();
-	m_view.get().onMessage("Wonder Constructed: " + builtWonder->getName() + "!");
+	m_view.get().onMessage(getGameState().getCurrentPlayer().getName() + ": Wonder Constructed: " + builtWonder->getName() + "!");
 
 	bool hasTheology = currentPlayer.hasProgressToken(ProgressTokenType::THEOLOGY);
 	bool wonderReplay = builtWonder->getEffect().getGrantsPlayAgain();

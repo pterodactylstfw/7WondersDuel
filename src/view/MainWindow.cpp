@@ -825,17 +825,24 @@ void MainWindow::showFloatingText(const QString& text, const QString& colorStyle
 {
 	QLabel* label = new QLabel(this);
 	label->setText(text);
-	label->setStyleSheet(colorStyle);
+	label->setStyleSheet(colorStyle + "background-color: rgba(0,0,0,180); padding: 5px; border-radius: 5px;");
 	label->adjustSize();
+	label->show();
+	m_activeMessages.append(label);
 
+	int messageIndex = m_activeMessages.size()-1;
+	int spacing = 40; // intre mesaje
+
+	int startY = this->height()/2;
 	int x = this->width() * 0.10;
-	int y = (this->height() - label->height()) / 2;
+	int y = startY + (messageIndex * spacing);
 
 	label->move(x, y);
-	label->show();
 	label->raise();
 
-	QTimer::singleShot(2500, label, &QLabel::deleteLater);
+	QTimer::singleShot(2500, [this, label]() {
+		removeMessageLabel(label);
+	});
 }
 
 void MainWindow::nonBlockingWait(int milliseconds) {
@@ -1628,6 +1635,19 @@ void MainWindow::updateCardStructures()
 
 		cardButton->show();
 		m_cardButtons.push_back(cardButton);
+	}
+}
+
+void MainWindow::removeMessageLabel(QLabel *label) {
+	if (m_activeMessages.contains(label)) {
+		m_activeMessages.removeOne(label);
+		label->deleteLater();
+
+		int startY = this->height() / 2;
+		int spacing = 40;
+		for(int i=0; i < m_activeMessages.size(); ++i) {
+			m_activeMessages[i]->move(m_activeMessages[i]->x(), startY + (i * spacing));
+		}
 	}
 }
 

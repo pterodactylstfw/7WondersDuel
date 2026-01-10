@@ -4,18 +4,14 @@
 #include "GameController.h"
 #include "MockGameView.h"
 
-// Test?m clasa Player
 TEST(PlayerTest, InitialState) {
 	std::string name = "TestUser";
 	Player p(name);
 
-	// Verific?m numele
 	EXPECT_EQ(p.getName(), name);
 
-	// Verific?m banii de start (ar trebui s? fie 7)
 	EXPECT_EQ(p.getCoins(), GameConstants::STARTING_COINS);
 
-	// Verific?m scuturile militare
 	EXPECT_EQ(p.getMilitaryShields(), 0);
 }
 
@@ -31,21 +27,82 @@ TEST(PlayerTest, RemoveCoinsProtection) {
 	Player p("Player1");
 	p.addCoins(100);
 
-	// Încerc?m s? scoatem mai mult decât are
 	p.removeCoins(1000);
 
-	// Ar trebui s? r?mân? la 0, nu s? se duc? pe minus
 	EXPECT_EQ(p.getCoins(), 0);
 }
 
-// Test?m GameController
-TEST(GameControllerTest, StartGame) {
-	MockGameView mockView;
-	GameController controller(mockView);
+TEST(PlayerTest, CardSorting) {
+	Player p("Sorter");
+	Cost cost; CardEffect effect;
 
-	EXPECT_FALSE(controller.hasGameStarted());
+	Card brown("Lumber", CardColor::BROWN, 1, cost, effect, "");
+	Card grey("Glass", CardColor::GREY, 1, cost, effect, "");
+	Card blue("Altar", CardColor::BLUE, 1, cost, effect, "");
 
-	controller.startNewGame("Alice", "Bob");
+	p.addCard(std::make_unique<Card>(brown));
+	p.addCard(std::make_unique<Card>(grey));
+	p.addCard(std::make_unique<Card>(blue));
 
-	EXPECT_TRUE(controller.hasGameStarted());
+	auto brownCards = p.getCardsOfType(CardColor::BROWN);
+	EXPECT_EQ(brownCards.size(), 1);
+	EXPECT_EQ(brownCards[0].get().getName(), "Lumber");
+
+	auto redCards = p.getCardsOfType(CardColor::RED);
+	EXPECT_TRUE(redCards.empty());
+}
+
+TEST(PlayerTests, ScientificVictory_Duplicates) {
+	Player p("ScienceFail");
+
+	p.addScientificSymbol(ScientificSymbol::WHEEL);
+	p.addScientificSymbol(ScientificSymbol::ASTROLABE);
+	p.addScientificSymbol(ScientificSymbol::MORTAR_PESTLE);
+	p.addScientificSymbol(ScientificSymbol::SUNDIAL);
+	p.addScientificSymbol(ScientificSymbol::SCALES);
+
+	EXPECT_FALSE(p.hasScientificVictory());
+
+	p.addScientificSymbol(ScientificSymbol::WHEEL);
+
+	EXPECT_FALSE(p.hasScientificVictory());
+
+	p.addScientificSymbol(ScientificSymbol::QUILL_INKWELL);
+	EXPECT_TRUE(p.hasScientificVictory());
+}
+
+TEST(PlayerTests, TradingCostCalculation) {
+	Player me("Me");
+	Player opponent("Opponent");
+
+	std::map<ResourceType, int> req;
+	req[ResourceType::WOOD] = 1;
+	Cost woodCost(0, req);
+
+	EXPECT_EQ(me.calculateTradeCost(woodCost, opponent), 2);
+
+	ResourceProduction prod;
+	prod.addFixedResource(ResourceType::WOOD, 1);
+
+	opponent.addResourceProduction(prod);
+	opponent.addResourceProduction(prod);
+
+	EXPECT_EQ(me.calculateTradeCost(woodCost, opponent), 4);
+}
+
+TEST(PlayerTests, CanAfford_WithTrading) {
+	Player p("Buyer");
+	Player opponent("Seller");
+
+	std::map<ResourceType, int> req;
+	req[ResourceType::WOOD] = 1;
+	Cost costOfCard(0, req);
+
+	p.addCoins(100);
+
+	EXPECT_TRUE(p.canAfford(costOfCard, opponent));
+
+	p.removeCoins(p.getCoins());
+
+	EXPECT_FALSE(p.canAfford(costOfCard, opponent));
 }

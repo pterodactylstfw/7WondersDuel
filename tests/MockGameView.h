@@ -8,7 +8,7 @@ public:
 	void onError(const std::string& error) override {}
 	void onStateUpdated() override {}
 
-	// Return?m valori simple pentru a nu bloca testele
+	// returnam valori simple pentru a putea testa logica jocului
 	int askInt(int min, int max, const std::string& prompt) override { return min; }
 
 	ResourceType askResourceSelection(const std::vector<ResourceType>& options, const std::string& prompt) override {

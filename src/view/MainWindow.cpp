@@ -155,7 +155,7 @@ MainWindow::MainWindow(QWidget* parent)
 		for (const QHostAddress& address : QNetworkInterface::allAddresses()) {
 			if (address.protocol() == QAbstractSocket::IPv4Protocol && address != localhost) {
 				ipAddress = address.toString();
-				}
+			}
 		}
 
 		// Lista completa (mai sigur)
@@ -172,7 +172,7 @@ MainWindow::MainWindow(QWidget* parent)
 	connect(ui->actForceWin, &QAction::triggered, this, [this]() {
 		if (!m_isOnlineMode && m_game.hasGameStarted()) {
 			m_game.debugTriggerVictory();
-			}
+		}
 		else {
 			QMessageBox::warning(this, "Cheat", "Cheats disabled in Online Mode or Menu.");
 		}
@@ -200,7 +200,8 @@ MainWindow::MainWindow(QWidget* parent)
 
 void MainWindow::onMessage(const std::string& message) {
 	if (m_game.isGameOver() || (m_networkState && m_networkState->isGameOver())) {
-		return;}
+		return;
+	}
 	qDebug() << "Message:" << QString::fromStdString(message);
 	QString text = QString::fromStdString(message);
 	showFloatingText(text, "color: #ffffff; font-weight: bold; font-size: 16px;");
@@ -211,59 +212,62 @@ void MainWindow::onError(const std::string& error) {
 }
 
 void MainWindow::onStateUpdated() {
-    if (m_isOnlineMode) {
-        if (!m_networkState) return;
-    } else {
-        if (!m_game.hasGameStarted()) {
-            if (m_btnHint) m_btnHint->hide();
-            return;
-        }
-    }
+	if (m_isOnlineMode) {
+		if (!m_networkState) return;
+	}
+	else {
+		if (!m_game.hasGameStarted()) {
+			if (m_btnHint) m_btnHint->hide();
+			return;
+		}
+	}
 
-    const auto& state = getCurrentGameState();
+	const auto& state = getCurrentGameState();
 
-    if (state.isGameOver()) {
+	if (state.isGameOver()) {
 		if (m_btnHint) m_btnHint->hide();
-        showGameOverScreen();
-        return;
-    }
+		showGameOverScreen();
+		return;
+	}
 
-    if (m_isOnlineMode) {
-        if (state.getCurrentPlayerIndex() == m_myIndex) {
-            ui->cardContainer->setEnabled(true);
-            ui->label->setText("YOUR TURN!");
-        } else {
-            ui->cardContainer->setEnabled(false);
-            ui->label->setText("Opponent's Turn...");
-        }
-    }
+	if (m_isOnlineMode) {
+		if (state.getCurrentPlayerIndex() == m_myIndex) {
+			ui->cardContainer->setEnabled(true);
+			ui->label->setText("YOUR TURN!");
+		}
+		else {
+			ui->cardContainer->setEnabled(false);
+			ui->label->setText("Opponent's Turn...");
+		}
+	}
 
-    updateGameUI();
-    drawProgressTokens();
-    
-    updatePlayerArea(state.getCurrentPlayer(), ui->playerWonders, ui->playerCards);
-    updatePlayerArea(state.getOpponent(), ui->opponentWonders, ui->opponentCards);
+	updateGameUI();
+	drawProgressTokens();
 
-    if (state.getCurrentPhase() == GamePhase::DRAFTING) {
-        drawDraftBoard();
-        if (m_btnHint) m_btnHint->hide();
-    }
-    else {
-        updateCardStructures();
-        this->setWindowTitle("7 Wonders Duel - Age " + QString::number(state.getCurrentAge()));
+	updatePlayerArea(state.getCurrentPlayer(), ui->playerWonders, ui->playerCards);
+	updatePlayerArea(state.getOpponent(), ui->opponentWonders, ui->opponentCards);
 
-        if (m_btnHint) {
-            bool showHint = false;
-            if (m_isOnlineMode) {
-                if (state.getCurrentPlayerIndex() == m_myIndex) showHint = true;
-            } else {
-                if (!state.getCurrentPlayer().isAI()) showHint = true;
-            }
+	if (state.getCurrentPhase() == GamePhase::DRAFTING) {
+		drawDraftBoard();
+		if (m_btnHint) m_btnHint->hide();
+	}
+	else {
+		updateCardStructures();
+		this->setWindowTitle("7 Wonders Duel - Age " + QString::number(state.getCurrentAge()));
 
-            if (showHint) m_btnHint->show();
-            else m_btnHint->hide();
-        }
-    }
+		if (m_btnHint) {
+			bool showHint = false;
+			if (m_isOnlineMode) {
+				if (state.getCurrentPlayerIndex() == m_myIndex) showHint = true;
+			}
+			else {
+				if (!state.getCurrentPlayer().isAI()) showHint = true;
+			}
+
+			if (showHint) m_btnHint->show();
+			else m_btnHint->hide();
+		}
+	}
 }
 
 int MainWindow::askInt(int min, int max, const std::string& prompt) {
@@ -510,41 +514,43 @@ const GameState& MainWindow::getCurrentGameState() const {
 }
 
 void MainWindow::onBtnHintClicked() {
-    const auto& state = getCurrentGameState();
+	const auto& state = getCurrentGameState();
 
-    if (m_isOnlineMode) {
-        if (!m_networkState) return;
-    } else {
-        if (!m_game.hasGameStarted()) return;
-    }
+	if (m_isOnlineMode) {
+		if (!m_networkState) return;
+	}
+	else {
+		if (!m_game.hasGameStarted()) return;
+	}
 
-    if (state.isGameOver()) return;
+	if (state.isGameOver()) return;
 
-    if (m_isOnlineMode) {
-        if (state.getCurrentPlayerIndex() != m_myIndex) {
-            showFloatingText("Wait for your turn!", "color: red; font-size: 20px;");
-            return;
-        }
-    } else {
-        if (state.getCurrentPlayer().isAI()) {
-            showFloatingText("Wait for AI turn!", "color: red; font-size: 20px;");
-            return;
-        }
-    }
+	if (m_isOnlineMode) {
+		if (state.getCurrentPlayerIndex() != m_myIndex) {
+			showFloatingText("Wait for your turn!", "color: red; font-size: 20px;");
+			return;
+		}
+	}
+	else {
+		if (state.getCurrentPlayer().isAI()) {
+			showFloatingText("Wait for AI turn!", "color: red; font-size: 20px;");
+			return;
+		}
+	}
 
-    AIController hintAI(AIDifficulty::HARD);
-    AIMove bestMove = hintAI.decideMove(state);
+	AIController hintAI(AIDifficulty::HARD);
+	AIMove bestMove = hintAI.decideMove(state);
 
-    if (bestMove.cardIndex != -1) {
-        highlightCardUI(bestMove.cardIndex);
-        QString actionText;
-        switch (bestMove.action) {
-            case PlayerAction::CONSTRUCT_BUILDING:actionText = "Build this!"; break;
-            case PlayerAction::DISCARD_FOR_COINS:actionText = "Sell this!"; break;
-            case PlayerAction::CONSTRUCT_WONDER:actionText = "Build Wonder!"; break;
-        }
-        showHintText(actionText);
-    }
+	if (bestMove.cardIndex != -1) {
+		highlightCardUI(bestMove.cardIndex);
+		QString actionText;
+		switch (bestMove.action) {
+		case PlayerAction::CONSTRUCT_BUILDING:actionText = "Build this!"; break;
+		case PlayerAction::DISCARD_FOR_COINS:actionText = "Sell this!"; break;
+		case PlayerAction::CONSTRUCT_WONDER:actionText = "Build Wonder!"; break;
+		}
+		showHintText(actionText);
+	}
 }
 
 void MainWindow::updatePlayerArea(const Player& player, QWidget* wondersArea, QWidget* cityArea)
@@ -868,10 +874,10 @@ void MainWindow::showFloatingText(const QString& text, const QString& colorStyle
 	label->show();
 	m_activeMessages.append(label);
 
-	int messageIndex = m_activeMessages.size()-1;
+	int messageIndex = m_activeMessages.size() - 1;
 	int spacing = 40; // intre mesaje
 
-	int startY = this->height()/2;
+	int startY = this->height() / 2;
 	int x = this->width() * 0.10;
 	int y = startY + (messageIndex * spacing);
 
@@ -880,7 +886,7 @@ void MainWindow::showFloatingText(const QString& text, const QString& colorStyle
 
 	QTimer::singleShot(2500, [this, label]() {
 		removeMessageLabel(label);
-	});
+		});
 }
 
 void MainWindow::nonBlockingWait(int milliseconds) {
@@ -1331,7 +1337,7 @@ void MainWindow::cleanupVisuals() // pentru resetarea UI-ului la iesirea din joc
 	}
 	m_cardButtons.clear();
 
-	if(m_btnHint) {
+	if (m_btnHint) {
 		m_btnHint->hide();
 	}
 
@@ -1552,6 +1558,7 @@ void MainWindow::setupLayouts()
 	// age 3 layout
 	const int startY_Age3 = startY - verticalOverlap;
 
+
 	// Randul 7 (jos 2 carti)
 	for (int i = 0; i < 2; ++i) m_age3Layout[i] = { startX + (2 * stepX) + i * stepX, startY_Age3 + 6 * verticalOverlap };
 
@@ -1562,7 +1569,11 @@ void MainWindow::setupLayouts()
 	for (int i = 0; i < 4; ++i) m_age3Layout[5 + i] = { startX + stepX + i * stepX, startY_Age3 + 4 * verticalOverlap };
 
 	// Randul 4 (mijloc - Guilds - 2 carti)
-	for (int i = 0; i < 2; ++i) m_age3Layout[9 + i] = { startX + (2 * stepX) + i * stepX, startY_Age3 + 3 * verticalOverlap };
+	for (int i = 0; i < 2; ++i)
+		if (i == 0)
+			m_age3Layout[9 + i] = { startX + static_cast<int>(1.5 * stepX) + i * stepX, startY_Age3 + 3 * verticalOverlap };
+		else
+			m_age3Layout[9 + i] = { startX + static_cast<int>(3.5 * stepX) + (i - 1) * stepX, startY_Age3 + 3 * verticalOverlap };
 
 	// Randul 3 (4 carti)
 	for (int i = 0; i < 4; ++i) m_age3Layout[11 + i] = { startX + stepX + i * stepX, startY_Age3 + 2 * verticalOverlap };
@@ -1693,6 +1704,16 @@ void MainWindow::updateCardStructures()
 		cardButton->setIconSize(QSize(cardW, cardH));
 		cardButton->setText("");
 
+		if (node.m_isFaceUp) {
+			auto cardViewOpt = gameState.getCardView(node.m_index);
+			if (cardViewOpt) {
+				const Card& card = cardViewOpt->get();
+				cardButton->setToolTip(
+					QString::fromStdString(card.displayCardInfo())
+				);
+			}
+		}
+
 		cardButton->setStyleSheet(
 			"QPushButton { border: 1px solid rgba(0,0,0,150); background-color: transparent; border-radius: 5px; }"
 			"QPushButton:hover { border: 2px solid yellow; }"
@@ -1707,14 +1728,14 @@ void MainWindow::updateCardStructures()
 	}
 }
 
-void MainWindow::removeMessageLabel(QLabel *label) {
+void MainWindow::removeMessageLabel(QLabel* label) {
 	if (m_activeMessages.contains(label)) {
 		m_activeMessages.removeOne(label);
 		label->deleteLater();
 
 		int startY = this->height() / 2;
 		int spacing = 40;
-		for(int i=0; i < m_activeMessages.size(); ++i) {
+		for (int i = 0; i < m_activeMessages.size(); ++i) {
 			m_activeMessages[i]->move(m_activeMessages[i]->x(), startY + (i * spacing));
 		}
 	}

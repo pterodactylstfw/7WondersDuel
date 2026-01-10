@@ -40,7 +40,6 @@
         <file>../assets/age2/brewery.png</file>
         <file>../assets/age2/brickyard.png</file>
         <file>../assets/age2/caravansery.png</file>
-        <file>../assets/age2/courthouse.png</file>
         <file>../assets/age2/customs_house.png</file>
         <file>../assets/age2/dispensary.png</file>
         <file>../assets/age2/drying_room.png</file>
@@ -65,6 +64,7 @@
         <file>../assets/age3/armory.png</file>
         <file>../assets/age3/arsenal.png</file>
         <file>../assets/age3/chamber_of_commerce.png</file>
+		<file>../assets/age3/courthouse.png</file>
         <file>../assets/age3/circus.png</file>
         <file>../assets/age3/fortifications.png</file>
         <file>../assets/age3/gardens.png</file>

@@ -84,7 +84,7 @@ MainWindow::MainWindow(QWidget* parent)
 		m_isOnlineMode = false;
 
 		// Resetam conexiunea
-		// m_netClient->disconnect();
+		m_netClient->disconnect();
 		});
 
 	// Cand serverul pica de tot
@@ -1075,6 +1075,11 @@ void MainWindow::showGameOverScreen()
 		"QPushButton:hover { background-color: #b71c1c; }"
 	);
 	connect(btnMenu, &QPushButton::clicked, this, [this]() {
+		if (m_isOnlineMode && m_netClient) {
+			m_netClient->disconnect(this);
+			m_netClient->disconnectFromHost();
+
+		}
 		cleanupVisuals();
 		ui->stackedWidget->setCurrentIndex(0);
 		});

@@ -94,5 +94,4 @@ private:
     void updateCardStructures();
 
     void nonBlockingWait(int milliseconds);
-
 };

@@ -87,3 +87,10 @@ void NetworkClient::onReadyRead() {
 void NetworkClient::onSocketError() {
     emit errorOccurred(m_socket->errorString());
 }
+
+void NetworkClient::disconnectFromHost()
+{
+    if (m_socket->state() != QAbstractSocket::UnconnectedState) {
+        m_socket->disconnectFromHost();
+    }
+}

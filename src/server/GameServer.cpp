@@ -127,6 +127,12 @@ void GameServer::broadcastGameState() {
 }
 
 void GameServer::processClientAction(QTcpSocket* sender, const json& j) {
+    
+    if (m_gameController.isGameOver()) {
+        std::cout << "[SERVER] Action ignored. Game is already OVER." << std::endl;
+        return;
+    }
+
     std::string type = j.value("type", "UNKNOWN");
     int senderIndex = m_playerIndices[sender];
 
@@ -150,6 +156,12 @@ void GameServer::processClientAction(QTcpSocket* sender, const json& j) {
         bool success = m_gameController.executeAction(cardIdx, action, wonderIdx);
 
         if (success) {
+            if (m_gameController.isGameOver()) {
+                auto winnerIdx = m_gameController.getGameState().getWinnerIndex();
+                std::cout << "[SERVER] Game Over! Winner: "
+                    << (winnerIdx.has_value() ? std::to_string(winnerIdx.value()) : "Draw")
+                    << std::endl;
+            }
             broadcastGameState();
         } else {
             // Optional: Trimite mesaj de eroare inapoi

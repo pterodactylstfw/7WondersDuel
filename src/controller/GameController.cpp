@@ -164,6 +164,45 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 		}
 	}
 
+	if (m_gameState->hasPendingScientificReward())
+	{
+		const auto& availableTokens = m_gameState->getAvailableTokens();
+		if (!availableTokens.empty())
+		{
+			int chosenIndex = -1;
+
+			if (player.isAI())
+			{
+				chosenIndex = 0;
+				m_view.get().onMessage(player.getName() + " (AI) chose a Progress Token");
+			}
+			else
+			{
+				chosenIndex = m_view.get().askTokenSelection(
+					availableTokens,
+					"Science Pair! Choose a Progress Token:"
+				);
+			}
+
+			if (chosenIndex >= 0 && chosenIndex < (int)availableTokens.size())
+			{
+				auto token = m_gameState->extractAvailableToken(chosenIndex); // scoate de pe masa
+				if (token)
+				{
+					player.addProgressToken(std::move(token));
+					applyProgressTokenEffect(
+						player,
+						m_gameState->getOpponent(),
+						*player.getProgressTokens().back()
+					);
+				}
+			}
+		}
+
+		m_gameState->setPendingScientificReward(false); // sau clearPendingScientificReward()
+	}
+
+
 	if (!effect.getDiscounts().empty())
 	{
 		for (const auto& discount : effect.getDiscounts())
@@ -196,24 +235,25 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 	{
 		auto& discardedTokens = m_gameState->getDiscardedTokens();
 		if (!discardedTokens.empty()) {
-			int chosenIndex = -1;
+		int chosenIndex = -1;
 
-			if (player.isAI()) {
-				chosenIndex = 0;
-				m_view.get().onMessage(player.getName() + "AI chose a Progress Token");
-			}
-			else {
-				chosenIndex = m_view.get().askTokenSelection(
-					discardedTokens,
-					"Select a Progress Token to claim:"
-				);
-			}
-			if (chosenIndex >= 0 && chosenIndex < discardedTokens.size()) {
-				player.addProgressToken(std::move(discardedTokens[chosenIndex]));
-				discardedTokens.erase(discardedTokens.begin() + chosenIndex);
-				applyProgressTokenEffect(player, opponent, *player.getProgressTokens().back());
+		if (player.isAI()) {
+			chosenIndex = 0;
+			m_view.get().onMessage(player.getName() + "AI chose a Progress Token");
+		}
+		else {
+			chosenIndex = m_view.get().askTokenSelection(
+				discardedTokens,
+				"Select a Progress Token to claim:"
+			);
+		}
 
-			}
+		if (chosenIndex >= 0 && chosenIndex < discardedTokens.size()) {
+			player.addProgressToken(std::move(discardedTokens[chosenIndex]));
+			discardedTokens.erase(discardedTokens.begin() + chosenIndex);
+			applyProgressTokenEffect(player, opponent, *player.getProgressTokens().back());
+
+		}
 		}
 
 		if (effect.getOpponentLosesCoins().has_value())

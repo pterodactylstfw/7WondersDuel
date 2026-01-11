@@ -120,6 +120,7 @@ public:
 
 	std::vector<std::unique_ptr<ProgressToken>>& getDiscardedTokens();
 	const std::vector<std::unique_ptr<ProgressToken>>& getDiscardedTokens() const;
+	std::unique_ptr<ProgressToken> extractAvailableToken(int index);
 
 	void addToDiscardTokens(std::unique_ptr<ProgressToken>&& token);
 	std::unique_ptr<ProgressToken> extractDiscardedTokens(int index);
@@ -127,6 +128,7 @@ public:
 	bool removeMilitaryToken(int index); 
 	bool hasPendingScientificReward() const;
 	void setPendingScientificReward(bool pending);
+	void clearPendingScientificReward();
 
 	friend CORE_API void to_json(json& j, const GameState& state);
 	friend CORE_API void from_json(const json& j, GameState& state);

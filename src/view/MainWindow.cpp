@@ -1719,8 +1719,26 @@ void MainWindow::updateCardStructures()
 			"QPushButton:hover { border: 2px solid yellow; }"
 		);
 
-		connect(cardButton, &QPushButton::clicked, [this, cardIndex = node.m_index]() {
-			showActionDialog(cardIndex);
+		connect(cardButton, &QPushButton::clicked, [this, node]() {
+			const auto& state = getCurrentGameState();
+
+			if (!node.m_isFaceUp) {
+				showFloatingText(
+					"You cannot access this card.\nChoose another.",
+					"color: red; font-size: 18px;"
+				);
+				return;
+			}
+
+			if (!state.isCardAccessible(node.m_index)) {
+				showFloatingText(
+					"This card is blocked by others.\nChoose another.",
+					"color: red; font-size: 18px;"
+				);
+				return;
+			}
+
+			showActionDialog(node.m_index);
 			});
 
 		cardButton->show();

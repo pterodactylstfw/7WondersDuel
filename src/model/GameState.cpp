@@ -1,5 +1,7 @@
 ﻿#include "GameState.h"
 #include "GameState.h"
+#include "GameState.h"
+#include "GameState.h"
 #include <fstream>
 
 void GameState::buildPyramidStructure(int age) {
@@ -424,6 +426,16 @@ const std::vector<std::unique_ptr<ProgressToken>>& GameState::getDiscardedTokens
     return m_discardedProgressTokens;
 }
 
+std::unique_ptr<ProgressToken> GameState::extractAvailableToken(int index)
+{
+    if (index < 0 || index >= m_availableProgressToken.size())
+        return nullptr;
+
+    auto token = std::move(m_availableProgressToken[index]);
+    m_availableProgressToken.erase(m_availableProgressToken.begin() + index);
+    return token;
+}
+
 void GameState::addToDiscardTokens(std::unique_ptr<ProgressToken>&& token)
 {
     if(token)
@@ -464,6 +476,11 @@ bool GameState::hasPendingScientificReward() const
 void GameState::setPendingScientificReward(bool pending)
 {
     m_pendingScientificReward = pending;
+}
+
+void GameState::clearPendingScientificReward()
+{
+    m_pendingScientificReward = false;
 }
 
 uint8_t GameState::getCurrentPlayerIndex() const

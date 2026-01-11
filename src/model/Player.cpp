@@ -298,7 +298,7 @@ bool Player::isAI() const
 
 bool Player::hasScientificVictory() const
 {
-	return m_scientificSymbols.size() > GameConstants::SCIENTIFIC_SUPREMACY_SYMBOLS;
+	return m_scientificSymbols.size() >= GameConstants::SCIENTIFIC_SUPREMACY_SYMBOLS;
 }
 
 int Player::getMilitaryShields() const

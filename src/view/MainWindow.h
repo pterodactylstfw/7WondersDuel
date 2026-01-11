@@ -30,7 +30,7 @@ public:
     int askInt(int min, int max, const std::string& prompt) override;
     ResourceType askResourceSelection(const std::vector<ResourceType>& options, const std::string& prompt) override;
     int askWonderSelection(const std::array<std::unique_ptr<Wonder>,GameConstants::WONDERS_PER_PLAYER>& wonders, const std::string& playerName) override;
-    int askTokenSelection(const std::vector<std::unique_ptr<ProgressToken>>& tokens, const std::string& prompt) override;
+    int askTokenSelection(const std::vector<std::unique_ptr<ProgressToken>>& tokens) override;
     int askCardSelectionFromList(const std::vector<std::reference_wrapper<const Card>>& cards, const std::string& prompt) override;
 
 private slots:

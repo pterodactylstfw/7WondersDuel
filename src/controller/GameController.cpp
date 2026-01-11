@@ -178,10 +178,7 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 			}
 			else
 			{
-				chosenIndex = m_view.get().askTokenSelection(
-					availableTokens,
-					"Science Pair! Choose a Progress Token:"
-				);
+				chosenIndex = m_view.get().askTokenSelection(availableTokens);
 			}
 
 			if (chosenIndex >= 0 && chosenIndex < (int)availableTokens.size())
@@ -242,10 +239,7 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 			m_view.get().onMessage(player.getName() + "AI chose a Progress Token");
 		}
 		else {
-			chosenIndex = m_view.get().askTokenSelection(
-				discardedTokens,
-				"Select a Progress Token to claim:"
-			);
+			chosenIndex = m_view.get().askTokenSelection(discardedTokens);
 		}
 
 		if (chosenIndex >= 0 && chosenIndex < discardedTokens.size()) {

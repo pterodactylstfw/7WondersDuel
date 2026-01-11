@@ -339,29 +339,69 @@ int MainWindow::askWonderSelection(const std::array<std::unique_ptr<Wonder>, Gam
 	return selectedIndex;
 }
 
-int MainWindow::askTokenSelection(const std::vector<std::unique_ptr<ProgressToken>>& tokens, const std::string& prompt) {
+int MainWindow::askTokenSelection(const std::vector<std::unique_ptr<ProgressToken>>& tokens) 
+{
 	if (tokens.empty()) return -1;
 
-	QStringList items;
-	for (const auto& token : tokens) {
-		QString label = QString::fromStdString(std::string(token->getName()));
-		items << label;
+	QDialog dialog(this);
+	dialog.setWindowTitle("Select a Progress Token");
+	dialog.setModal(true);
+	dialog.setMinimumSize(400, 200);
+
+	QVBoxLayout* mainLayout = new QVBoxLayout(&dialog);
+
+	QLabel* title = new QLabel("Choose a Progress Token");
+	title->setAlignment(Qt::AlignCenter);
+	title->setStyleSheet("font-size: 18px; font-weight: bold; color: gold;");
+	mainLayout->addWidget(title);
+
+	QHBoxLayout* tokensLayout = new QHBoxLayout();
+	tokensLayout->setSpacing(15);
+	mainLayout->addLayout(tokensLayout);
+
+	int selectedIndex = -1;
+	QEventLoop loop;
+
+	for (size_t i = 0; i < tokens.size(); ++i) {
+		const auto& token = tokens[i];
+
+		QPushButton* btn = new QPushButton(&dialog);
+		btn->setFixedSize(90, 90);
+
+		QPixmap pix(QString::fromStdString(token->getImagePath()));
+		if (!pix.isNull()) {
+			btn->setIcon(QIcon(pix));
+			btn->setIconSize(QSize(80, 80));
+		}
+
+		btn->setToolTip(QString::fromStdString(
+			token->getName() + "\n" + token->getDescription()
+		));
+
+		btn->setStyleSheet(
+			"QPushButton { "
+			"  border: 2px solid transparent; "
+			"  border-radius: 45px; "
+			"  background-color: rgba(0,0,0,120); "
+			"}"
+			"QPushButton:hover { "
+			"  border: 2px solid gold; "
+			"}"
+		);
+
+		connect(btn, &QPushButton::clicked, [&, i]() {
+			selectedIndex = static_cast<int>(i);
+			dialog.accept();
+			loop.quit();
+			});
+
+		tokensLayout->addWidget(btn);
 	}
 
-	bool ok;
-	QString item = QInputDialog::getItem(this,
-		"Select Progress Token",
-		QString::fromStdString(prompt),
-		items,
-		0,
-		false,
-		&ok);
+	dialog.show();
+	loop.exec();
 
-	if (ok && !item.isEmpty()) {
-		return items.indexOf(item);
-	}
-
-	return 0; // default: primul
+	return selectedIndex;
 }
 
 int MainWindow::askCardSelectionFromList(const std::vector<std::reference_wrapper<const Card>>& cards, const std::string& prompt) {
@@ -965,12 +1005,20 @@ void MainWindow::showActionDialog(int cardIndex)
 			}
 			else {
 				bool success = m_game.executeAction(cardIndex, PlayerAction::CONSTRUCT_BUILDING);
-				if (success) actionTaken = true;
-				else {
-					// Daca a esuat (nu are bani), redeschidem dialogul ca sa aleaga altceva
-					// Sau poti afisa un mesaj de eroare si sa il lasi sa incerce altceva
-					shouldReopenDialog = true;
+
+				if (success) {
+					actionTaken = true;
 				}
+				else {
+					QMessageBox::warning(
+						this,
+						"Cannot Construct Building",
+						"You do not have enough resources or coins to construct this building."
+					);
+
+					shouldReopenDialog = true; // redeschide dialogul
+				}
+
 			}
 		}
 

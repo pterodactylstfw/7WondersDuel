@@ -30,7 +30,7 @@ public:
         return 0;
     }
 
-    int askTokenSelection(const std::vector<std::unique_ptr<ProgressToken>>&, const std::string&) override {
+    int askTokenSelection(const std::vector<std::unique_ptr<ProgressToken>>&, const std::string& prompt) override {
         return 0;
     }
 

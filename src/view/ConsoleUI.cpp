@@ -248,13 +248,43 @@ int ConsoleUI::showActionMenu()
 
 void ConsoleUI::showVictoryScreen(const std::string& winnerName)
 {
+	const auto& state = m_game.getGameState();
+	int winnerIndex = state.getWinnerIndex().value_or(-1);
+
+	std::string victoryType = "GAME OVER";
+
+	if (std::abs(state.getMilitaryPosition()) >= GameConstants::MILITARY_SUPREMACY_DISTANCE) {
+		victoryType = "MILITARY VICTORY!";
+	}
+	else if (winnerIndex != -1 && state.getPlayers()[winnerIndex]->hasScientificVictory()) {
+		victoryType = "SCIENTIFIC VICTORY!";
+	}
+	else if (winnerIndex != -1) {
+		victoryType = "CIVILIAN VICTORY!";
+	}
+	else {
+		victoryType = "GAME ENDED (DRAW)";
+	}
+
 	Utils::clearScreen();
 	std::println("\n=======================================");
-	std::println("           GAME OVER");
+	std::println("           {}           ", victoryType);
 	std::println("=======================================");
 	std::println(">>> The winner is: {} <<<", winnerName);
+
+	if (victoryType == "CIVILIAN VICTORY!" && winnerIndex != -1) {
+		const auto& winner = state.getPlayers()[winnerIndex];
+		const auto& loser = state.getPlayers()[1 - winnerIndex];
+		int winnerScore = winner->getFinalScore(*loser);
+		int loserScore = loser->getFinalScore(*winner);
+		std::println("{}'s Score: {} points", winner->getName(), winnerScore);
+		std::println("{}'s Score: {} points", loser->getName(), loserScore);
+	}
+
 	std::println("Congratulations!");
 	std::println("=======================================");
+
+	Utils::waitForEnter("Press Enter to return to Main Menu...");
 }
 
 
@@ -346,19 +376,6 @@ void ConsoleUI::handlePlayCard()
     }
 
     if (success) {
-        if (m_game.isGameOver())
-        {
-            const auto& state = m_game.getGameState();
-            const auto& winner = state.getWinnerIndex();
-            if (state.getCurrentPlayerIndex() == winner.value())
-            {
-                showVictoryScreen(state.getCurrentPlayer().getName());
-            }
-            else
-            {
-                showVictoryScreen(state.getOpponent().getName());
-            }
-        }
         std::println("{}>>> SUCCESS! Action completed. <<<", '\n');
     }
 }

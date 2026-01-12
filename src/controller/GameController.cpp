@@ -178,7 +178,7 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 			}
 			else
 			{
-				chosenIndex = m_view.get().askTokenSelection(availableTokens);
+				chosenIndex = m_view.get().askTokenSelection(availableTokens, "Scientific pair reward: Choose a Progress Token");
 			}
 
 			if (chosenIndex >= 0 && chosenIndex < (int)availableTokens.size())
@@ -239,7 +239,7 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 			m_view.get().onMessage(player.getName() + "AI chose a Progress Token");
 		}
 		else {
-			chosenIndex = m_view.get().askTokenSelection(discardedTokens);
+			chosenIndex = m_view.get().askTokenSelection(discardedTokens, "Special effect: Choose a discarded Progress Token");
 		}
 
 		if (chosenIndex >= 0 && chosenIndex < discardedTokens.size()) {
@@ -644,7 +644,10 @@ bool GameController::executeAction(int cardIndex, PlayerAction action, int wonde
 	case PlayerAction::CONSTRUCT_WONDER:
 		success = handleConstructWonders(cardIndex, wonderIndex, playAgain);
 		break;
+
+		default: break;
 	}
+
 
 
 	if (success) {
@@ -764,6 +767,7 @@ void GameController::applyProgressTokenEffect(Player& player, Player& opponent, 
 			token.getEffect().withUrbanismEffect();
 			break;
 		}
+		default: break;
 	}
 }
 

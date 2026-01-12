@@ -339,12 +339,13 @@ int MainWindow::askWonderSelection(const std::array<std::unique_ptr<Wonder>, Gam
 	return selectedIndex;
 }
 
-int MainWindow::askTokenSelection(const std::vector<std::unique_ptr<ProgressToken>>& tokens) 
+int MainWindow::askTokenSelection(const std::vector<std::unique_ptr<ProgressToken>>& tokens, const std::string& prompt) 
 {
 	if (tokens.empty()) return -1;
 
 	QDialog dialog(this);
-	dialog.setWindowTitle("Select a Progress Token");
+	dialog.setWindowTitle(QString::fromStdString(prompt));
+
 	dialog.setModal(true);
 	dialog.setMinimumSize(400, 200);
 
@@ -588,6 +589,7 @@ void MainWindow::onBtnHintClicked() {
 		case PlayerAction::CONSTRUCT_BUILDING:actionText = "Build this!"; break;
 		case PlayerAction::DISCARD_FOR_COINS:actionText = "Sell this!"; break;
 		case PlayerAction::CONSTRUCT_WONDER:actionText = "Build Wonder!"; break;
+				default: actionText = "Wait/Unknown"; break;
 		}
 		showHintText(actionText);
 	}

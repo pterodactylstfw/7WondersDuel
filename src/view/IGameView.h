@@ -25,7 +25,7 @@ public:
 
     // efecte specifice
     virtual int askCardSelectionFromList(const std::vector<std::reference_wrapper<const Card>>& cards, const std::string& prompt) = 0;
-    virtual int askTokenSelection(const std::vector<std::unique_ptr<ProgressToken>>& tokens) = 0;
+    virtual int askTokenSelection(const std::vector<std::unique_ptr<ProgressToken>>& tokens, const std::string& prompt) = 0;
 
     //starea jocului s-a schimbat => update ui
     virtual void onStateUpdated() = 0;

@@ -339,12 +339,12 @@ int MainWindow::askWonderSelection(const std::array<std::unique_ptr<Wonder>, Gam
 	return selectedIndex;
 }
 
-int MainWindow::askTokenSelection(const std::vector<std::unique_ptr<ProgressToken>>& tokens) 
+int MainWindow::askTokenSelection(const std::vector<std::unique_ptr<ProgressToken>>& tokens, const std::string& prompt) 
 {
 	if (tokens.empty()) return -1;
 
 	QDialog dialog(this);
-	dialog.setWindowTitle("Select a Progress Token");
+	dialog.setWindowTitle(prompt);
 	dialog.setModal(true);
 	dialog.setMinimumSize(400, 200);
 

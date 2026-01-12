@@ -588,6 +588,7 @@ void MainWindow::onBtnHintClicked() {
 		case PlayerAction::CONSTRUCT_BUILDING:actionText = "Build this!"; break;
 		case PlayerAction::DISCARD_FOR_COINS:actionText = "Sell this!"; break;
 		case PlayerAction::CONSTRUCT_WONDER:actionText = "Build Wonder!"; break;
+				default: actionText = "Wait/Unknown"; break;
 		}
 		showHintText(actionText);
 	}

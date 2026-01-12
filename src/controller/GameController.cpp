@@ -692,6 +692,12 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 			}
 
 			m_gameState->removeCardFromPyramid(cardIndex);
+	
+          success = handleConstructWonders(cardIndex, wonderIndex, playAgain);
+        break;
+    
+    default: break;
+    }
 
 			bool anyCardLeft = false;
 			for (const auto& node : m_gameState->getPyramid()) {
@@ -699,19 +705,20 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 			}
 
 			if (!anyCardLeft) {
-				checkEndAge();
-			}
-			else {
-				if (!playAgain) {
-					m_gameState->switchPlayer();
-				}
-			}
-			m_view.get().onStateUpdated();
-			return true;
-		}
+            checkEndAge();
+        }
+        else {
+            if (!playAgain) {
+                m_gameState->switchPlayer();
+            }
+        }
+        
+        m_view.get().onStateUpdated();
+        return true;
+    }
 
-		return false;
-	}
+    return false;
+}
 
 	void GameController::checkEndAge() {
 		int currentAge = m_gameState->getCurrentAge();
@@ -801,7 +808,8 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 			token.getEffect().withUrbanismEffect();
 			break;
 		}
-		}
+		default: break;
+    }
 	}
 
 	bool GameController::pickWonder(int wonderIndex)

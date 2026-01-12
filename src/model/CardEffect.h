@@ -51,6 +51,8 @@ public:
 
 	CardEffect() = default;
 
+	bool operator==(const CardEffect& other) const = default;
+
 	CardEffect& withVictoryPoints(int points) noexcept;
 	CardEffect& withShields(int shields) noexcept;
 	CardEffect& withBaseCoins(int coins) noexcept;

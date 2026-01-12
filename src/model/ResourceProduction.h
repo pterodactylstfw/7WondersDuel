@@ -27,6 +27,8 @@ public:
 	const std::map<ResourceType, int>& getFixedResources() const;
 	const std::vector<std::vector<ResourceType>>& getChoices() const;
 
+	bool operator==(const ResourceProduction& other) const = default;
+
 	bool hasChoices() const;
 	std::map<ResourceType, int> getTotalProduction() const;
 	bool isEmpty() const;

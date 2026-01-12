@@ -113,7 +113,7 @@ QLineEdit {
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>2</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="pageMenu">
        <property name="styleSheet">
@@ -394,7 +394,7 @@ color: #f0f0f0;</string>
                </layout>
               </item>
               <item>
-               <layout class="QHBoxLayout" name="opponentResourcesLayout"/>
+               <layout class="QHBoxLayout" name="opponentTokensLayout"/>
               </item>
              </layout>
             </widget>
@@ -644,7 +644,7 @@ color: #f0f0f0;</string>
                </layout>
               </item>
               <item>
-               <layout class="QHBoxLayout" name="playerResourcesLayout"/>
+               <layout class="QHBoxLayout" name="playerTokensLayout"/>
               </item>
              </layout>
             </widget>

@@ -655,21 +655,21 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 		}
 	}
 
-	bool GameController::executeAction(int cardIndex, PlayerAction action, int wonderIndex) {
-		if (!m_gameState->isCardAccessible(cardIndex)) {
-			m_view.get().onError("[!] Card is blocked or invalid.");
-			return false; // carte blocata/inexistenta
-		}
+bool GameController::executeAction(int cardIndex, PlayerAction action, int wonderIndex) {
+	if (!m_gameState->isCardAccessible(cardIndex)) {
+		m_view.get().onError("[!] Card is blocked or invalid.");
+		return false;
+	}
 
-		Player& currentPlayer = m_gameState->getCurrentPlayer();
-		const Player& opponent = m_gameState->getOpponent();
-		auto cardView = m_gameState->getCardView(cardIndex);
-		if (!cardView.has_value()) return false;
+	Player& currentPlayer = m_gameState->getCurrentPlayer();
+	const Player& opponent = m_gameState->getOpponent();
+	auto cardView = m_gameState->getCardView(cardIndex);
+	if (!cardView.has_value()) return false;
 
-		bool success = false;
-		bool playAgain = false;
+	bool success = false;
+	bool playAgain = false;
 
-		switch (action) {
+	switch (action) {
 		case PlayerAction::CONSTRUCT_BUILDING:
 			success = handleConstructBuilding(cardIndex);
 			break;
@@ -681,43 +681,39 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 		case PlayerAction::CONSTRUCT_WONDER:
 			success = handleConstructWonders(cardIndex, wonderIndex, playAgain);
 			break;
+
+		default: break;
+	}
+
+
+	if (success) {
+		checkInstantVictory();
+		if (m_gameState->isGameOver()) {
+			m_view.get().onStateUpdated();
+			return true;
 		}
 
+		m_gameState->removeCardFromPyramid(cardIndex);
 
-		if (success) {
-			checkInstantVictory();
-			if (m_gameState->isGameOver()) {
-				m_view.get().onStateUpdated();
-				return true;
+		bool anyCardLeft = false;
+		for (const auto& node : m_gameState->getPyramid()) {
+			if (!node.m_isRemoved) { anyCardLeft = true; break; }
+		}
+
+		if (!anyCardLeft) {
+			checkEndAge();
+		}
+		else {
+			if (!playAgain) {
+				m_gameState->switchPlayer();
 			}
+		}
 
-			m_gameState->removeCardFromPyramid(cardIndex);
-	
-          success = handleConstructWonders(cardIndex, wonderIndex, playAgain);
-        break;
-    
-    default: break;
-    }
+		m_view.get().onStateUpdated();
+		return true;
+	}
 
-			bool anyCardLeft = false;
-			for (const auto& node : m_gameState->getPyramid()) {
-				if (!node.m_isRemoved) { anyCardLeft = true; break; }
-			}
-
-			if (!anyCardLeft) {
-            checkEndAge();
-        }
-        else {
-            if (!playAgain) {
-                m_gameState->switchPlayer();
-            }
-        }
-        
-        m_view.get().onStateUpdated();
-        return true;
-    }
-
-    return false;
+	return false;
 }
 
 	void GameController::checkEndAge() {

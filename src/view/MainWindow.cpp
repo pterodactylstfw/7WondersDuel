@@ -339,12 +339,12 @@ int MainWindow::askWonderSelection(const std::array<std::unique_ptr<Wonder>, Gam
 	return selectedIndex;
 }
 
-int MainWindow::askTokenSelection(const std::vector<std::unique_ptr<ProgressToken>>& tokens, const std::string& prompt) 
+int MainWindow::askTokenSelection(const std::vector<std::unique_ptr<ProgressToken>>& tokens, const std::string& prompt)
 {
 	if (tokens.empty()) return -1;
 
 	QDialog dialog(this);
-	dialog.setWindowTitle(prompt);
+	dialog.setWindowTitle(QString::fromStdString(prompt));
 	dialog.setModal(true);
 	dialog.setMinimumSize(400, 200);
 
@@ -1499,23 +1499,74 @@ void MainWindow::updatePlayerPanel(const Player& player, bool isOpponent)
 		"font-weight: bold;"
 		"qproperty-alignment: 'AlignCenter';";
 
+	QLabel* nameLabel;
+	QLabel* coinsLabel;
+	QLabel* vpLabel;
+	QLayout* tokensLayout;
+
 	if (isOpponent) {
-		ui->labelOpponentName->setText(QString::fromStdString(player.getName()));
-
-		ui->labelOpponentCoins->setStyleSheet(styleTemplate.arg(":/assets/coins.png"));
-		ui->labelOpponentCoins->setText(QString::number(player.getCoins()));
-
-		ui->labelOpponentVP->setStyleSheet(styleTemplate.arg(":/assets/victorypoints.png"));
-		ui->labelOpponentVP->setText(QString::number(player.getVictoryPoints()));
+		nameLabel = ui->labelOpponentName;
+		coinsLabel = ui->labelOpponentCoins;
+		vpLabel = ui->labelOpponentVP;
+		tokensLayout = ui->opponentTokensLayout;
 	}
 	else {
-		ui->labelCurrentPlayerName->setText(QString::fromStdString(player.getName()));
+		nameLabel = ui->labelCurrentPlayerName;
+		coinsLabel = ui->labelCurrentPlayerCoins;
+		vpLabel = ui->labelCurrentPlayerVP;
+		tokensLayout = ui->playerTokensLayout;
+	}
 
-		ui->labelCurrentPlayerCoins->setStyleSheet(styleTemplate.arg(":/assets/coins.png"));
-		ui->labelCurrentPlayerCoins->setText(QString::number(player.getCoins()));
+	nameLabel->setText(QString::fromStdString(player.getName()));
 
-		ui->labelCurrentPlayerVP->setStyleSheet(styleTemplate.arg(":/assets/victorypoints.png"));
-		ui->labelCurrentPlayerVP->setText(QString::number(player.getVictoryPoints()));
+	coinsLabel->setStyleSheet(styleTemplate.arg(":/assets/coins.png"));
+	coinsLabel->setText(QString::number(player.getCoins()));
+
+	vpLabel->setStyleSheet(styleTemplate.arg(":/assets/victorypoints.png"));
+	vpLabel->setText(QString::number(player.getVictoryPoints()));
+
+
+	QLayoutItem* child;
+	while ((child = tokensLayout->takeAt(0)) != nullptr) {
+		if (child->widget()) {
+			delete child->widget();
+		}
+		delete child;
+	}
+
+	const auto& tokens = player.getProgressTokens();
+	if (!tokens.empty()) {
+
+		int tokenCount = static_cast<int>(tokens.size());
+		int iconSize = 35;
+		int spacing = 4;
+
+		if (tokenCount > 4) {
+			iconSize = (160 - (tokenCount - 1) * 2) / tokenCount;
+			spacing = 2;
+		}
+		tokensLayout->setSpacing(spacing);
+
+		for (const auto& token : tokens) {
+			QLabel* tokenIcon = new QLabel();
+
+			tokenIcon->setFixedSize(iconSize, iconSize);
+			tokenIcon->setScaledContents(true);
+			tokenIcon->setStyleSheet("background-color: transparent; border: none;");
+
+			QPixmap pix(QString::fromStdString(token->getImagePath()));
+			if (!pix.isNull()) {
+				tokenIcon->setPixmap(pix);
+			}
+			else {
+				tokenIcon->setText("T");
+				QString style = QString("background-color: green; color: white; border-radius: %1px; qproperty-alignment: 'AlignCenter';").arg(iconSize / 2);
+				tokenIcon->setStyleSheet(style);
+			}
+
+			tokenIcon->setToolTip(QString::fromStdString(token->getName()));
+			tokensLayout->addWidget(tokenIcon);
+		}
 	}
 }
 

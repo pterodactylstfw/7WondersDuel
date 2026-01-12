@@ -644,7 +644,10 @@ bool GameController::executeAction(int cardIndex, PlayerAction action, int wonde
 	case PlayerAction::CONSTRUCT_WONDER:
 		success = handleConstructWonders(cardIndex, wonderIndex, playAgain);
 		break;
+
+		default: break;
 	}
+
 
 
 	if (success) {
@@ -764,6 +767,7 @@ void GameController::applyProgressTokenEffect(Player& player, Player& opponent, 
 			token.getEffect().withUrbanismEffect();
 			break;
 		}
+		default: break;
 	}
 }
 

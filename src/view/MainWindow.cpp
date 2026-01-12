@@ -344,7 +344,8 @@ int MainWindow::askTokenSelection(const std::vector<std::unique_ptr<ProgressToke
 	if (tokens.empty()) return -1;
 
 	QDialog dialog(this);
-	dialog.setWindowTitle(prompt);
+	dialog.setWindowTitle(QString::fromStdString(prompt));
+
 	dialog.setModal(true);
 	dialog.setMinimumSize(400, 200);
 
@@ -588,6 +589,7 @@ void MainWindow::onBtnHintClicked() {
 		case PlayerAction::CONSTRUCT_BUILDING:actionText = "Build this!"; break;
 		case PlayerAction::DISCARD_FOR_COINS:actionText = "Sell this!"; break;
 		case PlayerAction::CONSTRUCT_WONDER:actionText = "Build Wonder!"; break;
+				default: actionText = "Wait/Unknown"; break;
 		}
 		showHintText(actionText);
 	}

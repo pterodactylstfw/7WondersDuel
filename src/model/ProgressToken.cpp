@@ -66,7 +66,8 @@ void to_json(json& j, const ProgressToken& token)
 		{"type", token.m_tokenType},
 		{"name", token.m_name},
 		{"effect", token.m_effect},
-		{"isActive", token.m_isActive}
+		{"isActive", token.m_isActive},
+		{"imagePath", token.m_imagePath}
 	};
 }
 
@@ -76,4 +77,5 @@ void from_json(const json& j, ProgressToken& token)
 	j.at("name").get_to(token.m_name);
 	j.at("effect").get_to(token.m_effect);
 	j.at("isActive").get_to(token.m_isActive);
+	j.at("imagePath").get_to(token.m_imagePath);
 }

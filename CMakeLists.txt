@@ -115,6 +115,7 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/main_gui.cpp")
             src/view/MainWindow.cpp src/view/MainWindow.h
             src/view/MainWindow.ui
             src/view/NetworkClient.cpp src/view/NetworkClient.h
+            src/server/GameServer.cpp src/server/GameServer.h src/server/ServerGameView.h
     )
 
     add_executable(7WondersGUI

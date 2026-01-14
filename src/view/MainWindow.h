@@ -11,6 +11,7 @@
 #include "Constants.h"
 #include "NetworkClient.h"
 #include "AIController.h"
+#include "server/GameServer.h"
 
 namespace Ui {
     class MainWindow;
@@ -52,6 +53,7 @@ private:
 
     NetworkClient* m_netClient;
     std::unique_ptr<GameState> m_networkState;
+    QString m_myUserName; // online
     int m_myIndex = -1;
 
     bool m_isOnlineMode = false;
@@ -66,6 +68,8 @@ private:
     std::array<CardPosition, GameConstants::CARDS_PER_AGE> m_age1Layout;
     std::array<CardPosition, GameConstants::CARDS_PER_AGE> m_age2Layout;
     std::array<CardPosition, GameConstants::CARDS_PER_AGE> m_age3Layout;
+
+    std::unique_ptr<GameServer> m_integratedServer; // server hibrid host - sa nu mai pornesc aplicatia cu exe
 
     void updatePlayerArea(const Player& player, QWidget* wondersArea, QWidget* cityArea);
     QWidget* createColorColumn(const std::vector<std::reference_wrapper<const Card>>& cards, int width, int height);
@@ -97,4 +101,7 @@ private:
 
     void removeMessageLabel(QLabel* label);
     void nonBlockingWait(int milliseconds);
+
+    void setupNetworkConnections();
+    void resetNetwork();
 };

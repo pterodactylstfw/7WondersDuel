@@ -16,6 +16,8 @@ public:
 
     void connectToServer(const QString& ip, quint16 port); // init conexiune
 
+    void sendName(const std::string& name);
+
     void sendAction(int cardIndex, PlayerAction action, int wonderIndex = -1);
 
     void sendPickWonder(int wonderIndex);

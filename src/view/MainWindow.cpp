@@ -188,8 +188,8 @@ void MainWindow::onStateUpdated() {
 	updateGameUI();
 	drawProgressTokens();
 
-	updatePlayerArea(state.getCurrentPlayer(), ui->playerWonders, ui->playerCards);
-	updatePlayerArea(state.getOpponent(), ui->opponentWonders, ui->opponentCards);
+	//updatePlayerArea(state.getCurrentPlayer(), ui->playerWonders, ui->playerCards);
+	//updatePlayerArea(state.getOpponent(), ui->opponentWonders, ui->opponentCards);
 
 	if (state.getCurrentPhase() == GamePhase::DRAFTING) {
 		drawDraftBoard();
@@ -242,6 +242,10 @@ ResourceType MainWindow::askResourceSelection(const std::vector<ResourceType>& o
 int MainWindow::askWonderSelection(const std::array<std::unique_ptr<Wonder>, GameConstants::WONDERS_PER_PLAYER>& wonders, const std::string& playerName) {
 	if (m_myWonderButtons.empty()) return -1;
 
+	const auto& state = getCurrentGameState();
+	const Player& me = state.getCurrentPlayer();
+	const Player& opp = state.getOpponent();
+
 	QEventLoop loop;
 	int selectedIndex = -1;
 	std::vector<QMetaObject::Connection> connections;
@@ -256,16 +260,38 @@ int MainWindow::askWonderSelection(const std::array<std::unique_ptr<Wonder>, Gam
 
 		if (btn && wonders[i] && !wonders[i]->isBuilt()) {
 
-			btn->setStyleSheet("border: 3px solid #00FF00; border-radius: 5px;");
-			btn->setCursor(Qt::PointingHandCursor);
+			// --- VERIFICARE COST ---
+			int totalCost = me.calculateTotalCost(wonders[i]->getCost(), opp);
+			bool canAfford = (me.getCoins() >= totalCost);
 
-			auto conn = connect(btn, &QPushButton::clicked, [&, i]() {
-				selectedIndex = static_cast<int>(i);
-				loop.quit();
+			if (canAfford) {
+				// VERDE (Construibila)
+				btn->setStyleSheet("border: 3px solid #00FF00; border-radius: 5px;");
+				btn->setCursor(Qt::PointingHandCursor);
+				btn->setEnabled(true);
+
+				auto conn = connect(btn, &QPushButton::clicked, [&, i]() {
+					selectedIndex = static_cast<int>(i);
+					loop.quit();
 				});
-			connections.push_back(conn);
+				connections.push_back(conn);
+			}
+			else {
+				// ROSU (Nu ai bani) - O facem semi-transparenta si rosie
+				btn->setStyleSheet("border: 2px solid red; opacity: 0.7; background-color: rgba(50,0,0,100);");
+				btn->setCursor(Qt::ForbiddenCursor);
+				// O lasam dezactivata ca sa nu poata da click
+				// Sau o lasi activa si dai mesaj de eroare, dar e mai bine sa nu poata da click.
+				// Daca vrei click -> mesaj, pune connect si acolo.
+				// Aici o dezactivez:
+				// btn->setEnabled(false);
+
+				// Dar tooltip-ul ramane util
+				btn->setToolTip(QString("Not enough coins! Cost: %1").arg(totalCost));
+			}
 		}
 		else if (btn) {
+			// Minuni deja construite
 			btn->setDisabled(true);
 			btn->setStyleSheet("opacity: 0.3; background-color: rgba(0,0,0,100);");
 		}
@@ -1061,7 +1087,6 @@ void MainWindow::showActionDialog(int cardIndex)
 	auto cardView = currentState.getCardView(cardIndex);
 	if (!cardView.has_value()) return;
 	const Card& card = cardView->get();
-
 	bool actionTaken = false;
 	bool shouldReopenDialog = true;
 
@@ -1158,8 +1183,6 @@ void MainWindow::showActionDialog(int cardIndex)
 		else if (userChoice == 3) {
 			const Player& me = currentState.getCurrentPlayer();
 
-			// Acum dialogul este INCHIS, deci putem da click linistiti pe minuni
-			// askWonderSelection va porni propriul EventLoop, ceea ce e OK acum
 			int wonderIndex = askWonderSelection(me.getWonders(), me.getName());
 
 			if (wonderIndex != -1) {
@@ -1606,10 +1629,35 @@ void MainWindow::updateGameUI()
 	if (m_game.isGameOver()) return;
 
 
-	const auto& gameState = getCurrentGameState();
+	const auto& state = getCurrentGameState();
+	const auto& players = state.getPlayers();
 
-	updatePlayerPanel(gameState.getCurrentPlayer(), false);
-	updatePlayerPanel(gameState.getOpponent(), true);
+	int bottomIndex = 0;
+	int topIndex = 1;
+
+	if (m_isOnlineMode) {
+		// ONLINE: Eu sunt mereu jos, adversarul sus
+		if (m_myIndex != -1) { // Daca stim cine suntem
+			bottomIndex = m_myIndex;
+			topIndex = 1 - m_myIndex;
+		}
+	}
+	else {
+		// OFFLINE: Vrei ca Player 1 sa fie mereu jos, Player 2 sus?
+		// Atunci lasam bottomIndex = 0, topIndex = 1.
+		// Daca vrei ca jucatorul curent sa fie jos (Hotseat), folosesti codul vechi.
+		// Dar ai zis ca vrei FIX: P1 Jos, P2 Sus.
+		bottomIndex = 0;
+		topIndex = 1;
+	}
+
+	// --- DESENARE JUCATOR JOS (Main) ---
+	updatePlayerPanel(*players[bottomIndex], false); // false = Main Panel
+	updatePlayerArea(*players[bottomIndex], ui->playerWonders, ui->playerCards);
+
+	// --- DESENARE JUCATOR SUS (Opponent) ---
+	updatePlayerPanel(*players[topIndex], true); // true = Opponent Panel
+	updatePlayerArea(*players[topIndex], ui->opponentWonders, ui->opponentCards);
 
 	updateMilitaryTrack();
 }

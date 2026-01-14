@@ -8,11 +8,13 @@
 #include <QApplication>
 #include <qpainter.h>
 #include <QVBoxLayout>
-#include <QHBoxLayout>
 #include <QLabel>
 #include "AIController.h"
 #include <QThread>
 #include <QNetworkInterface>
+#include <QRadioButton>
+#include <QDialogButtonBox>
+#include <QLineEdit>
 
 MainWindow::MainWindow(QWidget* parent)
 	: QMainWindow(parent)
@@ -38,69 +40,11 @@ MainWindow::MainWindow(QWidget* parent)
 	ui->stackedWidget->setCurrentIndex(0);
 
 	connect(ui->btnStart, &QPushButton::clicked, this, &MainWindow::onBtnStartClicked);
-
-	connect(m_netClient, &NetworkClient::identityReceived, this, [this](int index, const QString& name) {
-		this->m_myIndex = index;
-		QMessageBox::information(this, "Game Started",
-			"You are " + name + "!\nThe game will begin shortly.");
-
-		this->setWindowTitle("7 Wonders Duel - " + name);
-
-		ui->stackedWidget->setCurrentIndex(1);
-
-		ui->stackedWidget->update();
-		ui->cardContainer->update();
-		QTimer::singleShot(100, this, [this]() {
-			setupLayouts();     // Calculam coordonatele pe baza marimii actuale
-			updateGameUI();     // Desenam cartile si minunile
-			});
-
-		//QApplication::processEvents();
-		ui->actionSave->setEnabled(true);
-		});
-
-	connect(m_netClient, &NetworkClient::stateReceived, this, [this](const GameState& newState) {
-
-		json j;
-		to_json(j, newState);
-
-		// Init pointerul daca e null
-		if (!m_networkState) {
-			m_networkState = std::make_unique<GameState>();
-		}
-
-		from_json(j, *m_networkState);
-
-		onStateUpdated();
-		});
-
-	// Cand primim eroare (de ex. "Opponent disconnected")
-	connect(m_netClient, &NetworkClient::errorOccurred, this, [this](const QString& msg) {
-		QMessageBox::critical(this, "Connection Error", msg);
-
-		// Ne intoarcem la meniu
-		cleanupVisuals();
-		ui->stackedWidget->setCurrentIndex(0);
-		ui->btnStart->setEnabled(true);
-		m_isOnlineMode = false;
-
-		// Resetam conexiunea
-		m_netClient->disconnect();
-		});
-
-	// Cand serverul pica de tot
-	connect(m_netClient, &NetworkClient::disconnected, this, [this]() {
-		if (m_isOnlineMode) {
-			QMessageBox::warning(this, "Disconnected", "Lost connection to server.");
-			cleanupVisuals();
-			ui->stackedWidget->setCurrentIndex(0);
-			ui->btnStart->setEnabled(true);
-			m_isOnlineMode = false;
-		}
-		});
-
 	connect(ui->btnLoad, &QPushButton::clicked, this, &MainWindow::onBtnLoadClicked);
 	connect(ui->btnExit, &QPushButton::clicked, this, &MainWindow::onBtnExitClicked);
+
+	m_netClient = new NetworkClient(this);
+	setupNetworkConnections();
 
 	connect(ui->btnBack, &QPushButton::clicked, this, [this]() {
 		if (m_game.hasGameStarted() && !m_game.isGameOver()) {
@@ -436,23 +380,120 @@ void MainWindow::onBtnStartClicked()
 	if (!okMode || mode.isEmpty()) return;
 
 	if (mode == "Online Multiplayer") {
-		m_isOnlineMode = true;
+        m_isOnlineMode = true;
 
-		bool ok;
-		QString ipAddress = QInputDialog::getText(this, "Connect to Server",
-			"Enter Server IP Address:\n(Use '127.0.0.1' if server is on this PC)",
-			QLineEdit::Normal, "127.0.0.1", &ok);
+        // --- DIALOG CUSTOM PENTRU HOST/JOIN ---
+        QDialog netDlg(this);
+        netDlg.setWindowTitle("Network Setup");
+        netDlg.setFixedSize(400, 300);
+        netDlg.setStyleSheet("background-color: #2b2b2b; color: white;");
 
-		if (!ok || ipAddress.isEmpty()) return;
+        QVBoxLayout* layout = new QVBoxLayout(&netDlg);
 
-		// Incercam conectarea
-		m_netClient->connectToServer(ipAddress, 12345);
+        QLabel* lblTitle = new QLabel("Select Role:");
+        lblTitle->setStyleSheet("font-size: 18px; font-weight: bold; margin-bottom: 10px;");
+        layout->addWidget(lblTitle);
 
-		ui->label->setText("Connecting to " + ipAddress + "...");
+        // Radio Buttons
+        QRadioButton* rbHost = new QRadioButton("Host Game (Server)");
+        QRadioButton* rbJoin = new QRadioButton("Join Game (Client)");
+        rbHost->setStyleSheet("font-size: 14px; margin: 5px;");
+        rbJoin->setStyleSheet("font-size: 14px; margin: 5px;");
+        rbJoin->setChecked(true);
 
-		ui->btnStart->setEnabled(false);
-		return;
-	}
+        layout->addWidget(rbHost);
+        layout->addWidget(rbJoin);
+
+        // Zona IP (pentru Join)
+        QWidget* ipWidget = new QWidget();
+		QVBoxLayout* ipLayout = new QVBoxLayout(ipWidget);
+		ipLayout->setContentsMargins(10, 10, 10, 10);
+
+        QLabel* lblIP = new QLabel("Friend's IP (Host):");
+		lblIP->setStyleSheet("font-size: 14px; font-weight: normal; color: white;");
+        QLineEdit* editIP = new QLineEdit("127.0.0.1");
+		editIP->setStyleSheet(
+		"background-color: #444; "
+		"border: 1px solid gray; "
+		"padding: 5px; "
+		"color: white; "
+		"font-size: 14px;"
+		);
+
+        ipLayout->addWidget(lblIP);
+        ipLayout->addWidget(editIP);
+        layout->addWidget(ipWidget);
+
+        // Zona Info IP (pentru Host)
+        QLabel* lblMyIP = new QLabel();
+		lblMyIP->setStyleSheet(
+		"color: #FFD700; "
+		"font-size: 20px; "  // Font mai mic (era probabil urias)
+		"font-weight: bold; "
+		"font-style: italic; "
+		"margin-top: 10px; "
+		"background-color: transparent;" // Sa nu aiba fundal alb
+		);
+        lblMyIP->setWordWrap(true);
+		lblMyIP->setAlignment(Qt::AlignCenter);
+        lblMyIP->hide();
+        layout->addWidget(lblMyIP);
+
+        auto updateDlg = [&]() {
+            if (rbHost->isChecked()) {
+                ipWidget->hide();
+                lblMyIP->show();
+
+                // Aflam IP-ul local
+                QString myIp = "Unknown";
+                for (const auto& address : QNetworkInterface::allAddresses()) {
+                    if (address.protocol() == QAbstractSocket::IPv4Protocol && address != QHostAddress::LocalHost) {
+                        myIp = address.toString();
+                        break;
+                    }
+                }
+                lblMyIP->setText("Your Local IP is: " + myIp + "\n(Tell your friend to connect to this IP)");
+            } else {
+                ipWidget->show();
+                lblMyIP->hide();
+            }
+        };
+
+        connect(rbHost, &QRadioButton::toggled, &netDlg, updateDlg);
+        updateDlg(); // apel initial
+
+        // Butoane
+        QDialogButtonBox* bbox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+        connect(bbox, &QDialogButtonBox::accepted, &netDlg, &QDialog::accept);
+        connect(bbox, &QDialogButtonBox::rejected, &netDlg, &QDialog::reject);
+        layout->addWidget(bbox);
+
+        if (netDlg.exec() == QDialog::Accepted) {
+            m_isOnlineMode = true;
+
+            // Daca am fost host inainte, resetam serverul vechi
+            m_integratedServer.reset();
+
+            if (rbHost->isChecked()) {
+                // --- MOD HOST ---
+                // 1. Pornim serverul intern
+                m_integratedServer = std::make_unique<GameServer>(); // Asculta pe 12345
+
+                // 2. Ne conectam la el (localhost)
+                m_netClient->connectToServer("127.0.0.1", 12345);
+                ui->label->setText("Hosting Game... Waiting for Player 2...");
+            }
+            else {
+                // --- MOD JOIN ---
+                QString targetIp = editIP->text();
+                m_netClient->connectToServer(targetIp, 12345);
+                ui->label->setText("Connecting to " + targetIp + "...");
+            }
+
+            ui->btnStart->setEnabled(false);
+        }
+        return;
+    }
 
 	m_isOnlineMode = false; // Ne asiguram ca e false
 
@@ -936,6 +977,84 @@ void MainWindow::nonBlockingWait(int milliseconds) {
 	loop.exec();
 }
 
+void MainWindow::setupNetworkConnections() {
+	connect(m_netClient, &NetworkClient::identityReceived, this, [this](int index, const QString& name) {
+		this->m_myIndex = index;
+		QMessageBox::information(this, "Game Started",
+			"You are " + name + "!\nThe game will begin shortly.");
+
+		this->setWindowTitle("7 Wonders Duel - " + name);
+
+		ui->stackedWidget->setCurrentIndex(1);
+
+		ui->stackedWidget->update();
+		ui->cardContainer->update();
+		QTimer::singleShot(100, this, [this]() {
+			setupLayouts();     // Calculam coordonatele pe baza marimii actuale
+			updateGameUI();     // Desenam cartile si minunile
+			});
+
+		//QApplication::processEvents();
+		ui->actionSave->setEnabled(true);
+		});
+
+	connect(m_netClient, &NetworkClient::stateReceived, this, [this](const GameState& newState) {
+
+		json j;
+		to_json(j, newState);
+
+		// Init pointerul daca e null
+		if (!m_networkState) {
+			m_networkState = std::make_unique<GameState>();
+		}
+
+		from_json(j, *m_networkState);
+
+		onStateUpdated();
+		});
+
+	// Cand primim eroare (de ex. "Opponent disconnected")
+	connect(m_netClient, &NetworkClient::errorOccurred, this, [this](const QString& msg) {
+		QMessageBox::critical(this, "Connection Error", msg);
+
+		if (m_isOnlineMode) {
+			m_isOnlineMode = false;
+			QTimer::singleShot(0, this, &MainWindow::resetNetwork); // la 0s dupa ce iesim din onReadyRead
+		}
+
+		cleanupVisuals();
+		ui->stackedWidget->setCurrentIndex(0);
+		ui->btnStart->setEnabled(true);
+		m_isOnlineMode = false;
+
+		// Resetam conexiunea
+		m_netClient->disconnect();
+		});
+
+	// Cand serverul pica de tot
+	connect(m_netClient, &NetworkClient::disconnected, this, [this]() {
+		if (m_isOnlineMode) {
+			QMessageBox::warning(this, "Disconnected", "Lost connection to server.");
+			cleanupVisuals();
+			ui->stackedWidget->setCurrentIndex(0);
+			ui->btnStart->setEnabled(true);
+			m_isOnlineMode = false;
+		}
+		});
+}
+
+void MainWindow::resetNetwork() {
+	if (m_netClient) {
+		QObject::disconnect(m_netClient, nullptr, nullptr, nullptr);
+		m_netClient->disconnectFromHost();
+		m_netClient->deleteLater();
+	}
+
+	m_netClient = new NetworkClient(this);
+
+	setupNetworkConnections();
+}
+
 void MainWindow::showActionDialog(int cardIndex)
 {
 	const GameState& currentState = getCurrentGameState();
@@ -1398,6 +1517,13 @@ void MainWindow::cleanupVisuals() // pentru resetarea UI-ului la iesirea din joc
 
 	ui->labelCurrentPlayerName->setText("-");
 	ui->labelOpponentName->setText("-");
+
+	if (m_integratedServer) {
+		m_integratedServer.reset();
+	}
+
+	ui->label->clear();
+	ui->label->setStyleSheet("");
 
 }
 

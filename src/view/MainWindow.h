@@ -53,6 +53,7 @@ private:
 
     NetworkClient* m_netClient;
     std::unique_ptr<GameState> m_networkState;
+    QString m_myUserName; // online
     int m_myIndex = -1;
 
     bool m_isOnlineMode = false;

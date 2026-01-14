@@ -18,6 +18,14 @@ void NetworkClient::connectToServer(const QString& ip, quint16 port) {
     m_socket->connectToHost(ip, port);
 }
 
+void NetworkClient::sendName(const std::string& name) {
+    if (!isConnected()) return;
+    json j;
+    j["type"] = "SET_NAME";
+    j["name"] = name;
+    m_socket->write(QByteArray::fromStdString(j.dump() + "\n"));
+}
+
 bool NetworkClient::isConnected() const {
     return m_socket->state() == QAbstractSocket::ConnectedState;
 }

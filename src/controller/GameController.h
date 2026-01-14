@@ -58,5 +58,7 @@ public:
 
 	void debugTriggerVictory(); // Cheat
 
+	void reset(); // online
+
 	~GameController() = default;
 };

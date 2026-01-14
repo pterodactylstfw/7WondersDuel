@@ -887,3 +887,7 @@ bool GameController::executeAction(int cardIndex, PlayerAction action, int wonde
 			m_view.get().onMessage("DEBUG: Military Victory Triggered!");
 		}
 	}
+
+	void GameController::reset() {
+		m_gameState.reset();
+	}

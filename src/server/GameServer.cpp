@@ -33,22 +33,8 @@ void GameServer::incomingConnection(qintptr socketDescriptor) {
     connect(socket, &QTcpSocket::readyRead, this, &GameServer::onReadyRead);
     connect(socket, &QTcpSocket::disconnected, this, &GameServer::onDisconnected);
 
-    int playerIndex = m_clients.size();
     m_clients.push_back(socket);
-    m_playerIndices[socket] = playerIndex;
-
-    std::println("[SERVER] Client connected. Assigned Index: {}", playerIndex);
-    std::println("[SERVER] Client connected! Total players: {}/2", m_clients.size());
-
-    if (m_clients.size() == 2) {
-        std::println("[SERVER] Both players connected. Starting Game...");
-        m_gameController.startNewGame("Player 1", "Player 2");
-
-        sendIdentity(m_clients[0], 0, "Player 1");
-        sendIdentity(m_clients[1], 1, "Player 2");
-
-        broadcastGameState();
-    }
+    std::println("[SERVER] Client connected. Waiting for SET_NAME...");
 }
 
 void GameServer::sendIdentity(QTcpSocket* client, int index, const std::string& name) {
@@ -107,8 +93,10 @@ void GameServer::onDisconnected() {
     // Daca nu mai e nimeni, putem reseta jocul serverului
     if (m_clients.empty()) {
         std::cout << "[SERVER] All players gone. Resetting game logic." << std::endl;
-        // m_gameController = GameController(m_serverView); /// TODO: Reset (necesita operator=)
-        // Sau pur si simplu serverul ramane asa pana il repornesti.
+        m_gameStarted = false; // Resetam flag-ul
+        m_playerNames.clear();
+        m_playerIndices.clear();
+        m_gameController.reset();
     }
 }
 
@@ -134,6 +122,18 @@ void GameServer::processClientAction(QTcpSocket* sender, const json& j) {
     }
 
     std::string type = j.value("type", "UNKNOWN");
+    if (type == "SET_NAME") {
+        std::string name = j.value("name", "Player");
+        if (name.empty()) name = "Unknown";
+
+        m_playerNames[sender] = name;
+        std::cout << "[SERVER] Client set name to: " << name << std::endl;
+
+        tryStartGame(); // Incercam sa pornim
+        return;
+    }
+
+    if (!m_gameStarted) return;
     int senderIndex = m_playerIndices[sender];
 
     int currentPlayerIndex = m_gameController.getGameState().getCurrentPlayerIndex();
@@ -174,6 +174,33 @@ void GameServer::processClientAction(QTcpSocket* sender, const json& j) {
         if(m_gameController.pickWonder(wonderIdx)) {
             broadcastGameState();
         }
+    }
+}
+
+void GameServer::tryStartGame() {
+    // Conditie: 2 clienti, ambele nume setate, jocul nu ruleaza deja
+    if (m_clients.size() == 2 && m_playerNames.size() == 2 && !m_gameStarted) {
+        m_gameStarted = true;
+
+        // Ordinea clientilor din vector dicteaza cine e P1 si cine e P2
+        QTcpSocket* socketP1 = m_clients[0];
+        QTcpSocket* socketP2 = m_clients[1];
+
+        // Mapam indecsii
+        m_playerIndices[socketP1] = 0;
+        m_playerIndices[socketP2] = 1;
+
+        std::string name1 = m_playerNames[socketP1];
+        std::string name2 = m_playerNames[socketP2];
+
+        std::cout << "[SERVER] Starting Game: " << name1 << " vs " << name2 << std::endl;
+
+        m_gameController.startNewGame(name1, name2);
+
+        sendIdentity(socketP1, 0, name1);
+        sendIdentity(socketP2, 1, name2);
+
+        broadcastGameState();
     }
 }
 

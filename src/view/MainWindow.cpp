@@ -46,6 +46,7 @@ MainWindow::MainWindow(QWidget* parent)
 	m_netClient = new NetworkClient(this);
 	setupNetworkConnections();
 
+
 	connect(ui->btnBack, &QPushButton::clicked, this, [this]() {
 		if (m_game.hasGameStarted() && !m_game.isGameOver()) {
 			auto reply = QMessageBox::question(this, "Confirm",
@@ -408,69 +409,85 @@ void MainWindow::onBtnStartClicked()
 	if (mode == "Online Multiplayer") {
         m_isOnlineMode = true;
 
-        // --- DIALOG CUSTOM PENTRU HOST/JOIN ---
-        QDialog netDlg(this);
-        netDlg.setWindowTitle("Network Setup");
-        netDlg.setFixedSize(400, 300);
-        netDlg.setStyleSheet("background-color: #2b2b2b; color: white;");
+		QDialog netDlg(this);
+		netDlg.setWindowTitle("Multiplayer Setup");
 
-        QVBoxLayout* layout = new QVBoxLayout(&netDlg);
+		netDlg.setFixedSize(600, 400);
+		netDlg.setStyleSheet("background-color: #2b2b2b; color: white;");
 
-        QLabel* lblTitle = new QLabel("Select Role:");
-        lblTitle->setStyleSheet("font-size: 18px; font-weight: bold; margin-bottom: 10px;");
-        layout->addWidget(lblTitle);
+		QVBoxLayout* layout = new QVBoxLayout(&netDlg);
+		layout->setSpacing(15);
+		layout->setContentsMargins(30, 30, 30, 30); // Margini generoase
 
-        // Radio Buttons
-        QRadioButton* rbHost = new QRadioButton("Host Game (Server)");
-        QRadioButton* rbJoin = new QRadioButton("Join Game (Client)");
-        rbHost->setStyleSheet("font-size: 14px; margin: 5px;");
-        rbJoin->setStyleSheet("font-size: 14px; margin: 5px;");
-        rbJoin->setChecked(true);
+		QLabel* lblName = new QLabel("Enter Your Name:");
+		lblName->setStyleSheet("font-size: 16px; font-weight: bold; color: #FFD700;"); // Auriu, mediu
+		layout->addWidget(lblName);
 
-        layout->addWidget(rbHost);
-        layout->addWidget(rbJoin);
+		QLineEdit* editName = new QLineEdit("Player");
+		editName->setStyleSheet("background-color: #444; border: 1px solid gray; padding: 6px; font-size: 14px; border-radius: 4px;");
+		layout->addWidget(editName);
 
-        // Zona IP (pentru Join)
-        QWidget* ipWidget = new QWidget();
+		QFrame* line = new QFrame();
+		line->setFrameShape(QFrame::HLine);
+		line->setStyleSheet("color: #555;");
+		layout->addWidget(line);
+
+		QLabel* lblRole = new QLabel("Select Role:");
+		lblRole->setStyleSheet("font-size: 16px; font-weight: bold;");
+		layout->addWidget(lblRole);
+
+		QRadioButton* rbHost = new QRadioButton("HOST Game (Create Server)");
+		QRadioButton* rbJoin = new QRadioButton("JOIN Game (Connect to Friend)");
+		rbHost->setStyleSheet("font-size: 14px; margin-left: 10px;");
+		rbJoin->setStyleSheet("font-size: 14px; margin-left: 10px;");
+		rbJoin->setChecked(true);
+
+		layout->addWidget(rbHost);
+		layout->addWidget(rbJoin);
+
+		QWidget* dynamicArea = new QWidget();
+		QVBoxLayout* dynLayout = new QVBoxLayout(dynamicArea);
+		dynLayout->setContentsMargins(0, 10, 0, 0);
+
+		QWidget* ipWidget = new QWidget();
 		QVBoxLayout* ipLayout = new QVBoxLayout(ipWidget);
-		ipLayout->setContentsMargins(10, 10, 10, 10);
+		ipLayout->setContentsMargins(0, 10, 0, 10); // Spatiu sus/jos
 
-        QLabel* lblIP = new QLabel("Friend's IP (Host):");
+		QLabel* lblIP = new QLabel("Friend's IP (Host):");
 		lblIP->setStyleSheet("font-size: 14px; font-weight: normal; color: white;");
-        QLineEdit* editIP = new QLineEdit("127.0.0.1");
+
+		QLineEdit* editIP = new QLineEdit("127.0.0.1");
 		editIP->setStyleSheet(
-		"background-color: #444; "
-		"border: 1px solid gray; "
-		"padding: 5px; "
-		"color: white; "
-		"font-size: 14px;"
+			"background-color: #444; border: 1px solid gray; padding: 6px; "
+			"color: white; font-size: 14px; border-radius: 4px;"
 		);
 
-        ipLayout->addWidget(lblIP);
-        ipLayout->addWidget(editIP);
-        layout->addWidget(ipWidget);
+		ipLayout->addWidget(lblIP);
+		ipLayout->addWidget(editIP);
 
-        // Zona Info IP (pentru Host)
-        QLabel* lblMyIP = new QLabel();
+		layout->addWidget(ipWidget);
+
+		QLabel* lblMyIP = new QLabel();
 		lblMyIP->setStyleSheet(
-		"color: #FFD700; "
-		"font-size: 20px; "  // Font mai mic (era probabil urias)
-		"font-weight: bold; "
-		"font-style: italic; "
-		"margin-top: 10px; "
-		"background-color: transparent;" // Sa nu aiba fundal alb
+			"color: #FFD700; "
+			"font-size: 18px; "
+			"font-weight: bold; "
+			"margin-top: 15px; margin-bottom: 15px;"
+			"background-color: transparent;"
 		);
-        lblMyIP->setWordWrap(true);
+		lblMyIP->setWordWrap(true);
 		lblMyIP->setAlignment(Qt::AlignCenter);
-        lblMyIP->hide();
-        layout->addWidget(lblMyIP);
+		lblMyIP->hide();
+
+		layout->addWidget(lblMyIP);
+
+		layout->addStretch();
 
         auto updateDlg = [&]() {
             if (rbHost->isChecked()) {
                 ipWidget->hide();
                 lblMyIP->show();
 
-                // Aflam IP-ul local
                 QString myIp = "Unknown";
                 for (const auto& address : QNetworkInterface::allAddresses()) {
                     if (address.protocol() == QAbstractSocket::IPv4Protocol && address != QHostAddress::LocalHost) {
@@ -486,9 +503,8 @@ void MainWindow::onBtnStartClicked()
         };
 
         connect(rbHost, &QRadioButton::toggled, &netDlg, updateDlg);
-        updateDlg(); // apel initial
+        updateDlg();
 
-        // Butoane
         QDialogButtonBox* bbox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
         connect(bbox, &QDialogButtonBox::accepted, &netDlg, &QDialog::accept);
         connect(bbox, &QDialogButtonBox::rejected, &netDlg, &QDialog::reject);
@@ -496,21 +512,18 @@ void MainWindow::onBtnStartClicked()
 
         if (netDlg.exec() == QDialog::Accepted) {
             m_isOnlineMode = true;
+        	m_myUserName = editName->text();
+        	if (m_myUserName.isEmpty()) m_myUserName = "Unknown";
 
-            // Daca am fost host inainte, resetam serverul vechi
             m_integratedServer.reset();
 
             if (rbHost->isChecked()) {
-                // --- MOD HOST ---
-                // 1. Pornim serverul intern
-                m_integratedServer = std::make_unique<GameServer>(); // Asculta pe 12345
+                m_integratedServer = std::make_unique<GameServer>();
 
-                // 2. Ne conectam la el (localhost)
                 m_netClient->connectToServer("127.0.0.1", 12345);
                 ui->label->setText("Hosting Game... Waiting for Player 2...");
             }
             else {
-                // --- MOD JOIN ---
                 QString targetIp = editIP->text();
                 m_netClient->connectToServer(targetIp, 12345);
                 ui->label->setText("Connecting to " + targetIp + "...");
@@ -521,7 +534,7 @@ void MainWindow::onBtnStartClicked()
         return;
     }
 
-	m_isOnlineMode = false; // Ne asiguram ca e false
+	m_isOnlineMode = false;
 
 	bool isVsAI = (mode == "Player vs AI");
 
@@ -1024,6 +1037,12 @@ void MainWindow::setupNetworkConnections() {
 		ui->actionSave->setEnabled(true);
 		});
 
+	connect(m_netClient, &NetworkClient::connected, this, [this](){
+		m_netClient->sendName(m_myUserName.toStdString());
+		ui->label->setText("Connected! Waiting for opponent...");
+
+	});
+
 	connect(m_netClient, &NetworkClient::stateReceived, this, [this](const GameState& newState) {
 
 		json j;
@@ -1044,8 +1063,8 @@ void MainWindow::setupNetworkConnections() {
 		QMessageBox::critical(this, "Connection Error", msg);
 
 		if (m_isOnlineMode) {
-			m_isOnlineMode = false;
 			QTimer::singleShot(0, this, &MainWindow::resetNetwork); // la 0s dupa ce iesim din onReadyRead
+			m_isOnlineMode = false;
 		}
 
 		cleanupVisuals();
@@ -1061,6 +1080,8 @@ void MainWindow::setupNetworkConnections() {
 	connect(m_netClient, &NetworkClient::disconnected, this, [this]() {
 		if (m_isOnlineMode) {
 			QMessageBox::warning(this, "Disconnected", "Lost connection to server.");
+			QTimer::singleShot(0, this, &MainWindow::resetNetwork);
+			m_isOnlineMode = false;
 			cleanupVisuals();
 			ui->stackedWidget->setCurrentIndex(0);
 			ui->btnStart->setEnabled(true);

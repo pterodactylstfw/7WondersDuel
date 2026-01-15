@@ -2,6 +2,7 @@
     <qresource prefix="/">
         <file>../assets/background.jpg</file>
         <file>../assets/board_background.png</file>
+        <file>../assets/game_over.png</file>
         <file>../assets/coins.png</file>
         <file>../assets/victorypoints.png</file>
         <file>../assets/military_board.png</file>
@@ -38,13 +39,12 @@
         <file>../assets/age2/barracks.png</file>
         <file>../assets/age2/brewery.png</file>
         <file>../assets/age2/brickyard.png</file>
-	<file>../assets/age2/caravansery.png</file>
-        <file>../assets/age2/courthouse.png</file>
+        <file>../assets/age2/caravansery.png</file>
         <file>../assets/age2/customs_house.png</file>
         <file>../assets/age2/dispensary.png</file>
         <file>../assets/age2/drying_room.png</file>
         <file>../assets/age2/forum.png</file>
-	<file>../assets/age2/glass_blower.png</file>
+        <file>../assets/age2/glass_blower.png</file>
         <file>../assets/age2/horse_breeders.png</file>
         <file>../assets/age2/laboratory.png</file>
         <file>../assets/age2/library.png</file>
@@ -55,7 +55,7 @@
         <file>../assets/age2/shelf_quarry.png</file>
         <file>../assets/age2/statue.png</file>
         <file>../assets/age2/temple.png</file>
-	<file>../assets/age2/tribunal.png</file>
+        <file>../assets/age2/tribunal.png</file>
         <file>../assets/age2/walls.png</file>
         <file>../assets/age3/academy.png</file>
         <file>../assets/age3/age3_back.png</file>
@@ -64,6 +64,7 @@
         <file>../assets/age3/armory.png</file>
         <file>../assets/age3/arsenal.png</file>
         <file>../assets/age3/chamber_of_commerce.png</file>
+		<file>../assets/age3/courthouse.png</file>
         <file>../assets/age3/circus.png</file>
         <file>../assets/age3/fortifications.png</file>
         <file>../assets/age3/gardens.png</file>

@@ -1,4 +1,7 @@
 ﻿#include "GameState.h"
+#include "GameState.h"
+#include "GameState.h"
+#include "GameState.h"
 #include <fstream>
 
 void GameState::buildPyramidStructure(int age) {
@@ -136,6 +139,11 @@ void GameState::switchPlayer()
 }
 
 std::array<std::unique_ptr<Player>, GameConstants::NUMBER_OF_PLAYERS>& GameState::getPlayers()
+{
+	return m_players;
+}
+
+const std::array<std::unique_ptr<Player>, GameConstants::NUMBER_OF_PLAYERS>& GameState::getPlayers() const
 {
 	return m_players;
 }
@@ -418,6 +426,16 @@ const std::vector<std::unique_ptr<ProgressToken>>& GameState::getDiscardedTokens
     return m_discardedProgressTokens;
 }
 
+std::unique_ptr<ProgressToken> GameState::extractAvailableToken(int index)
+{
+    if (index < 0 || index >= m_availableProgressToken.size())
+        return nullptr;
+
+    auto token = std::move(m_availableProgressToken[index]);
+    m_availableProgressToken.erase(m_availableProgressToken.begin() + index);
+    return token;
+}
+
 void GameState::addToDiscardTokens(std::unique_ptr<ProgressToken>&& token)
 {
     if(token)
@@ -460,11 +478,16 @@ void GameState::setPendingScientificReward(bool pending)
     m_pendingScientificReward = pending;
 }
 
+void GameState::clearPendingScientificReward()
+{
+    m_pendingScientificReward = false;
+}
+
 uint8_t GameState::getCurrentPlayerIndex() const
 {
     return m_currentPlayerIndex;
 }
-void GameState::setWinner(uint8_t index)
+void GameState::setWinner(std::optional<uint8_t> index)
 {
     m_winnerIndex = index;
 }
@@ -496,6 +519,7 @@ void to_json(json& j, const GameState& state)
         {"ageIIIDeck", state.m_ageIIIDeck},
         {"currentAge", state.m_currentAge},
         {"currentPhase", state.m_currentPhase},
+            {"draftedWonders", state.m_draftedWonders},
         {"currentAgeCards", state.m_currentAgeCards},
         {"pyramid", state.m_pyramid},
         {"allWonders", state.m_allWonders},
@@ -516,7 +540,11 @@ void from_json(const json& j, GameState& state)
     j.at("ageIIDeck").get_to(state.m_ageIIDeck);
     j.at("ageIIIDeck").get_to(state.m_ageIIIDeck);
     j.at("currentAge").get_to(state.m_currentAge);
-    state.m_currentPhase = j.value("currentPhase", GamePhase::AGE_I);
+    //state.m_currentPhase = j.value("currentPhase", GamePhase::DRAFTING);
+    if(j.contains("currentPhase"))
+        j.at("currentPhase").get_to(state.m_currentPhase);
+    if(j.contains("draftedWonders"))
+        j.at("draftedWonders").get_to(state.m_draftedWonders);
     j.at("currentAgeCards").get_to(state.m_currentAgeCards);
     j.at("pyramid").get_to(state.m_pyramid);
     j.at("allWonders").get_to(state.m_allWonders);

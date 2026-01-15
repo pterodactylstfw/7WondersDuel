@@ -1,7 +1,8 @@
 #include "Player.h"
+#include "Player.h"
 
 Player::Player(const std::string& playerName):
-	m_name(playerName), m_coins(GameConstants::STARTING_COINS), m_militaryShields(0), m_victoryPoints(0) { }
+	m_name(playerName),m_isAI(false), m_coins(GameConstants::STARTING_COINS), m_militaryShields(0), m_victoryPoints(0) { }
 
 void Player::addCard(std::unique_ptr<Card>&& card)
 {
@@ -179,6 +180,7 @@ void to_json(json& j, const Player& player)
 {
 	j = json{
 		{"name", player.m_name},
+		{"isAI", player.m_isAI},
 		{"coins", player.m_coins},
 		{"militaryShields", player.m_militaryShields},
 		{"victoryPoints", player.m_victoryPoints},
@@ -197,6 +199,7 @@ void to_json(json& j, const Player& player)
 void from_json(const json& j, Player& player)
 {
 	j.at("name").get_to(player.m_name);
+	player.m_isAI = j.value("isAI", false);
 	j.at("coins").get_to(player.m_coins);
 	j.at("militaryShields").get_to(player.m_militaryShields);
 	j.at("victoryPoints").get_to(player.m_victoryPoints);
@@ -238,20 +241,6 @@ int Player::getFinalScore(const Player& opponent) const
 	int score = 0;
 
 	score += m_victoryPoints;
-
-	for (const auto& card : m_constructedCards) {
-		if (card->getEffect().getVictoryPointsPerCard().has_value()) {
-			score += card->getEffect().getVictoryPointsPerCard().value();
-		}
-	}
-
-	for (const auto& wonder : m_constructedWonders)
-	{
-		if (wonder->getEffect().getVictoryPointsPerCard().has_value()) {
-			score += wonder->getEffect().getVictoryPointsPerCard().value();
-		}
-	}
-
 	score += m_coins / 3;
 
 	if (hasProgressToken(ProgressTokenType::MATHEMATICS)) {
@@ -284,9 +273,32 @@ int Player::getFinalScore(const Player& opponent) const
 	return score;
 }
 
+int Player::getCivilianVictoryPoints(const Player& opponent) const
+{
+	int points = 0;
+	for (const auto& card : m_constructedCards)
+	{
+		if (card->getColor() == CardColor::BLUE)
+		{
+			points += card->getEffect().getVictoryPointsPerCard().value_or(0);
+		}
+	}
+	return points;
+}
+
+void Player::setAI(bool isAI)
+{
+	m_isAI = isAI;
+}
+
+bool Player::isAI() const
+{
+	return m_isAI;
+}
+
 bool Player::hasScientificVictory() const
 {
-	return m_scientificSymbols.size() > GameConstants::SCIENTIFIC_SUPREMACY_SYMBOLS;
+	return m_scientificSymbols.size() >= GameConstants::SCIENTIFIC_SUPREMACY_SYMBOLS;
 }
 
 int Player::getMilitaryShields() const

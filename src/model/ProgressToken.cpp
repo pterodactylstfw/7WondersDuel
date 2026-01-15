@@ -1,5 +1,7 @@
 #include "ProgressToken.h"
 
+#include <sstream>
+
 ProgressToken::ProgressToken(ProgressTokenType type, const std::string& name, CardEffect effect, std::string imagePath)
 	: m_tokenType(type), m_name(name), m_effect(std::move(effect)), m_isActive(false), m_imagePath(std::move(imagePath))
 {}
@@ -64,7 +66,8 @@ void to_json(json& j, const ProgressToken& token)
 		{"type", token.m_tokenType},
 		{"name", token.m_name},
 		{"effect", token.m_effect},
-		{"isActive", token.m_isActive}
+		{"isActive", token.m_isActive},
+		{"imagePath", token.m_imagePath}
 	};
 }
 
@@ -74,4 +77,5 @@ void from_json(const json& j, ProgressToken& token)
 	j.at("name").get_to(token.m_name);
 	j.at("effect").get_to(token.m_effect);
 	j.at("isActive").get_to(token.m_isActive);
+	j.at("imagePath").get_to(token.m_imagePath);
 }

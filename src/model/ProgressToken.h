@@ -3,8 +3,9 @@
 #include <string>
 #include "CardEffect.h"
 #include "JsonUtils.h"
+#include "CoreExport.h"
 
-class ProgressToken {
+class CORE_API ProgressToken {
 private:
     ProgressTokenType m_tokenType;
     std::string m_name;
@@ -33,7 +34,7 @@ public:
     void setActive(bool active);
 
     std::string toString() const;
-    auto operator<=>(const ProgressToken& other) const = default;
+    //auto operator<=>(const ProgressToken& other) const = default;
     bool operator==(const ProgressToken& other) const = default;
 
     friend std::ostream& operator<<(std::ostream& os, const ProgressToken& token);

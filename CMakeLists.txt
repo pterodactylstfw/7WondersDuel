@@ -30,7 +30,7 @@ else()
 endif()
 
 # Cautare pachet qt6
-find_package(Qt6 REQUIRED COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Network)
 
 
 # organizare fisiere source
@@ -65,76 +65,137 @@ set(SRC_UTILS
         src/utils/Constants.cpp src/utils/Constants.h
         src/utils/JsonUtils.cpp src/utils/JsonUtils.h
         src/utils/Utils.cpp src/utils/Utils.h
+        include/CoreExport.h
 )
-
-# view
-set(SRC_VIEW_GUI
-        src/view/MainWindow.cpp src/view/MainWindow.h
-        src/view/MainWindow.ui
+# viewInterface
+set(SRC_VIEW_INTERFACE
         src/view/IGameView.h
-        src/utils/Utils.cpp
 )
 
-# reuniune surse comune
-set(CORE_SOURCES
+
+add_library(7WondersCore SHARED
         ${SRC_MODEL}
         ${SRC_FACTORIES}
         ${SRC_CONTROLLER}
         ${SRC_UTILS}
+        ${SRC_VIEW_INTERFACE}
 )
 
+target_compile_definitions(7WondersCore PRIVATE SEVEN_WONDERS_CORE_LIBRARY)
+
+target_include_directories(7WondersCore PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/model
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/view
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/controller
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/factories
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/utils
+)
+
+target_link_libraries(7WondersCore PRIVATE Qt6::Widgets Qt6::Network)
 
 # exec consola
 
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/view/ConsoleUI.cpp")
     add_executable(7WondersConsole
-            ${CORE_SOURCES}
             src/view/ConsoleUI.cpp src/view/ConsoleUI.h
             src/main.cpp
     )
 
-    target_include_directories(7WondersConsole PRIVATE
-            include
-            src
-            src/model
-            src/view
-            src/controller
-            src/factories
-            src/utils
-    )
+    target_link_libraries(7WondersConsole PRIVATE 7WondersCore)
 endif()
 
 
 # exec qt gui
 
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/main_gui.cpp")
+
+    set(SRC_VIEW_IMPL
+            src/view/MainWindow.cpp src/view/MainWindow.h
+            src/view/MainWindow.ui
+            src/view/NetworkClient.cpp src/view/NetworkClient.h
+            src/server/GameServer.cpp src/server/GameServer.h src/server/ServerGameView.h
+    )
+
     add_executable(7WondersGUI
             ${GUI_TYPE} # WIN32 / macOS X Bundle
-            ${CORE_SOURCES}
-            ${SRC_VIEW_GUI}
+            ${SRC_VIEW_IMPL}
             src/main_gui.cpp
             src/resources.qrc
     )
 
-    target_link_libraries(7WondersGUI PRIVATE Qt6::Widgets)
-
-    # Incl toate folderele pt GUI
-    target_include_directories(7WondersGUI PRIVATE
-            include
-            src
-            src/model
-            src/view
-            src/controller
-            src/factories
-            src/utils
-    )
+    target_link_libraries(7WondersGUI PRIVATE Qt6::Widgets Qt6::Network 7WondersCore)
 
     # Configurare specifica Mac (iconita si nume)
     if(APPLE)
         set_target_properties(7WondersGUI PROPERTIES
                 MACOSX_BUNDLE_BUNDLE_NAME "7 Wonders Duel"
-                MACOSX_BUNDLE_GUI_IDENTIFIER "com.pterodactyl.7wonders"
+                MACOSX_BUNDLE_GUI_IDENTIFIER "com.constructorii.7wonders"
                 MACOSX_BUNDLE_SHORT_VERSION_STRING "1.0"
         )
     endif()
+
 endif()
+
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/server/main_server.cpp")
+    add_executable(7WondersServer
+                src/server/main_server.cpp
+                src/server/GameServer.cpp
+                src/server/GameServer.h
+    )
+
+    target_link_libraries(7WondersServer PRIVATE Qt6::Network 7WondersCore)
+endif()
+
+
+# unit tests cu Google Test
+enable_testing()
+
+# descarcare google test
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+        DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+)
+# setare pentru Windows
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+
+# definire teste
+add_executable(7WondersTests
+    tests/main_test.cpp
+    tests/TestPlayer.cpp
+    tests/TestFactories.cpp
+    tests/TestGameController.cpp
+    tests/TestGameState.cpp
+    tests/TestCard.cpp
+    tests/TestCost.cpp
+    tests/TestWonder.cpp
+    tests/MockGameView.h
+)
+
+# legam testele cu bibliotecile necesare
+target_link_libraries(7WondersTests
+    PRIVATE
+    GTest::gtest_main
+    7WondersCore     
+    Qt6::Core         
+)
+
+# includem directoarele sursa pentru teste
+target_include_directories(7WondersTests PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/model
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/view
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/controller
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/factories
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/utils
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests
+)
+
+# inregistrare teste
+include(GoogleTest)
+gtest_discover_tests(7WondersTests)

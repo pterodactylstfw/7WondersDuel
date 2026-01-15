@@ -268,7 +268,7 @@ std::vector<std::unique_ptr<Card>> CardFactory::createAgeIIDeck()
 			ResourceProduction().addChoice({ ResourceType::WOOD, 
 											 ResourceType::CLAY,
 											 ResourceType::STONE })),
-		"caranvansery.png"
+		"caravansery.png"
 	));
 
 	ageIIDeck.push_back(std::make_unique<Card>(

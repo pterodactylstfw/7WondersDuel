@@ -8,9 +8,9 @@
 #include "Cost.h"
 #include "CardEffect.h"
 #include "JsonUtils.h"
+#include "CoreExport.h"
 
-
-class Card
+class CORE_API Card
 {
 private:
 	std::string m_name;

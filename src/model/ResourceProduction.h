@@ -4,8 +4,9 @@
 #include <map>
 #include "Constants.h"
 #include "JsonUtils.h"
+#include "CoreExport.h"
 
-class ResourceProduction
+class CORE_API ResourceProduction
 {
 private:
 	std::map<ResourceType, int> m_fixedResources;
@@ -25,6 +26,8 @@ public:
 
 	const std::map<ResourceType, int>& getFixedResources() const;
 	const std::vector<std::vector<ResourceType>>& getChoices() const;
+
+	bool operator==(const ResourceProduction& other) const = default;
 
 	bool hasChoices() const;
 	std::map<ResourceType, int> getTotalProduction() const;

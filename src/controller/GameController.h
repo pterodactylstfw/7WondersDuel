@@ -8,9 +8,10 @@
 #include "WonderFactory.h"
 #include "Utils.h"
 #include "ProgressTokenFactory.h"
+#include "CoreExport.h"
 
 
-class GameController
+class CORE_API GameController
 {
 private:
 	std::unique_ptr<GameState> m_gameState;
@@ -35,6 +36,8 @@ private:
 	bool handleDiscardCard(int cardIndex);
 	bool handleConstructWonders(int cardIndex, int wonderIndex, bool & outPlayAgain);
 
+	void handleCivilianVictory();
+
 public:
 	explicit GameController(IGameView& view);
 
@@ -52,6 +55,10 @@ public:
   
 	void applyProgressTokenEffect(Player& player, Player& opponent, ProgressToken& token);
 	bool pickWonder(int wonderIndex);
+
+	void debugTriggerVictory(); // Cheat
+
+	void reset(); // online
 
 	~GameController() = default;
 };

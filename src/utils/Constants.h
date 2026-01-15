@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <string>
 #include "JsonUtils.h"
+#include "CoreExport.h"
 
 namespace GameConstants {
 
@@ -220,16 +221,16 @@ NLOHMANN_JSON_SERIALIZE_ENUM(GamePhase,
     }
 );
 
-std::string colorToString(CardColor color);
+CORE_API std::string colorToString(CardColor color);
 
-std::string resourceToString(ResourceType type); 
+CORE_API std::string resourceToString(ResourceType type);
 
-std::string scientificSymbolToString(ScientificSymbol symbol);
+CORE_API std::string scientificSymbolToString(ScientificSymbol symbol);
 
-std::string progressTokenTypeToString(ProgressTokenType tokenType);
+CORE_API std::string progressTokenTypeToString(ProgressTokenType tokenType);
 
-std::string victoryTypeToString(VictoryType type);
+CORE_API std::string victoryTypeToString(VictoryType type);
 
-std::string actionToString(PlayerAction action);
+CORE_API std::string actionToString(PlayerAction action);
 
-std::string wonderTypeToString(WonderType type);
+CORE_API std::string wonderTypeToString(WonderType type);

@@ -6,10 +6,10 @@
 
 #include "../utils/Constants.h"
 #include "ResourceProduction.h"
-
+#include "CoreExport.h"
 #include "JsonUtils.h"
 
-class CardEffect
+class CORE_API CardEffect
 {
 private:
 	std::optional<int> m_victoryPoints;
@@ -50,6 +50,8 @@ private:
 public:
 
 	CardEffect() = default;
+
+	bool operator==(const CardEffect& other) const = default;
 
 	CardEffect& withVictoryPoints(int points) noexcept;
 	CardEffect& withShields(int shields) noexcept;

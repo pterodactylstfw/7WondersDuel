@@ -9,6 +9,7 @@
 #include "Wonder.h"
 #include "ProgressToken.h"
 #include "JsonUtils.h"
+#include "CoreExport.h"
 
 //class Player;
 //class Card;
@@ -24,7 +25,7 @@ struct CardNode {
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(CardNode, m_index, m_isFaceUp, m_isRemoved, m_blockedBy)
 
-class GameState
+class CORE_API GameState
 {
 private:	
 
@@ -64,12 +65,14 @@ public:
 	void switchPlayer();
 
 	std::array<std::unique_ptr<Player>, GameConstants::NUMBER_OF_PLAYERS>& getPlayers();
+	const std::array<std::unique_ptr<Player>, GameConstants::NUMBER_OF_PLAYERS>& getPlayers() const;
+
 	const Player& getCurrentPlayer() const;
 	const Player& getOpponent() const;
 	Player& getCurrentPlayer();
 	Player& getOpponent();
 	uint8_t getCurrentPlayerIndex() const;
-	void setWinner(uint8_t index);
+	void setWinner(std::optional<uint8_t> index);
 
 	int getMilitaryPosition() const;
 
@@ -117,6 +120,7 @@ public:
 
 	std::vector<std::unique_ptr<ProgressToken>>& getDiscardedTokens();
 	const std::vector<std::unique_ptr<ProgressToken>>& getDiscardedTokens() const;
+	std::unique_ptr<ProgressToken> extractAvailableToken(int index);
 
 	void addToDiscardTokens(std::unique_ptr<ProgressToken>&& token);
 	std::unique_ptr<ProgressToken> extractDiscardedTokens(int index);
@@ -124,9 +128,10 @@ public:
 	bool removeMilitaryToken(int index); 
 	bool hasPendingScientificReward() const;
 	void setPendingScientificReward(bool pending);
+	void clearPendingScientificReward();
 
-	friend void to_json(json& j, const GameState& state);
-	friend void from_json(const json& j, GameState& state);
+	friend CORE_API void to_json(json& j, const GameState& state);
+	friend CORE_API void from_json(const json& j, GameState& state);
 
 	~GameState();
 

@@ -3,26 +3,26 @@
 #include <iostream>
 #include <print>
 #include <regex>
-#include <print>
+#include "CoreExport.h"
 
 namespace Utils {
 
-    bool isValidFormat(const std::string& input, const std::string& pattern);
-
-    std::string getStringInput(const std::string& prompt, const std::string& regexPattern = "",
-	    const std::string& errorMessage = "Invalid input format!");
-
-    int getIntInput(const std::string& prompt);
-
-    int getIntRange(int min, int max, const std::string& prompt);
-
-    void clearScreen();
-
-    void waitForEnter(const std::string& prompt = "Press Enter to continue...");
-
+    CORE_API bool isValidFormat(const std::string& input, const std::string& pattern);
+    
+    CORE_API std::string getStringInput(const std::string& prompt, const std::string& regexPattern = "",
+        const std::string& errorMessage = "Invalid input format!");
+    
+    CORE_API int getIntInput(const std::string& prompt);
+    
+    CORE_API int getIntRange(int min, int max, const std::string& prompt);
+    
+    CORE_API void clearScreen();
+    
+    CORE_API void waitForEnter(const std::string& prompt = "Press Enter to continue...");
+    
     template <typename Container, typename NameExtractor>
     int getUserSelection(const Container& items, const std::string& prompt, NameExtractor getNameFunc) {
-        if (!items.empty()) {
+        if (items.empty()) {
             std::println("[!] List is empty!");
             return -1;
         }

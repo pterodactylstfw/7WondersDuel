@@ -46,3 +46,23 @@ TEST(CostTest, TradingCost_Calculation) {
 	opponentProduction[ResourceType::WOOD] = 1;
 	EXPECT_EQ(cost.calculateTradingCost(myResources, opponentProduction), 6);
 }
+
+TEST(CostTest, ApplyDiscounts) {
+	Cost original;
+	original.withResourceCost(ResourceType::STONE, 3);
+	Cost discounted = original.applyDiscount(ResourceType::STONE, 2);
+
+	EXPECT_EQ(discounted.getResourceCost(ResourceType::STONE), 1);
+}
+
+TEST(CostTest, Operators_Work) {
+	Cost c1; c1.withCoinCost(2);
+	Cost c2; c2.withCoinCost(2);
+	Cost c3; c3.withCoinCost(5);
+
+	EXPECT_TRUE(c1 == c2);
+	EXPECT_FALSE(c1 == c3);
+
+	Cost sum = c1 + c3;
+	EXPECT_EQ(sum.getCoinCost(), 7);
+}

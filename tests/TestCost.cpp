@@ -2,7 +2,7 @@
 #include "Cost.h"
 #include "Constants.h"
 
-TEST(CostTest, Initaialization_And_Getters) {
+TEST(CostTest, Initializaton_And_Getters) {
 	Cost emptyCost;
 	EXPECT_TRUE(emptyCost.isFree());
 	EXPECT_EQ(emptyCost.getCoinCost(), 0);

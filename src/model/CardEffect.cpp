@@ -195,25 +195,31 @@ bool CardEffect::hasUrbanismEffect() const
 bool CardEffect::isEmpty() const
 {
     return !m_customDescription.has_value() &&
-        !m_grantsProgressToken &&
-        m_coinsPerWonder == 0 &&
+        !m_grantsProgressToken.has_value() &&
+        !m_coinsPerWonder.has_value() &&
         m_coinsPerCardType.empty() &&
-        m_pointsPerWonder == 0 &&
+        !m_pointsPerWonder.has_value() &&
         m_pointsPerCardType.empty() &&
-        m_pointsPerCoins.has_value() &&
-        !m_playAgain &&
-        !m_strategyEffect && !m_masonryEffect && !m_architectureEffect && !m_economyEffect && !m_mathematicsEffect &&
-        !m_countOpponentCards &&
-        !m_copyGuild &&
+        !m_pointsPerCoins.has_value() &&
+        !m_playAgain.has_value() &&
+        !m_strategyEffect.has_value() &&
+        !m_masonryEffect.has_value() &&
+        !m_architectureEffect.has_value() &&
+        !m_economyEffect.has_value() &&
+        !m_mathematicsEffect.has_value() &&
+        !m_theologyEffect.has_value() &&
+        !m_urbanismEffect.has_value() &&
+        !m_countOpponentCards.has_value() &&
+        !m_copyGuild.has_value() &&
         m_production.isEmpty() &&
-        m_scienceSymbol == ScientificSymbol::NONE &&
-        m_victoryPoints == 0 &&
-        m_shields == 0 &&
-        m_baseCoins == 0 &&
-        !m_discounts.empty() &&
-        !m_opponentLosesCoins &&
-        !m_opponentLosesCard &&
-        !m_grantsDiscardedCard;
+        !m_scienceSymbol.has_value() &&
+        !m_victoryPoints.has_value() &&
+        !m_shields.has_value() &&
+        !m_baseCoins.has_value() &&
+        m_discounts.empty() &&             
+        !m_opponentLosesCoins.has_value() &&
+        !m_opponentLosesCard.has_value() &&
+        !m_grantsDiscardedCard.has_value();
 }
 
 std::string CardEffect::getDescription() const // pentru aceasta functie am pus doar efectele cartilor normale, pentru ca guild cards, wonders si progress tokens au custom description

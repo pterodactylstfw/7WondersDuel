@@ -27,7 +27,7 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(CardNode, m_index, m_isFaceUp, m_isRemoved, m
 
 class CORE_API GameState
 {
-private:	
+private:
 
 	std::array<std::unique_ptr<Player>, GameConstants::NUMBER_OF_PLAYERS> m_players;
 	uint8_t m_currentPlayerIndex;
@@ -47,16 +47,18 @@ private:
 	std::vector<std::unique_ptr<Card>> m_discardedCards;
 	std::vector<std::unique_ptr<ProgressToken>> m_discardedProgressTokens;
 
+	std::array<bool, 4> m_militaryTokens = { true, true, true, true };
+
 	bool m_gameOver;
 	//std::optional<VictoryType> m_victoryType;
 
 	GamePhase m_currentPhase = GamePhase::DRAFTING;
 	std::vector<std::unique_ptr<Wonder>> m_draftedWonders;
-	
+
 	std::vector<CardNode> m_pyramid;
 	void buildPyramidStructure(int age);
 	std::array<bool, 2> m_militaryTokensDropped = { false, false };
-	bool m_pendingScientificReward = false; 
+	bool m_pendingScientificReward = false;
 public:
 
 	GameState();
@@ -76,7 +78,7 @@ public:
 
 	int getMilitaryPosition() const;
 
-    Player& getPlayerWithMostCardsPerColor(const CardColor& color);
+	Player& getPlayerWithMostCardsPerColor(const CardColor& color);
 
 	uint8_t getCurrentAge() const;
 	bool isGameOver() const;
@@ -125,7 +127,9 @@ public:
 	void addToDiscardTokens(std::unique_ptr<ProgressToken>&& token);
 	std::unique_ptr<ProgressToken> extractDiscardedTokens(int index);
 
-	bool removeMilitaryToken(int index); 
+	const std::array<bool, 4>& getMilitaryTokensStatus() const;
+	bool removeMilitaryToken(int index);
+
 	bool hasPendingScientificReward() const;
 	void setPendingScientificReward(bool pending);
 	void clearPendingScientificReward();

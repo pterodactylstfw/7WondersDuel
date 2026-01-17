@@ -7,6 +7,9 @@
         <file>../assets/victorypoints.png</file>
         <file>../assets/military_board.png</file>
         <file>../assets/military_lead.png</file>
+	<file>../assets/loot2.png</file>
+	<file>../assets/loot5.png</file>
+
         <file>../assets/age1/age1_back.png</file>
         <file>../assets/age1/age1_back_rotated.png</file>
         <file>../assets/age1/altar.png</file>
@@ -32,6 +35,7 @@
         <file>../assets/age1/theater.png</file>
         <file>../assets/age1/wood_reserve.png</file>
         <file>../assets/age1/workshop.png</file>
+
         <file>../assets/age2/age2_back.png</file>
         <file>../assets/age2/age2_back_rotated.png</file>
         <file>../assets/age2/aqueduct.png</file>
@@ -57,6 +61,7 @@
         <file>../assets/age2/temple.png</file>
         <file>../assets/age2/tribunal.png</file>
         <file>../assets/age2/walls.png</file>
+
         <file>../assets/age3/academy.png</file>
         <file>../assets/age3/age3_back.png</file>
         <file>../assets/age3/age3_back_rotated.png</file>
@@ -80,6 +85,7 @@
         <file>../assets/age3/study.png</file>
         <file>../assets/age3/town_hall.png</file>
         <file>../assets/age3/university.png</file>
+
         <file>../assets/guilds/builders_guild.png</file>
         <file>../assets/guilds/guilds_back.png</file>
         <file>../assets/guilds/guilds_back_rotated.png</file>
@@ -89,6 +95,7 @@
         <file>../assets/guilds/scientists_guild.png</file>
         <file>../assets/guilds/shipowners_guild.png</file>
         <file>../assets/guilds/tacticians_guild.png</file>
+
         <file>../assets/wonders/the_appian_way.png</file>
         <file>../assets/wonders/circus_maximus.png</file>
         <file>../assets/wonders/the_colossus.png</file>
@@ -101,6 +108,7 @@
         <file>../assets/wonders/the_sphinx.png</file>
         <file>../assets/wonders/the_statue_of_zeus.png</file>
         <file>../assets/wonders/the_temple_of_artemis.png</file>
+
         <file>../assets/tokens/agriculture.png</file>
         <file>../assets/tokens/architecture.png</file>
         <file>../assets/tokens/economy.png</file>

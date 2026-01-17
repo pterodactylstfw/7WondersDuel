@@ -175,6 +175,7 @@ add_executable(7WondersTests
     tests/TestCost.cpp
     tests/TestWonder.cpp
     tests/MockGameView.h
+    tests/TestProgressToken.cpp
 )
 
 # legam testele cu bibliotecile necesare

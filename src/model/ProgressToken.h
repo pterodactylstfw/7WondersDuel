@@ -34,10 +34,9 @@ public:
     void setActive(bool active);
 
     std::string toString() const;
-    //auto operator<=>(const ProgressToken& other) const = default;
     bool operator==(const ProgressToken& other) const = default;
 
-    friend std::ostream& operator<<(std::ostream& os, const ProgressToken& token);
+    friend CORE_API std::ostream& operator<<(std::ostream& os, const ProgressToken& token);
     friend void to_json(json& j, const ProgressToken& token);
     friend void from_json(const json& j, ProgressToken& token);
 };

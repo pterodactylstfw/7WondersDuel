@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include "CardFactory.h"
-#include "Card.h"
+#include "ProgressTokenFactory.h"
+#include "WonderFactory.h"
 #include "Constants.h"
 
 TEST(CardFactoryTest, CreateAgeIDeck_CreatesCorrectCards) {
@@ -74,4 +75,67 @@ TEST(CardFactoryTest, CreateGuildDeck_CreatesCorrectCards) {
 		}
 	}
 	EXPECT_TRUE(foundMerchantsGuild);
+}
+
+TEST(ProgressTokenFactoryTest, CreateAllTokens_CreatesCorrectTokens) {
+	ProgressTokenFactory factory;
+	auto tokens = factory.createAllTokens();
+
+	EXPECT_EQ(tokens.size(), 10);
+
+	for (const auto& token : tokens) {
+		ASSERT_NE(token, nullptr);
+		EXPECT_FALSE(token->getName().empty());
+		EXPECT_FALSE(token->getDescription().empty());
+		EXPECT_FALSE(token->isActive());
+	}
+
+	bool foundAgriculture = false;
+	bool foundPhilosophy = false;
+	for (const auto& token : tokens) {
+		if (token->getType() == ProgressTokenType::AGRICULTURE) {
+			foundAgriculture = true;
+			EXPECT_EQ(token->getName(), "Agriculture");
+			EXPECT_EQ(token->getVictoryPoints(), 4);
+		}
+		if (token->getType() == ProgressTokenType::PHILOSOPHY) {
+			foundPhilosophy = true;
+			EXPECT_EQ(token->getName(), "Philosophy");
+			EXPECT_EQ(token->getVictoryPoints(), 7);
+		}
+	}
+
+	EXPECT_TRUE(foundAgriculture);
+	EXPECT_TRUE(foundPhilosophy);
+}
+
+TEST(WonderFactoryTest, CreateWonders_CreatesCorrectWonders) {
+	WonderFactory factory;
+	auto wonders = factory.createWonders();
+
+	EXPECT_EQ(wonders.size(), 12);
+
+	for (const auto& wonder : wonders) {
+		ASSERT_NE(wonder, nullptr);
+		EXPECT_FALSE(wonder->getName().empty());
+		EXPECT_FALSE(wonder->getDescription().empty());
+		EXPECT_FALSE(wonder->isBuilt());
+	}
+
+	bool foundPyramids = false;
+	bool foundColossus = false;
+	for (const auto& wonder : wonders) {
+		if (wonder->getName() == "THE PYRAMIDS") {
+			foundPyramids = true;
+			EXPECT_EQ(wonder->getEffect().getVictoryPointsPerCard().value(), 9);
+		}
+		if (wonder->getName() == "THE COLOSSUS") {
+			foundColossus = true;
+			EXPECT_EQ(wonder->getEffect().getShields().value(), 2);
+			EXPECT_EQ(wonder->getEffect().getVictoryPointsPerCard().value(), 3);
+		}
+	}
+
+	EXPECT_TRUE(foundPyramids);
+	EXPECT_TRUE(foundColossus);
 }

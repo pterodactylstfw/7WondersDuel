@@ -1,5 +1,4 @@
 #include "Player.h"
-#include "Player.h"
 
 Player::Player(const std::string& playerName):
 	m_name(playerName),m_isAI(false), m_coins(GameConstants::STARTING_COINS), m_militaryShields(0), m_victoryPoints(0) { }

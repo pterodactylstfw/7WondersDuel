@@ -11,11 +11,6 @@
 #include "JsonUtils.h"
 #include "CoreExport.h"
 
-//class Player;
-//class Card;
-//class Wonder; de revizuit cu forward declarations
-
-
 struct CardNode {
 	int m_index;// index in m_currentAgeCards
 	bool m_isFaceUp; // daca e cu fata in suseUp;

@@ -1308,12 +1308,14 @@ void MainWindow::showGameOverScreen()
 	}
 	m_activeMessages.clear();
 
+	qDeleteAll(ui->pageGameOver->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly));
+
 	if (ui->pageGameOver->layout()) {
-		QLayoutItem* item;
+		/*QLayoutItem* item;
 		while ((item = ui->pageGameOver->layout()->takeAt(0)) != nullptr) {
 			delete item->widget();
 			delete item;
-		}
+		}*/
 		delete ui->pageGameOver->layout();
 	}
 

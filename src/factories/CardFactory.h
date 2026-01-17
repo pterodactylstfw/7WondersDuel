@@ -4,8 +4,9 @@
 #include <memory>
 
 #include "Card.h"
+#include "CoreExport.h"
 
-class CardFactory
+class CORE_API CardFactory
 {
 public:
 	std::vector<std::unique_ptr<Card>> createAgeIDeck();

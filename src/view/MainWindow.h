@@ -69,6 +69,8 @@ private:
     std::array<CardPosition, GameConstants::CARDS_PER_AGE> m_age2Layout;
     std::array<CardPosition, GameConstants::CARDS_PER_AGE> m_age3Layout;
 
+    QLabel* m_militaryTokens[4];
+
     std::unique_ptr<GameServer> m_integratedServer; // server hibrid host - sa nu mai pornesc aplicatia cu exe
 
     void updatePlayerArea(const Player& player, QWidget* wondersArea, QWidget* cityArea);

@@ -27,15 +27,41 @@ MainWindow::MainWindow(QWidget* parent)
 	this->setWindowIcon(QIcon(":/assets/coins.png"));
 	ui->setupUi(this);
 
+	if (ui->militaryPanel->layout()) {
+		delete ui->militaryPanel->layout();
+	}
+
 	m_netClient = new NetworkClient(this);
 
+	ui->labelMilitaryBoard->setParent(ui->militaryPanel);
 	ui->labelMilitaryBoard->setPixmap(QPixmap(":/assets/military_board.png"));
-	ui->labelMilitaryLead->setPixmap(QPixmap(":/assets/military_lead.png"));
+	ui->labelMilitaryBoard->lower(); // O trimitem în spate
+	ui->labelMilitaryBoard->show();  // Ne asigurăm că e vizibilă
 
-	ui->verticalLayout_6->removeWidget(ui->labelMilitaryLead);
-	ui->labelMilitaryLead->setParent(ui->militaryPanel);
-	ui->labelMilitaryLead->raise();
+	// 3. Configurăm PIONUL
+	ui->labelMilitaryLead->setParent(ui->militaryPanel); // Pionul stă pe Panel, nu pe tablă
+	ui->labelMilitaryLead->setPixmap(QPixmap(":/assets/military_lead.png"));
+	ui->labelMilitaryLead->raise(); // Pionul stă deasupra la tot
 	ui->labelMilitaryLead->show();
+
+	for (int i = 0; i < 4; ++i) {
+		// Le punem ÎN INTERIORUL imaginii de fundal. Așa vor fi mereu deasupra ei.
+		m_militaryTokens[i] = new QLabel(ui->labelMilitaryBoard);
+
+		m_militaryTokens[i]->setFixedSize(40, 40);
+		m_militaryTokens[i]->setScaledContents(true);
+		m_militaryTokens[i]->setStyleSheet("background: transparent;");
+
+		if (i == 0 || i == 2) {
+			m_militaryTokens[i]->setPixmap(QPixmap(":/assets/loot2.png"));
+		}
+		else {
+			m_militaryTokens[i]->setPixmap(QPixmap(":/assets/loot5.png"));
+		}
+
+		m_militaryTokens[i]->show();
+	}
+
 
 	ui->stackedWidget->setCurrentIndex(0);
 
@@ -274,7 +300,7 @@ int MainWindow::askWonderSelection(const std::array<std::unique_ptr<Wonder>, Gam
 				auto conn = connect(btn, &QPushButton::clicked, [&, i]() {
 					selectedIndex = static_cast<int>(i);
 					loop.quit();
-				});
+					});
 				connections.push_back(conn);
 			}
 			else {
@@ -407,7 +433,7 @@ void MainWindow::onBtnStartClicked()
 	if (!okMode || mode.isEmpty()) return;
 
 	if (mode == "Online Multiplayer") {
-        m_isOnlineMode = true;
+		m_isOnlineMode = true;
 
 		QDialog netDlg(this);
 		netDlg.setWindowTitle("Multiplayer Setup");
@@ -438,8 +464,27 @@ void MainWindow::onBtnStartClicked()
 
 		QRadioButton* rbHost = new QRadioButton("HOST Game (Create Server)");
 		QRadioButton* rbJoin = new QRadioButton("JOIN Game (Connect to Friend)");
-		rbHost->setStyleSheet("font-size: 14px; margin-left: 10px;");
-		rbJoin->setStyleSheet("font-size: 14px; margin-left: 10px;");
+		QString radioStyle =
+			"QRadioButton {"
+			"   font-size: 14px;"
+			"   color: white;"
+			"   margin-left: 10px;"
+			"}"
+			"QRadioButton::indicator {"
+			"   width: 16px;"
+			"   height: 16px;"
+			"   border-radius: 8px;"
+			"   border: 2px solid #aaaaaa;" // Margine gri când nu e selectat
+			"   background-color: #444;"
+			"}"
+			"QRadioButton::indicator:checked {"
+			"   background-color: #FFD700;" // GALBEN cand e selectat
+			"   border: 2px solid #FFD700;"
+			"}";
+
+		rbHost->setStyleSheet(radioStyle);
+		rbJoin->setStyleSheet(radioStyle);
+
 		rbJoin->setChecked(true);
 
 		layout->addWidget(rbHost);
@@ -483,56 +528,57 @@ void MainWindow::onBtnStartClicked()
 
 		layout->addStretch();
 
-        auto updateDlg = [&]() {
-            if (rbHost->isChecked()) {
-                ipWidget->hide();
-                lblMyIP->show();
+		auto updateDlg = [&]() {
+			if (rbHost->isChecked()) {
+				ipWidget->hide();
+				lblMyIP->show();
 
-                QString myIp = "Unknown";
-                for (const auto& address : QNetworkInterface::allAddresses()) {
-                    if (address.protocol() == QAbstractSocket::IPv4Protocol && address != QHostAddress::LocalHost) {
-                        myIp = address.toString();
-                        break;
-                    }
-                }
-                lblMyIP->setText("Your Local IP is: " + myIp + "\n(Tell your friend to connect to this IP)");
-            } else {
-                ipWidget->show();
-                lblMyIP->hide();
-            }
-        };
+				QString myIp = "Unknown";
+				for (const auto& address : QNetworkInterface::allAddresses()) {
+					if (address.protocol() == QAbstractSocket::IPv4Protocol && address != QHostAddress::LocalHost) {
+						myIp = address.toString();
+						break;
+					}
+				}
+				lblMyIP->setText("Your Local IP is: " + myIp + "\n(Tell your friend to connect to this IP)");
+			}
+			else {
+				ipWidget->show();
+				lblMyIP->hide();
+			}
+			};
 
-        connect(rbHost, &QRadioButton::toggled, &netDlg, updateDlg);
-        updateDlg();
+		connect(rbHost, &QRadioButton::toggled, &netDlg, updateDlg);
+		updateDlg();
 
-        QDialogButtonBox* bbox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-        connect(bbox, &QDialogButtonBox::accepted, &netDlg, &QDialog::accept);
-        connect(bbox, &QDialogButtonBox::rejected, &netDlg, &QDialog::reject);
-        layout->addWidget(bbox);
+		QDialogButtonBox* bbox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+		connect(bbox, &QDialogButtonBox::accepted, &netDlg, &QDialog::accept);
+		connect(bbox, &QDialogButtonBox::rejected, &netDlg, &QDialog::reject);
+		layout->addWidget(bbox);
 
-        if (netDlg.exec() == QDialog::Accepted) {
-            m_isOnlineMode = true;
-        	m_myUserName = editName->text();
-        	if (m_myUserName.isEmpty()) m_myUserName = "Unknown";
+		if (netDlg.exec() == QDialog::Accepted) {
+			m_isOnlineMode = true;
+			m_myUserName = editName->text();
+			if (m_myUserName.isEmpty()) m_myUserName = "Unknown";
 
-            m_integratedServer.reset();
+			m_integratedServer.reset();
 
-            if (rbHost->isChecked()) {
-                m_integratedServer = std::make_unique<GameServer>();
+			if (rbHost->isChecked()) {
+				m_integratedServer = std::make_unique<GameServer>();
 
-                m_netClient->connectToServer("127.0.0.1", 12345);
-                ui->label->setText("Hosting Game... Waiting for Player 2...");
-            }
-            else {
-                QString targetIp = editIP->text();
-                m_netClient->connectToServer(targetIp, 12345);
-                ui->label->setText("Connecting to " + targetIp + "...");
-            }
+				m_netClient->connectToServer("127.0.0.1", 12345);
+				ui->label->setText("Hosting Game... Waiting for Player 2...");
+			}
+			else {
+				QString targetIp = editIP->text();
+				m_netClient->connectToServer(targetIp, 12345);
+				ui->label->setText("Connecting to " + targetIp + "...");
+			}
 
-            ui->btnStart->setEnabled(false);
-        }
-        return;
-    }
+			ui->btnStart->setEnabled(false);
+		}
+		return;
+	}
 
 	m_isOnlineMode = false;
 
@@ -668,7 +714,7 @@ void MainWindow::onBtnHintClicked() {
 		case PlayerAction::CONSTRUCT_BUILDING:actionText = "Build this!"; break;
 		case PlayerAction::DISCARD_FOR_COINS:actionText = "Sell this!"; break;
 		case PlayerAction::CONSTRUCT_WONDER:actionText = "Build Wonder!"; break;
-				default: actionText = "Wait/Unknown"; break;
+		default: actionText = "Wait/Unknown"; break;
 		}
 		showHintText(actionText);
 	}
@@ -1037,11 +1083,11 @@ void MainWindow::setupNetworkConnections() {
 		ui->actionSave->setEnabled(true);
 		});
 
-	connect(m_netClient, &NetworkClient::connected, this, [this](){
+	connect(m_netClient, &NetworkClient::connected, this, [this]() {
 		m_netClient->sendName(m_myUserName.toStdString());
 		ui->label->setText("Connected! Waiting for opponent...");
 
-	});
+		});
 
 	connect(m_netClient, &NetworkClient::stateReceived, this, [this](const GameState& newState) {
 
@@ -1395,10 +1441,10 @@ void MainWindow::drawProgressTokens()
 	int boardW = ui->labelMilitaryBoard->width();
 	int boardH = ui->labelMilitaryBoard->height();
 
-	int tokenSize = boardW * 0.28;
-	int xPos = boardW * 0.67;
+	int tokenSize = boardW * 0.30;
+	int xPos = boardW * 0.66;
 
-	std::vector<double> yRatios = { 0.25, 0.35, 0.46, 0.56, 0.67 };
+	std::vector<double> yRatios = { 0.25, 0.35, 0.46, 0.56, 0.66 };
 
 	for (size_t i = 0; i < tokens.size() && i < yRatios.size(); ++i) {
 		const auto& token = tokens[i];
@@ -1448,6 +1494,22 @@ void MainWindow::drawDraftBoard()
 
 	int containerW = ui->cardContainer->width();
 	int containerH = ui->cardContainer->height();
+
+	QString currentPlayerName = QString::fromStdString(gameState.getCurrentPlayer().getName());
+	ui->textLabel->setText("DRAFT PHASE: " + currentPlayerName + ", choose a Wonder!");
+	ui->textLabel->setStyleSheet(
+		"font-size: 24px;"
+		"font-weight: bold;"
+		"color: black;"
+		"border-radius: 8px;"
+		"padding: 10px;"
+	);
+
+	ui->textLabel->setAlignment(Qt::AlignCenter);
+	ui->textLabel->adjustSize();
+	ui->textLabel->move((containerW - ui->textLabel->width()) / 2, 10);
+	ui->textLabel->raise();
+	ui->textLabel->show();
 
 	int wonderW = containerW * 0.20;
 	int wonderH = containerH * 0.40;
@@ -1768,30 +1830,96 @@ void MainWindow::updatePlayerPanel(const Player& player, bool isOpponent)
 
 void MainWindow::updateMilitaryTrack()
 {
+	if (!ui->militaryPanel || !ui->labelMilitaryLead || !ui->labelMilitaryBoard) return;
+
 	const auto& gameState = getCurrentGameState();
+
+	int panelW = ui->militaryPanel->width();
+	int panelH = ui->militaryPanel->height();
+
+	ui->labelMilitaryBoard->resize(panelW, panelH);
+	ui->labelMilitaryBoard->setScaledContents(true);
+
+	ui->labelMilitaryBoard->lower();
+	ui->labelMilitaryLead->raise();
+
+	// military lead
 	int militaryPosition = gameState.getMilitaryPosition();
 
-	QWidget* panel = ui->militaryPanel;
-
-	int panelW = panel->width();
-	int panelH = panel->height();
-
-	int pawnW = panelW * 0.4;
-	int pawnH = pawnW / 2;
-	ui->labelMilitaryLead->resize(pawnW, pawnH);
-
-	int leadX = (panelW - pawnW) / 2 - panelW * 0.15;
+	int pawnW = 50;
+	int pawnH = 30;
+	ui->labelMilitaryLead->setFixedSize(pawnW, pawnH);
 
 	double percentage = (militaryPosition + 9.0) / 18.0;
+
 	int availableHeight = panelH * 0.90;
 	int topMargin = panelH * 0.05;
 
 	int centerY = topMargin + (availableHeight * (1.0 - percentage));
 
 	int leadY = centerY - (pawnH / 2);
+	int leadX = (panelW - pawnW) / 2 - panelW * 0.10;
 
 	ui->labelMilitaryLead->move(leadX, leadY);
-	ui->labelMilitaryLead->raise();
+	ui->labelMilitaryLead->show();
+
+	// tokeni militari
+	const auto& tokensStatus = gameState.getMilitaryTokensStatus();
+
+	int wSmall = 16;
+	int hSmall = 34;
+
+	int wBig = 18;
+	int hBig = 38;
+
+	int tokenX = 9;
+
+	int halfHeight = panelH / 2;
+	int boardCenterY = panelH / 2;
+
+	int distSmall = halfHeight * 0.30;
+	int distBig = halfHeight * 0.56;
+
+	int yP1_Small = boardCenterY + distSmall;
+	int yP1_Big = boardCenterY + distBig;
+
+	int yP2_Small = boardCenterY - distSmall - hSmall;
+	int yP2_Big = boardCenterY - distBig - hBig;
+
+	if (m_militaryTokens[0]) {
+		m_militaryTokens[0]->setFixedSize(wSmall, hSmall);
+		m_militaryTokens[0]->move(tokenX, yP1_Small);
+
+		if (tokensStatus[0]) { m_militaryTokens[0]->show(); m_militaryTokens[0]->raise(); }
+		else m_militaryTokens[0]->hide();
+	}
+
+	// Token 1 (Player 1 - Mare - 5)
+	if (m_militaryTokens[1]) {
+		m_militaryTokens[1]->setFixedSize(wBig, hBig);
+		m_militaryTokens[1]->move(tokenX, yP1_Big);
+
+		if (tokensStatus[1]) { m_militaryTokens[1]->show(); m_militaryTokens[1]->raise(); }
+		else m_militaryTokens[1]->hide();
+	}
+
+	// Token 2 (Player 2 - Mic - 2)
+	if (m_militaryTokens[2]) {
+		m_militaryTokens[2]->setFixedSize(wSmall, hSmall);
+		m_militaryTokens[2]->move(tokenX, yP2_Small);
+
+		if (tokensStatus[2]) { m_militaryTokens[2]->show(); m_militaryTokens[2]->raise(); }
+		else m_militaryTokens[2]->hide();
+	}
+
+	// Token 3 (Player 2 - Mare - 5)
+	if (m_militaryTokens[3]) {
+		m_militaryTokens[3]->setFixedSize(wBig, hBig);
+		m_militaryTokens[3]->move(tokenX, yP2_Big);
+
+		if (tokensStatus[3]) { m_militaryTokens[3]->show(); m_militaryTokens[3]->raise(); }
+		else m_militaryTokens[3]->hide();
+	}
 }
 
 void MainWindow::setupLayouts()
@@ -1903,16 +2031,18 @@ void MainWindow::showHintText(const QString& text)
 
 void MainWindow::updateCardStructures()
 {
-	/*for (QPushButton* button : m_cardButtons) {
-		delete button; // crash uneori
-	}
-	m_cardButtons.clear();*/
-
 	for (QPushButton* button : m_cardButtons) {
-		// sterge cand revii in event loop
-		button->deleteLater();
+		if (button)
+		{
+			button->hide();
+			button->deleteLater();
+		}
 	}
 	m_cardButtons.clear();
+
+	if (ui->textLabel) {
+		ui->textLabel->hide();
+	}
 
 	const auto& gameState = getCurrentGameState();
 	const auto& pyramid = gameState.getPyramid();

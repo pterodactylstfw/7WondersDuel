@@ -71,18 +71,40 @@ void GameController::checkMilitaryLooting(int previousShields, int currentShield
 	const int ZONE_1 = GameConstants::MILITARY_ZONE_1;
 	const int ZONE_2 = GameConstants::MILITARY_ZONE_2;
 
+	Player& currentPlayer = m_gameState->getCurrentPlayer();
 	Player& opponent = m_gameState->getOpponent();
+	int opponentShields = opponent.getMilitaryShields();
 
-	if (previousShields < ZONE_1 && currentShields >= ZONE_1) {
-		if (m_gameState->removeMilitaryToken(0)) {
+	int prevAdvantage = previousShields - opponentShields;
+	int currentAdvantage = currentShields - opponentShields;
+
+	int tokenIndex1 = -1;
+	int tokenIndex2 = -1;
+
+	if (m_gameState->getCurrentPlayerIndex() == 0) {
+		tokenIndex1 = 2; 
+		tokenIndex2 = 3;
+	}
+	else {
+		tokenIndex1 = 0;
+		tokenIndex2 = 1;
+	}
+
+	if (prevAdvantage < ZONE_1 && currentAdvantage >= ZONE_1) {
+		if (m_gameState->removeMilitaryToken(tokenIndex1)) {
 			opponent.removeCoins(2);
-			m_view.get().onMessage("--- MILITARY ATTACK! Opponent lost 2 coins (Zone 1) ---");
+			m_view.get().onMessage("--- MILITARY ATTACK! Opponent lost 2 coins! ---");
+
+			m_view.get().onStateUpdated();
 		}
 	}
-	if (previousShields < ZONE_2 && currentShields >= ZONE_2) {
-		if (m_gameState->removeMilitaryToken(1)) {
+
+	if (prevAdvantage < ZONE_2 && currentAdvantage >= ZONE_2) {
+		if (m_gameState->removeMilitaryToken(tokenIndex2)) {
 			opponent.removeCoins(5);
-			m_view.get().onMessage("--- MILITARY ATTACK! Opponent lost 5 coins (Zone 2) ---");
+			m_view.get().onMessage("--- MILITARY ATTACK! Opponent lost 5 coins! ---");
+
+			m_view.get().onStateUpdated();
 		}
 	}
 }
@@ -601,6 +623,13 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 		// generare deck carti
 		CardFactory cf;
 		std::vector<std::unique_ptr<Card>> deck;
+
+		std::string ageRoman;
+		if (age == 1) ageRoman = "I";
+		else if (age == 2) ageRoman = "II";
+		else if (age == 3) ageRoman = "III";
+
+		m_view.get().onMessage("\nSTARTING AGE " + ageRoman + "\n");
 
 		if (age == 1) deck = cf.createAgeIDeck();
 		else if (age == 2) deck = cf.createAgeIIDeck();

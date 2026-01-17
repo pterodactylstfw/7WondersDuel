@@ -1974,33 +1974,49 @@ void MainWindow::setupLayouts()
 
 
 	// age 3 layout
-	const int startY_Age3 = startY - verticalOverlap;
+	const int cardH_A3 = pyramidTotalHeight / 3.8;
+	const int cardW_A3 = cardH_A3 / 1.5;
+	const int overlap_A3 = cardH_A3 / 2;
+	const int gap_A3 = 10;
+	const int stepX_A3 = cardW_A3 + gap_A3;
 
+	const int widthOfRowWith4 = 4 * cardW_A3 + 3 * gap_A3;
+	const int heightPyramid_A3 = cardH_A3 + 6 * overlap_A3;
 
-	// Randul 7 (jos 2 carti)
-	for (int i = 0; i < 2; ++i) m_age3Layout[i] = { startX + (2 * stepX) + i * stepX, startY_Age3 + 6 * verticalOverlap };
+	const int startX_A3 = (availableWidth - widthOfRowWith4) / 2;
+	const int startY_A3 = (availableHeight - heightPyramid_A3) / 2;
+
+	// Randul 7 (jos, 2 carti) 
+	for (int i = 0; i < 2; ++i)
+		m_age3Layout[i] = { startX_A3 + stepX_A3 + i * stepX_A3, startY_A3 + 6 * overlap_A3 };
 
 	// Randul 6 (3 carti)
-	for (int i = 0; i < 3; ++i) m_age3Layout[2 + i] = { startX + stepX + (stepX / 2) + i * stepX, startY_Age3 + 5 * verticalOverlap };
+	for (int i = 0; i < 3; ++i)
+		m_age3Layout[2 + i] = { startX_A3 + (stepX_A3 / 2) + i * stepX_A3, startY_A3 + 5 * overlap_A3 };
 
-	// Randul 5 (4 carti)
-	for (int i = 0; i < 4; ++i) m_age3Layout[5 + i] = { startX + stepX + i * stepX, startY_Age3 + 4 * verticalOverlap };
+	// Randul 5 (4 carți)
+	for (int i = 0; i < 4; ++i)
+		m_age3Layout[5 + i] = { startX_A3 + i * stepX_A3, startY_A3 + 4 * overlap_A3 };
 
-	// Randul 4 (mijloc - Guilds - 2 carti)
-	for (int i = 0; i < 2; ++i)
-		if (i == 0)
-			m_age3Layout[9 + i] = { startX + static_cast<int>(1.5 * stepX) + i * stepX, startY_Age3 + 3 * verticalOverlap };
-		else
-			m_age3Layout[9 + i] = { startX + static_cast<int>(3.5 * stepX) + (i - 1) * stepX, startY_Age3 + 3 * verticalOverlap };
+	// Randul 4 (mijloc - 2 carti)
+	if (true) { 
+		int yPos = startY_A3 + 3 * overlap_A3;
+		m_age3Layout[9] = { startX_A3 + (stepX_A3 / 2), yPos };              
+		m_age3Layout[10] = { startX_A3 + (stepX_A3 / 2) + 2 * stepX_A3, yPos };
+	}
 
 	// Randul 3 (4 carti)
-	for (int i = 0; i < 4; ++i) m_age3Layout[11 + i] = { startX + stepX + i * stepX, startY_Age3 + 2 * verticalOverlap };
+	for (int i = 0; i < 4; ++i)
+		m_age3Layout[11 + i] = { startX_A3 + i * stepX_A3, startY_A3 + 2 * overlap_A3 };
 
 	// Randul 2 (3 carti)
-	for (int i = 0; i < 3; ++i) m_age3Layout[15 + i] = { startX + stepX + (stepX / 2) + i * stepX, startY_Age3 + 1 * verticalOverlap };
+	for (int i = 0; i < 3; ++i)
+		m_age3Layout[15 + i] = { startX_A3 + (stepX_A3 / 2) + i * stepX_A3, startY_A3 + 1 * overlap_A3 };
 
-	// Randul 1 (sus 2 carti)
-	for (int i = 0; i < 2; ++i) m_age3Layout[18 + i] = { startX + (2 * stepX) + i * stepX, startY_Age3 };
+	// Randul 1 (sus, 2 carti)
+	for (int i = 0; i < 2; ++i)
+		m_age3Layout[18 + i] = { startX_A3 + stepX_A3 + i * stepX_A3, startY_A3 };
+
 }
 
 void MainWindow::showHintText(const QString& text)
@@ -2064,7 +2080,14 @@ void MainWindow::updateCardStructures()
 
 	const int availableHeight = containerSize.height();
 	const int pyramidTotalHeight = availableHeight * 0.9;
-	const int cardH = pyramidTotalHeight / 3;
+
+	int cardH;
+	if (currentAge == 3) {
+		cardH = pyramidTotalHeight / 3.8; // carti mai mici pt age3
+	}
+	else {
+		cardH = pyramidTotalHeight / 3;  
+	}
 	const int cardW = cardH / 1.5;
 
 	for (auto it = pyramid.rbegin(); it != pyramid.rend(); ++it) {

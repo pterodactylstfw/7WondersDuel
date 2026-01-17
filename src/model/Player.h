@@ -18,11 +18,11 @@ class CORE_API Player
 private:
 	std::string m_name;
 	int m_coins;
-	int m_militaryShields;
-	int m_victoryPoints;
+	uint8_t m_militaryShields;
+	uint8_t m_victoryPoints;
 	bool m_isAI = false;
 
-	std::map<ScientificSymbol, int> m_scientificSymbols;
+	std::map<ScientificSymbol, uint8_t> m_scientificSymbols;
 	std::vector< std::unique_ptr<Card>> m_constructedCards;
 	std::array<std::unique_ptr<Wonder>,4> m_wonders;
 	std::vector<std::unique_ptr<Wonder>> m_constructedWonders;
@@ -71,7 +71,10 @@ public:
 	bool isAI() const;
 
 	bool hasScientificVictory() const;
-	int getMilitaryShields() const;
+
+	const std::string& getName() const;
+	uint8_t getVictoryPoints() const;
+	uint8_t getMilitaryShields() const;
 	int getCoins() const;
 
 	std::vector<std::unique_ptr<Card>>& getConstructedCards();
@@ -85,8 +88,6 @@ public:
 
 	std::vector<std::unique_ptr<ProgressToken>>& getProgressTokens();
 	const std::vector<std::unique_ptr<ProgressToken>>& getProgressTokens() const;
-	const std::string& getName() const;
-	int getVictoryPoints() const;
 
 	friend void to_json(json& j, const Player& player);
 	friend void from_json(const json& j, Player& player);

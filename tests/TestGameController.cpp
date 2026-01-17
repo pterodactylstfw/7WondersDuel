@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <fstream>
 #include "GameController.h"
 #include "GameState.h"
 #include "MockGameView.h"
@@ -55,4 +56,39 @@ TEST(GameControllerTest, StartNewGame_InitializesPlayersCorrectly) {
 	EXPECT_EQ(players[1]->getMilitaryShields(), 0);
 	EXPECT_EQ(players[0]->getVictoryPoints(), 0);
 	EXPECT_EQ(players[1]->getVictoryPoints(), 0);
+}
+
+TEST(GameControllerTest, SaveGame_CreatesFile) {
+	MockGameView mockView;
+	GameController controller(mockView);
+	controller.startNewGame("Denisa", "Valentina");
+
+	std::string filename = "test_save_game.json";
+
+	controller.saveGame(filename);
+
+	std::ifstream file(filename);
+	EXPECT_TRUE(file.good());
+	file.close();
+
+	std::remove(filename.c_str());
+}
+
+TEST(GameControllerTest, LoadGame_RestoresState) {
+	MockGameView mockView;
+	GameController controller(mockView);
+	controller.startNewGame("SavePlayer1", "SavePlayer2");
+
+	std::string filename = "test_load_game.json";
+	controller.saveGame(filename);
+
+	GameController controller2(mockView);
+	controller2.loadGame(filename);
+
+	EXPECT_TRUE(controller2.hasGameStarted());
+	EXPECT_EQ(controller2.getGameState().getPlayers()[0]->getName(), "SavePlayer1");
+	EXPECT_EQ(controller2.getGameState().getPlayers()[1]->getName(), "SavePlayer2");
+	EXPECT_EQ(controller2.getGameState().getCurrentPhase(), GamePhase::DRAFTING);
+
+	std::remove(filename.c_str());
 }

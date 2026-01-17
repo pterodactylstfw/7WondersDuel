@@ -129,13 +129,6 @@ MainWindow::MainWindow(QWidget* parent)
 			}
 		}
 
-		// Lista completa (mai sigur)
-		/*QString allIPs;
-		for (const QHostAddress& address : QNetworkInterface::allAddresses()) {
-			if (address.protocol() == QAbstractSocket::IPv4Protocol && address != localhost)
-				allIPs += address.toString() + "\n";
-		}*/
-
 		QMessageBox::information(this, "My IP Address",
 			"Share this IP with Player 2:\n\n" + (ipAddress.isEmpty() ? "No network found" : ipAddress));
 		});
@@ -437,16 +430,15 @@ void MainWindow::onBtnStartClicked()
 
 		QDialog netDlg(this);
 		netDlg.setWindowTitle("Multiplayer Setup");
-
 		netDlg.setFixedSize(600, 400);
 		netDlg.setStyleSheet("background-color: #2b2b2b; color: white;");
 
 		QVBoxLayout* layout = new QVBoxLayout(&netDlg);
 		layout->setSpacing(15);
-		layout->setContentsMargins(30, 30, 30, 30); // Margini generoase
+		layout->setContentsMargins(30, 30, 30, 30);
 
 		QLabel* lblName = new QLabel("Enter Your Name:");
-		lblName->setStyleSheet("font-size: 16px; font-weight: bold; color: #FFD700;"); // Auriu, mediu
+		lblName->setStyleSheet("font-size: 16px; font-weight: bold; color: #FFD700;");
 		layout->addWidget(lblName);
 
 		QLineEdit* editName = new QLineEdit("Player");
@@ -465,26 +457,12 @@ void MainWindow::onBtnStartClicked()
 		QRadioButton* rbHost = new QRadioButton("HOST Game (Create Server)");
 		QRadioButton* rbJoin = new QRadioButton("JOIN Game (Connect to Friend)");
 		QString radioStyle =
-			"QRadioButton {"
-			"   font-size: 14px;"
-			"   color: white;"
-			"   margin-left: 10px;"
-			"}"
-			"QRadioButton::indicator {"
-			"   width: 16px;"
-			"   height: 16px;"
-			"   border-radius: 8px;"
-			"   border: 2px solid #aaaaaa;" // Margine gri când nu e selectat
-			"   background-color: #444;"
-			"}"
-			"QRadioButton::indicator:checked {"
-			"   background-color: #FFD700;" // GALBEN cand e selectat
-			"   border: 2px solid #FFD700;"
-			"}";
+			"QRadioButton { font-size: 14px; color: white; margin-left: 10px; }"
+			"QRadioButton::indicator { width: 16px; height: 16px; border-radius: 8px; border: 2px solid #aaaaaa; background-color: #444; }"
+			"QRadioButton::indicator:checked { background-color: #FFD700; border: 2px solid #FFD700; }";
 
 		rbHost->setStyleSheet(radioStyle);
 		rbJoin->setStyleSheet(radioStyle);
-
 		rbJoin->setChecked(true);
 
 		layout->addWidget(rbHost);
@@ -496,65 +474,80 @@ void MainWindow::onBtnStartClicked()
 
 		QWidget* ipWidget = new QWidget();
 		QVBoxLayout* ipLayout = new QVBoxLayout(ipWidget);
-		ipLayout->setContentsMargins(0, 10, 0, 10); // Spatiu sus/jos
-
+		ipLayout->setContentsMargins(0, 10, 0, 10);
 		QLabel* lblIP = new QLabel("Friend's IP (Host):");
 		lblIP->setStyleSheet("font-size: 14px; font-weight: normal; color: white;");
-
 		QLineEdit* editIP = new QLineEdit("127.0.0.1");
-		editIP->setStyleSheet(
-			"background-color: #444; border: 1px solid gray; padding: 6px; "
-			"color: white; font-size: 14px; border-radius: 4px;"
-		);
-
+		editIP->setStyleSheet("background-color: #444; border: 1px solid gray; padding: 6px; color: white; font-size: 14px; border-radius: 4px;");
 		ipLayout->addWidget(lblIP);
 		ipLayout->addWidget(editIP);
-
-		layout->addWidget(ipWidget);
+		dynLayout->addWidget(ipWidget);
 
 		QLabel* lblMyIP = new QLabel();
-		lblMyIP->setStyleSheet(
-			"color: #FFD700; "
-			"font-size: 18px; "
-			"font-weight: bold; "
-			"margin-top: 15px; margin-bottom: 15px;"
-			"background-color: transparent;"
-		);
+		lblMyIP->setStyleSheet("color: #FFD700; font-size: 18px; font-weight: bold; margin-top: 15px; margin-bottom: 15px; background-color: transparent;");
 		lblMyIP->setWordWrap(true);
 		lblMyIP->setAlignment(Qt::AlignCenter);
 		lblMyIP->hide();
+		dynLayout->addWidget(lblMyIP);
 
-		layout->addWidget(lblMyIP);
-
+		layout->addWidget(dynamicArea);
 		layout->addStretch();
+
+		QDialogButtonBox* bbox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+		bbox->setStyleSheet("QPushButton { padding: 6px 15px; font-size: 14px; }");
+		layout->addWidget(bbox, 0, Qt::AlignCenter);
+
+		connect(bbox, &QDialogButtonBox::accepted, &netDlg, &QDialog::accept);
+		connect(bbox, &QDialogButtonBox::rejected, &netDlg, &QDialog::reject);
+
+		auto validateInputs = [=]() {
+			bool nameOk = Utils::isValidFormat(editName->text().toStdString(), "^[a-zA-Z0-9 ]{3,15}$");
+			bool ipOk = true;
+
+			if (rbJoin->isChecked()) {
+				ipOk = Utils::isValidFormat(editIP->text().toStdString(), "^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4}$");
+			}
+
+			QString validStyle = "background-color: #444; border: 2px solid #4CAF50; padding: 6px; font-size: 14px; border-radius: 4px; color: white;";
+			QString invalidStyle = "background-color: #444; border: 2px solid #F44336; padding: 6px; font-size: 14px; border-radius: 4px; color: white;";
+
+			editName->setStyleSheet(nameOk ? validStyle : invalidStyle);
+
+			if (rbJoin->isChecked()) {
+				editIP->setStyleSheet(ipOk ? validStyle : invalidStyle);
+			}
+
+			bbox->button(QDialogButtonBox::Ok)->setEnabled(nameOk && ipOk);
+		};
 
 		auto updateDlg = [&]() {
 			if (rbHost->isChecked()) {
 				ipWidget->hide();
 				lblMyIP->show();
 
-				QString myIp = "Unknown";
+				QString bestIp = "Unknown";
 				for (const auto& address : QNetworkInterface::allAddresses()) {
-					if (address.protocol() == QAbstractSocket::IPv4Protocol && address != QHostAddress::LocalHost) {
-						myIp = address.toString();
-						break;
+					if (address.protocol() == QAbstractSocket::IPv4Protocol && !address.isLoopback()) {
+						QString ip = address.toString();
+						if (ip.startsWith("169.254")) continue;
+						if (ip.startsWith("192.168.")) { bestIp = ip; break; }
+						if (ip.startsWith("10.") || (ip.startsWith("172.") && ip.section('.', 1, 1).toInt() >= 16)) { bestIp = ip; }
 					}
 				}
-				lblMyIP->setText("Your Local IP is: " + myIp + "\n(Tell your friend to connect to this IP)");
+				lblMyIP->setText("Your Local IP: " + bestIp + "\n(Share this with your friend)");
 			}
 			else {
 				ipWidget->show();
 				lblMyIP->hide();
 			}
-			};
+			validateInputs();
+		};
 
 		connect(rbHost, &QRadioButton::toggled, &netDlg, updateDlg);
-		updateDlg();
+		connect(editName, &QLineEdit::textChanged, validateInputs);
+		connect(editIP, &QLineEdit::textChanged, validateInputs);
 
-		QDialogButtonBox* bbox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-		connect(bbox, &QDialogButtonBox::accepted, &netDlg, &QDialog::accept);
-		connect(bbox, &QDialogButtonBox::rejected, &netDlg, &QDialog::reject);
-		layout->addWidget(bbox);
+		updateDlg();
 
 		if (netDlg.exec() == QDialog::Accepted) {
 			m_isOnlineMode = true;

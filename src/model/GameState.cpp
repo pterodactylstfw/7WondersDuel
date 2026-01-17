@@ -187,13 +187,10 @@ std::vector<std::unique_ptr<Wonder>>& GameState::getAllWonders()
 
 int GameState::getAllConstructedWondersCount() const
 {
-	int total = 0;
-	for (const auto& player : m_players) {
-		if (player) {
-			total += player->getConstructedWondersCount();
-		}
-	}
-	return total;
+	return std::accumulate(m_players.begin(), m_players.end(), 0,
+		[](int sum, const std::unique_ptr<Player>& player) {
+			return sum + (player ? player->getConstructedWondersCount() : 0);
+		});
 }
 
 GamePhase GameState::getCurrentPhase() const
@@ -267,13 +264,15 @@ void GameState::initializeAge(int age, std::vector<std::unique_ptr<Card>>& deck)
 bool GameState::isCardAccessible(int index) const
 {
 	if (index < 0 || index >= m_pyramid.size()) return false;
-	if (m_pyramid[index].m_isRemoved) return false;
+	const auto& node = m_pyramid[index];
+	if (node.m_isRemoved) return false;
 
-	for (int blocker : m_pyramid[index].m_blockedBy)
-		if (!m_pyramid[blocker].m_isRemoved)
-			return false;
+	bool isBlocked = std::any_of(node.m_blockedBy.begin(), node.m_blockedBy.end(),
+		[this](int blockerIndex) {
+			return !m_pyramid[blockerIndex].m_isRemoved;
+		});
 
-	return true;
+	return !isBlocked;
 }
 
 void GameState::removeCardFromPyramid(int index)

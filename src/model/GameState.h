@@ -45,7 +45,6 @@ private:
 	std::array<bool, 4> m_militaryTokens = { true, true, true, true };
 
 	bool m_gameOver;
-	//std::optional<VictoryType> m_victoryType;
 
 	GamePhase m_currentPhase = GamePhase::DRAFTING;
 	std::vector<std::unique_ptr<Wonder>> m_draftedWonders;

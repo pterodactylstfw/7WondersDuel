@@ -109,6 +109,9 @@ void GameController::checkMilitaryLooting(int previousShields, int currentShield
 	}
 }
 
+
+// logica victorii 
+
 void GameController::checkInstantVictory()
 {
 	const Player& current = m_gameState->getCurrentPlayer();
@@ -217,14 +220,14 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 			}
 		}
 
-		m_gameState->setPendingScientificReward(false); // sau clearPendingScientificReward()
+		m_gameState->setPendingScientificReward(false);
 	}
 
 
 	if (!effect.getDiscounts().empty())
 	{
-		for (const auto& discount : effect.getDiscounts())
-			player.addTradeDiscount(discount.first, discount.second);
+		for (const auto& [type, amount] : effect.getDiscounts())
+			player.addTradeDiscount(type, amount);
 	}
 
 	if (!effect.getProduction().isEmpty())
@@ -232,15 +235,15 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 
 	if (!effect.getCoinsPerCardType().empty()) {
 		if (effect.getGrantsGuildCopy()) {
-			for (const auto& pair : effect.getCoinsPerCardType()) {
-				Player& playerWithMostCards = m_gameState->getPlayerWithMostCardsPerColor(pair.first);
-				int coinsToAdd = playerWithMostCards.getCardPerColor(pair.first) * pair.second;
+			for (const auto& [color, coins] : effect.getCoinsPerCardType()) {
+				Player& playerWithMostCards = m_gameState->getPlayerWithMostCardsPerColor(color);
+				int coinsToAdd = playerWithMostCards.getCardPerColor(color) * coins;
 				player.addCoins(coinsToAdd);
 			}
 		}
 		else {
-			for (const auto& pair : effect.getCoinsPerCardType()) {
-				int coinsToAdd = player.getCardPerColor(pair.first) * pair.second;
+			for (const auto& [color, coins] : effect.getCoinsPerCardType()) {
+				int coinsToAdd = player.getCardPerColor(color) * coins;
 				player.addCoins(coinsToAdd);
 			}
 		}
@@ -309,7 +312,7 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 				m_view.get().onMessage("The discarded pile is empty.");
 			}
 			else {
-				// Trebuie să construim un vector de referințe pentru UI
+				// construim o lista de referinte catre cartile din discard
 				std::vector<std::reference_wrapper<const Card>> cardOptions;
 				for (const auto& cPtr : discardedCards) {
 					cardOptions.push_back(std::cref(*cPtr));
@@ -413,7 +416,7 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 		int tradeCost = 0;
 		int costToPay = 0;
 
-		// 1. Calculam costul total (monede proprii + trade)
+		// Calculam cost total (monede proprii + trade)
 		if (!currentPlayer.hasChainForCard(card) &&
 			card.getColor() == CardColor::BLUE &&
 			currentPlayer.hasProgressToken(ProgressTokenType::MASONRY))
@@ -425,8 +428,8 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 			while (discount > 0)
 			{
 				std::vector <ResourceType> options;
-				for (const auto& it : resourceCosts)
-					if (it.second > 0) options.push_back(it.first);
+				for (const auto& [type, amount] : resourceCosts)
+					if (amount > 0) options.push_back(type);
 
 				if (options.empty()) break;
 				ResourceType chosen = ResourceType::NONE;
@@ -457,14 +460,12 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 			costToPay = tradeCost + finalCost.getCoinCost();
 		}
 
-		// 2. Verificam daca jucatorul isi permite (UI-ul ar fi trebuit sa verifice deja, dar facem double-check)
+		// Verificam daca jucatorul poate plati
 		if (!currentPlayer.canAfford(costToPay, opponent)) {
-			// Nu are bani suficienti. In GUI asta nu ar trebui sa se intample daca butonul e dezactivat,
-			// dar e bine sa avem protectia aici.
 			return false;
 		}
 
-		// 3. Executam plata
+		// Efectuam plata
 		if (costToPay > 0) {
 			currentPlayer.removeCoins(costToPay);
 		}
@@ -473,7 +474,7 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 			opponent.addCoins(tradeCost);
 		}
 
-		// 4. Mutam cartea si aplicam efectele
+		// Mutam cartea la jucator si aplicam efectele, daca are
 		int oldShields = currentPlayer.getMilitaryShields();
 
 		std::unique_ptr<Card> takenCard = m_gameState->takeCard(cardIndex);
@@ -494,7 +495,7 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 			m_view.get().onMessage("+4 Coins (Urbanism Bonus)");
 		}
 
-		// 5. Verificam efectele militare imediate
+		// Verif scuturi militare
 		int newShields = currentPlayer.getMilitaryShields();
 		if (newShields > oldShields) {
 			checkMilitaryLooting(oldShields, newShields);
@@ -533,7 +534,6 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 
 		if (m_gameState->getAllConstructedWondersCount() >= GameConstants::MAX_WONDERS_TOTAL) return false;
 
-		//int costToPay = currentPlayer.calculateTotalCost(targetWonderPtr->getCost(), opponent);
 		Cost baseCost = targetWonderPtr->getCost();
 		Cost finalCost = baseCost;
 		int costToPay = 0;
@@ -546,14 +546,14 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 
 			while (discount > 0)
 			{
-				// 1. Construim opțiunile
+				// construim optiunile de resurse
 				std::vector <ResourceType> options;
-				for (const auto& it : resourceCosts)
-					if (it.second > 0) options.push_back(it.first);
+				for (const auto& [type, amount] : resourceCosts)
+					if (amount > 0) options.push_back(type);
 
 				if (options.empty()) break;
 
-				// 2. Cerem UI-ului fara input output
+				// cerem alegerea resursei
 				ResourceType chosen = ResourceType::NONE;
 				if (currentPlayer.isAI()) {
 					chosen = options[0];
@@ -564,7 +564,7 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 						"Architecture Effect: Choose a resource to reduce cost (-1):"
 					);
 				}
-				// 3. Aplicam reducerea
+				// aplicam reducerea
 				if (resourceCosts.count(chosen)) {
 					resourceCosts[chosen]--;
 					if (resourceCosts[chosen] <= 0)
@@ -592,7 +592,6 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 		std::unique_ptr<Card> sacrificedCard = m_gameState->takeCard(cardIndex);
 
 		currentPlayer.getConstructedWonders().push_back(std::move(targetWonderPtr));
-		// de mutat minunea in minuni realizate(daca facem) sau marcata ca realizata
 
 		auto& builtWonder = currentPlayer.getConstructedWonders().back();
 		m_view.get().onMessage(getGameState().getCurrentPlayer().getName() + ": Wonder Constructed: " + builtWonder->getName() + "!");
@@ -615,12 +614,10 @@ void GameController::applyEffect(Player& player, const CardEffect& effect)
 		if (newShields > oldShields)
 			checkMilitaryLooting(oldShields, newShields);
 
-		// + trebuie sa verificam daca avem o carte care ne ofera bani pentru minune
 		return true;
 	}
 
-	void GameController::prepareAge(int age) {
-		// generare deck carti
+	void GameController::prepareAge(int age) { // generare deck age curent
 		CardFactory cf;
 		std::vector<std::unique_ptr<Card>> deck;
 
@@ -724,10 +721,8 @@ bool GameController::executeAction(int cardIndex, PlayerAction action, int wonde
 
 		m_gameState->removeCardFromPyramid(cardIndex);
 
-		bool anyCardLeft = false;
-		for (const auto& node : m_gameState->getPyramid()) {
-			if (!node.m_isRemoved) { anyCardLeft = true; break; }
-		}
+		bool anyCardLeft = std::ranges::any_of(m_gameState->getPyramid(),
+			[](const auto& node) { return !node.m_isRemoved; });
 
 		if (!anyCardLeft) {
 			checkEndAge();
@@ -761,8 +756,7 @@ bool GameController::executeAction(int cardIndex, PlayerAction action, int wonde
 
 	void GameController::loadGame(const std::string & filename) {
 		if (!m_gameState) {
-			m_gameState = std::make_unique<GameState>(); // init daca e null,
-			//fix crash load la cold start
+			m_gameState = std::make_unique<GameState>(); // game state gol pt cold load
 		}
 
 		if (!m_gameState->loadGame(std::string(filename))) {
@@ -917,6 +911,6 @@ bool GameController::executeAction(int cardIndex, PlayerAction action, int wonde
 		}
 	}
 
-	void GameController::reset() {
+	void GameController::reset() { // pentru server
 		m_gameState.reset();
 	}

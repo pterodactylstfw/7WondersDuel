@@ -25,16 +25,16 @@ void GameServer::incomingConnection(qintptr socketDescriptor) {
 
     QTcpSocket* socket = new QTcpSocket(this);
     if (!socket->setSocketDescriptor(socketDescriptor)) {
-        std::cerr << "[SERVER] Error handling socket descriptor." << std::endl;
+        std::cerr << ">>> [SERVER] Error handling socket descriptor." << std::endl;
         delete socket;
         return;
     }
 
-    connect(socket, &QTcpSocket::readyRead, this, &GameServer::onReadyRead);
-    connect(socket, &QTcpSocket::disconnected, this, &GameServer::onDisconnected);
+	connect(socket, &QTcpSocket::readyRead, this, &GameServer::onReadyRead); // cand primesc date
+	connect(socket, &QTcpSocket::disconnected, this, &GameServer::onDisconnected); // cand pleaca jucatorul
 
     m_clients.push_back(socket);
-    std::println("[SERVER] Client connected. Waiting for SET_NAME...");
+    std::println(">>> [SERVER] Client connected. Waiting for SET_NAME...");
 }
 
 void GameServer::sendIdentity(QTcpSocket* client, int index, const std::string& name) {
@@ -47,34 +47,31 @@ void GameServer::sendIdentity(QTcpSocket* client, int index, const std::string& 
     client->flush();
 }
 
-void GameServer::onReadyRead() {
+void GameServer::onReadyRead() { // logica de primire date
     QTcpSocket* senderSocket = qobject_cast<QTcpSocket*>(sender());
     if (!senderSocket) return;
 
-    // --- FIX AICI: Citim linie cu linie ---
-    while (senderSocket->canReadLine()) {
+	while (senderSocket->canReadLine()) { // citesc linie cu linie
         QByteArray data = senderSocket->readLine();
 
-        // Procesam JSON-ul liniei curente
         try {
             json actionJson = json::parse(data.toStdString());
             processClientAction(senderSocket, actionJson);
         } catch (...) {
-            std::cerr << "[SERVER] Invalid JSON received or merged packet." << std::endl;
+            std::cerr << ">>> [SERVER] Invalid JSON received or merged packet." << std::endl;
         }
     }
 }
 
-void GameServer::onDisconnected() {
+void GameServer::onDisconnected() { // logica de deconectare
     QTcpSocket* disconnectedSocket = qobject_cast<QTcpSocket*>(sender());
     if (!disconnectedSocket) return;
 
-    std::cout << "[SERVER] A player disconnected." << std::endl;
+    std::cout << ">>> [SERVER] A player disconnected." << std::endl;
 
-    // Cautam celalalt jucator ca sa il anuntam
+	// contactez celalalt jucator
     for (QTcpSocket* client : m_clients) {
         if (client != disconnectedSocket) {
-            // Construim un mesaj de eroare/game over
             json j;
             j["type"] = "ERROR";
             j["message"] = "Opponent disconnected. You win by forfeit!";
@@ -90,17 +87,16 @@ void GameServer::onDisconnected() {
     m_playerIndices.erase(disconnectedSocket);
     disconnectedSocket->deleteLater();
 
-    // Daca nu mai e nimeni, putem reseta jocul serverului
     if (m_clients.empty()) {
-        std::cout << "[SERVER] All players gone. Resetting game logic." << std::endl;
-        m_gameStarted = false; // Resetam flag-ul
+        std::cout << ">>> [SERVER] All players gone. Resetting game logic." << std::endl;
+        m_gameStarted = false;
         m_playerNames.clear();
         m_playerIndices.clear();
         m_gameController.reset();
     }
 }
 
-void GameServer::broadcastGameState() {
+void GameServer::broadcastGameState() { // starea jocului catre clienti
     json stateJson;
     stateJson["type"] = "UPDATE";
     to_json(stateJson["state"], m_gameController.getGameState());
@@ -114,10 +110,10 @@ void GameServer::broadcastGameState() {
     }
 }
 
-void GameServer::processClientAction(QTcpSocket* sender, const json& j) {
+void GameServer::processClientAction(QTcpSocket* sender, const json& j) { // procesare actiuni
     
     if (m_gameController.isGameOver()) {
-        std::cout << "[SERVER] Action ignored. Game is already OVER." << std::endl;
+        std::cout << ">>> [SERVER] Action ignored. Game is already OVER." << std::endl;
         return;
     }
 
@@ -127,9 +123,9 @@ void GameServer::processClientAction(QTcpSocket* sender, const json& j) {
         if (name.empty()) name = "Unknown";
 
         m_playerNames[sender] = name;
-        std::cout << "[SERVER] Client set name to: " << name << std::endl;
+        std::cout << ">>> [SERVER] Client set name to: " << name << std::endl;
 
-        tryStartGame(); // Incercam sa pornim
+        tryStartGame();
         return;
     }
 
@@ -140,7 +136,7 @@ void GameServer::processClientAction(QTcpSocket* sender, const json& j) {
 
     if (m_gameController.getGameState().getCurrentPhase() != GamePhase::DRAFTING) {
         if (senderIndex != currentPlayerIndex) {
-            std::cout << "[SERVER] Ignored action from Player " << senderIndex << " (Not their turn)" << std::endl;
+            std::cout << ">>> [SERVER] Ignored action from Player " << senderIndex << " (Not their turn)" << std::endl;
             return;
         }
     }
@@ -151,20 +147,18 @@ void GameServer::processClientAction(QTcpSocket* sender, const json& j) {
         int wonderIdx = j.value("wonderIndex", -1);
         PlayerAction action = static_cast<PlayerAction>(actionInt);
 
-        std::cout << "[SERVER] Processing ACTION from Player " << senderIndex << std::endl;
+        std::cout << ">>> [SERVER] Processing ACTION from Player " << senderIndex << std::endl;
 
         bool success = m_gameController.executeAction(cardIdx, action, wonderIdx);
 
         if (success) {
             if (m_gameController.isGameOver()) {
                 auto winnerIdx = m_gameController.getGameState().getWinnerIndex();
-                std::cout << "[SERVER] Game Over! Winner: "
+                std::cout << ">>> [SERVER] Game Over! Winner: "
                     << (winnerIdx.has_value() ? std::to_string(winnerIdx.value()) : "Draw")
                     << std::endl;
             }
             broadcastGameState();
-        } else {
-            // Optional: Trimite mesaj de eroare inapoi
         }
     }
     else if (type == "PICK_WONDER") {
@@ -178,22 +172,20 @@ void GameServer::processClientAction(QTcpSocket* sender, const json& j) {
 }
 
 void GameServer::tryStartGame() {
-    // Conditie: 2 clienti, ambele nume setate, jocul nu ruleaza deja
+	// conditie: 2 jucatori cu nume setat si joc neinceput inca
     if (m_clients.size() == 2 && m_playerNames.size() == 2 && !m_gameStarted) {
         m_gameStarted = true;
 
-        // Ordinea clientilor din vector dicteaza cine e P1 si cine e P2
         QTcpSocket* socketP1 = m_clients[0];
         QTcpSocket* socketP2 = m_clients[1];
 
-        // Mapam indecsii
         m_playerIndices[socketP1] = 0;
         m_playerIndices[socketP2] = 1;
 
         std::string name1 = m_playerNames[socketP1];
         std::string name2 = m_playerNames[socketP2];
 
-        std::cout << "[SERVER] Starting Game: " << name1 << " vs " << name2 << std::endl;
+        std::cout << ">>> [SERVER] Starting Game: " << name1 << " VS " << name2 << std::endl;
 
         m_gameController.startNewGame(name1, name2);
 

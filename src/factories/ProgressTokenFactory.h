@@ -2,7 +2,9 @@
 #include <vector>
 #include <memory>
 #include "ProgressToken.h"
-class ProgressTokenFactory
+#include "CoreExport.h"
+
+class CORE_API ProgressTokenFactory
 {
 private:
 	std::unique_ptr<ProgressToken> createToken(ProgressTokenType type);

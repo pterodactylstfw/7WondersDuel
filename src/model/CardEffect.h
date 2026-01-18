@@ -40,9 +40,9 @@ private:
 	std::optional<bool> m_grantsDiscardedCard;
 
 	std::optional<bool> m_strategyEffect;
-	std::optional<bool> m_masonryEffect;      
-	std::optional<bool> m_architectureEffect; 
-	std::optional<bool> m_economyEffect;      
+	std::optional<bool> m_masonryEffect;
+	std::optional<bool> m_architectureEffect;
+	std::optional<bool> m_economyEffect;
 	std::optional<bool> m_mathematicsEffect;
 	std::optional<bool> m_theologyEffect;
 	std::optional<bool> m_urbanismEffect;
@@ -115,7 +115,7 @@ public:
 
 	std::optional<int> getOpponentLosesCoins() const;
 	std::optional<CardColor> getOpponentLosesCard() const;
-	
+
 	bool getGrantsDiscardedCard() const;
 
 	bool hasStrategyEffect() const;

@@ -1,5 +1,4 @@
 #include "Player.h"
-#include "Player.h"
 
 Player::Player(const std::string& playerName):
 	m_name(playerName),m_isAI(false), m_coins(GameConstants::STARTING_COINS), m_militaryShields(0), m_victoryPoints(0) { }
@@ -54,7 +53,7 @@ void Player::removeCoins(int amount)
 
 void Player::addMilitaryShields(int shields)
 {
-	m_militaryShields += shields;
+	m_militaryShields += static_cast<uint8_t>(shields);
 }
 
 bool Player::addScientificSymbol(ScientificSymbol symbol)
@@ -66,7 +65,7 @@ bool Player::addScientificSymbol(ScientificSymbol symbol)
 
 void Player::addVictoryPoints(int points)
 {
-	m_victoryPoints += points;
+	m_victoryPoints += static_cast<uint8_t>(points);
 }
 
 void Player::addTradeDiscount(ResourceType type, int amount)
@@ -155,12 +154,10 @@ int Player::calculateTotalCost(const Cost& cost, const Player& opponent) const
 
 bool Player::hasChainForCard(const Card& card) const
 {
-	for (const auto& ownedCard : m_constructedCards)
-	{
-		if (ownedCard!=nullptr && card.canBeBuiltFreelyAfter(*ownedCard))
-			return true;
-	}
-	return false;
+	return std::any_of(m_constructedCards.begin(), m_constructedCards.end(),
+		[&card](const auto& ownedCard) {
+			return ownedCard && card.canBeBuiltFreelyAfter(*ownedCard);
+		});
 }
 
 bool Player::canBuildCard(const Card& card, const Player& opponent) const
@@ -172,7 +169,7 @@ bool Player::canBuildCard(const Card& card, const Player& opponent) const
 	return false;
 }
 
-int Player::getVictoryPoints() const {
+uint8_t Player::getVictoryPoints() const {
 	return m_victoryPoints;
 }
 
@@ -301,7 +298,7 @@ bool Player::hasScientificVictory() const
 	return m_scientificSymbols.size() >= GameConstants::SCIENTIFIC_SUPREMACY_SYMBOLS;
 }
 
-int Player::getMilitaryShields() const
+uint8_t Player::getMilitaryShields() const
 {
 	return m_militaryShields;
 }
@@ -318,11 +315,10 @@ std::vector<std::unique_ptr<Card>>& Player::getConstructedCards()
 
 int Player::getCardPerColor(const CardColor& color)
 {
-	int count = 0;
-	for (const auto& card : m_constructedCards)
-		if (card->getColor() == color)
-			count++;
-	return count;
+	return static_cast<int>(std::count_if(m_constructedCards.begin(), m_constructedCards.end(),
+		[&color](const auto& cardPtr) {
+			return cardPtr && cardPtr->getColor() == color;
+		}));
 }
 
 std::array<std::unique_ptr<Wonder>, 4>& Player::getWonders()
@@ -382,8 +378,8 @@ std::unique_ptr<Card> Player::removeCard(const Card& card)
 }
 
 bool Player::hasProgressToken(ProgressTokenType type) const {
-	for (const auto& token : m_progressTokens) {
-		if (token->getType() == type) return true;
-	}
-	return false;
+	return std::any_of(m_progressTokens.begin(), m_progressTokens.end(),
+		[type](const auto& token) {
+			return token && token->getType() == type;
+		});
 }

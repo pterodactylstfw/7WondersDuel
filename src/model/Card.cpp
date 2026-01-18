@@ -1,7 +1,7 @@
 #include "Card.h"
 
 Card::Card(std::string_view name, CardColor color, uint8_t age, Cost cost, CardEffect effect, std::string imagePath,
-           std::optional<std::string> freeChainFrom, std::optional<std::string> providesChainTo) :
+	std::optional<std::string> freeChainFrom, std::optional<std::string> providesChainTo) :
 	m_name(name),
 	m_color(color),
 	m_age(age),
@@ -12,7 +12,7 @@ Card::Card(std::string_view name, CardColor color, uint8_t age, Cost cost, CardE
 	m_providesChainTo(std::move(providesChainTo)) {
 }
 
-Card::Card(std::string_view name, CardColor color, uint8_t age, Cost cost, CardEffect effect, std::string imagePath):
+Card::Card(std::string_view name, CardColor color, uint8_t age, Cost cost, CardEffect effect, std::string imagePath) :
 	Card(name, color, age, std::move(cost), std::move(effect), imagePath, std::nullopt, std::nullopt) {
 }
 

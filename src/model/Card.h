@@ -24,7 +24,7 @@ private:
 	std::optional<std::string> m_providesChainTo; // Cardul pentru care aceasta carte ofera lant liber (daca exista)
 
 public:
-	Card() = default; // default constructor pentru json - pana la revizuire ulterioara - sa vad cum pot sa fac altfel
+	Card() = default;
 
 	Card(std::string_view name, CardColor color, uint8_t age, Cost cost, CardEffect effect, std::string imagePath,
 		std::optional<std::string> freeChainFrom, std::optional<std::string> providesChainTo);
@@ -52,9 +52,6 @@ public:
 
 	bool canBeBuiltFreelyAfter(const Card& previousCard) const;
 	bool canBuildFreeChainTo(const Card& nextCard) const;
-
-	void applyEffect(); // To be defined later
-	std::string getEffectDescription() const; // To be defined later
 
 	std::string displayCardInfo() const;
 

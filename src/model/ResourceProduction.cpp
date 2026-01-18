@@ -21,13 +21,13 @@ ResourceProduction& ResourceProduction::operator=(ResourceProduction&& other) no
 ResourceProduction& ResourceProduction::addFixedResource(ResourceType type, int quantity)
 {
 	this->m_fixedResources[type] += quantity;
-	return *this; 
+	return *this;
 }
 
 ResourceProduction& ResourceProduction::addChoice(const std::vector<ResourceType>& options)
 {
 	this->m_choices.push_back(options);
-	return *this; 
+	return *this;
 }
 
 const std::map<ResourceType, int>& ResourceProduction::getFixedResources() const
@@ -74,7 +74,7 @@ std::string ResourceProduction::getDescription() const
 		if (!firstElement) {
 			ss << ", ";
 		}
-		ss << pair.second << " " << resourceToString(pair.first); 
+		ss << pair.second << " " << resourceToString(pair.first);
 		firstElement = false;
 	}
 
@@ -86,7 +86,7 @@ std::string ResourceProduction::getDescription() const
 		for (int i = 0; i < choiceGroup.size(); i++) {
 			ss << resourceToString(choiceGroup[i]);
 			if (i < choiceGroup.size() - 1) {
-				ss << "/"; 
+				ss << "/";
 			}
 		}
 		firstElement = false;

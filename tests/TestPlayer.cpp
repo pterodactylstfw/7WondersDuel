@@ -75,7 +75,7 @@ TEST(PlayerTests, TradingCostCalculation) {
 	Player me("Me");
 	Player opponent("Opponent");
 
-	std::map<ResourceType, int> req;
+	std::map<ResourceType, uint8_t> req;
 	req[ResourceType::WOOD] = 1;
 	Cost woodCost(0, req);
 
@@ -94,7 +94,7 @@ TEST(PlayerTests, CanAfford_WithTrading) {
 	Player p("Buyer");
 	Player opponent("Seller");
 
-	std::map<ResourceType, int> req;
+	std::map<ResourceType, uint8_t> req;
 	req[ResourceType::WOOD] = 1;
 	Cost costOfCard(0, req);
 

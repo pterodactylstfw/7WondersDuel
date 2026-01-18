@@ -15,8 +15,10 @@ public:
     }
 
     void onStateUpdated() override {
-        // TODO
+		// serverul nu actualizeaza interfata grafica
     }
+
+    // serverul nu alege 
 
     int askInt(int, int, const std::string&) override {
         return 0;

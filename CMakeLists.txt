@@ -14,16 +14,17 @@ set(CMAKE_AUTOUIC ON)
 # config path qt si tip gui
 
 if(WIN32)
-    # --- WINDOWS ---
-    set(CMAKE_PREFIX_PATH "C:/Qt/6.10.1/msvc2022_64")
-    # Flag pt a ascunde consola pe Windows
     set(GUI_TYPE WIN32)
-
+    # Setam doar daca nu e setat deja de utilizator/IDE
+    if(NOT DEFINED CMAKE_PREFIX_PATH)
+        set(CMAKE_PREFIX_PATH "C:/Qt/6.10.1/msvc2022_64") 
+    endif()
 elseif(APPLE)
-    # --- macOS ---
-    set(CMAKE_PREFIX_PATH "/Users/pterodactylstfw/Qt/6.10.1/macos")
-    # flag pt creare .app pe mac
     set(GUI_TYPE MACOSX_BUNDLE)
+    # Setam doar daca nu e setat deja
+    if(NOT DEFINED CMAKE_PREFIX_PATH)
+        set(CMAKE_PREFIX_PATH "/Users/pterodactylstfw/Qt/6.10.1/macos") # hardcodat pt mac-ul meu
+    endif()
 
 else()
     message(WARNING "OS necunoscut. Qt Path trebuie setat manual.")

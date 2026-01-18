@@ -11,11 +11,6 @@
 #include "JsonUtils.h"
 #include "CoreExport.h"
 
-//class Player;
-//class Card;
-//class Wonder; de revizuit cu forward declarations
-
-
 struct CardNode {
 	int m_index;// index in m_currentAgeCards
 	bool m_isFaceUp; // daca e cu fata in suseUp;
@@ -50,7 +45,6 @@ private:
 	std::array<bool, 4> m_militaryTokens = { true, true, true, true };
 
 	bool m_gameOver;
-	//std::optional<VictoryType> m_victoryType;
 
 	GamePhase m_currentPhase = GamePhase::DRAFTING;
 	std::vector<std::unique_ptr<Wonder>> m_draftedWonders;

@@ -35,17 +35,15 @@ MainWindow::MainWindow(QWidget* parent)
 
 	ui->labelMilitaryBoard->setParent(ui->militaryPanel);
 	ui->labelMilitaryBoard->setPixmap(QPixmap(":/assets/military_board.png"));
-	ui->labelMilitaryBoard->lower(); // O trimitem în spate
-	ui->labelMilitaryBoard->show();  // Ne asigurăm că e vizibilă
+	ui->labelMilitaryBoard->lower();
+	ui->labelMilitaryBoard->show();
 
-	// 3. Configurăm PIONUL
-	ui->labelMilitaryLead->setParent(ui->militaryPanel); // Pionul stă pe Panel, nu pe tablă
+	ui->labelMilitaryLead->setParent(ui->militaryPanel);
 	ui->labelMilitaryLead->setPixmap(QPixmap(":/assets/military_lead.png"));
-	ui->labelMilitaryLead->raise(); // Pionul stă deasupra la tot
+	ui->labelMilitaryLead->raise();
 	ui->labelMilitaryLead->show();
 
 	for (int i = 0; i < 4; ++i) {
-		// Le punem ÎN INTERIORUL imaginii de fundal. Așa vor fi mereu deasupra ei.
 		m_militaryTokens[i] = new QLabel(ui->labelMilitaryBoard);
 
 		m_militaryTokens[i]->setFixedSize(40, 40);
@@ -162,6 +160,16 @@ MainWindow::MainWindow(QWidget* parent)
 	this->setWindowTitle("7 Wonders Duel");
 }
 
+const GameState& MainWindow::getCurrentGameState() const {
+	if (m_isOnlineMode) {
+		if (m_networkState)
+			return *m_networkState;
+		return m_game.getGameState();
+	}
+	else
+		return m_game.getGameState();
+}
+
 void MainWindow::onMessage(const std::string& message) {
 	if (m_game.isGameOver() || (m_networkState && m_networkState->isGameOver())) {
 		return;
@@ -207,9 +215,6 @@ void MainWindow::onStateUpdated() {
 
 	updateGameUI();
 	drawProgressTokens();
-
-	//updatePlayerArea(state.getCurrentPlayer(), ui->playerWonders, ui->playerCards);
-	//updatePlayerArea(state.getOpponent(), ui->opponentWonders, ui->opponentCards);
 
 	if (state.getCurrentPhase() == GamePhase::DRAFTING) {
 		drawDraftBoard();
@@ -260,7 +265,23 @@ ResourceType MainWindow::askResourceSelection(const std::vector<ResourceType>& o
 }
 
 int MainWindow::askWonderSelection(const std::array<std::unique_ptr<Wonder>, GameConstants::WONDERS_PER_PLAYER>& wonders, const std::string& playerName) {
-	if (m_myWonderButtons.empty()) return -1;
+
+	QWidget* targetContainer = nullptr;
+	QString qPlayerName = QString::fromStdString(playerName);
+
+	if (qPlayerName == ui->labelCurrentPlayerName->text()) {
+		targetContainer = ui->playerWonders; // jucatorul de jos
+	}
+	else if (qPlayerName == ui->labelOpponentName->text()) {
+		targetContainer = ui->opponentWonders; // jucatorul de sus
+	}
+	else {
+		return -1;
+	}
+
+	// gasim butoanele din container
+	QList<QPushButton*> buttons = targetContainer->findChildren<QPushButton*>();
+	if (buttons.empty()) return -1;
 
 	const auto& state = getCurrentGameState();
 	const Player& me = state.getCurrentPlayer();
@@ -270,61 +291,72 @@ int MainWindow::askWonderSelection(const std::array<std::unique_ptr<Wonder>, Gam
 	int selectedIndex = -1;
 	std::vector<QMetaObject::Connection> connections;
 
-
 	QString originalText = ui->label->text();
-	ui->label->setText("SELECT A WONDER TO BUILD (Click on the image)");
+	ui->label->setText(QString::fromStdString(playerName) + ", SELECT A WONDER TO BUILD!");
 	ui->label->setStyleSheet("color: orange; font-weight: bold;");
 
-	for (size_t i = 0; i < m_myWonderButtons.size(); ++i) {
-		QPushButton* btn = m_myWonderButtons[i];
+	int validOptionsCount = 0;
 
-		if (btn && wonders[i] && !wonders[i]->isBuilt()) {
+	for (QPushButton* btn : buttons) {
+		bool indexOk = false;
+		int i = btn->property("wonderIndex").toInt(&indexOk);
 
-			// --- VERIFICARE COST ---
+		if (!indexOk || i < 0 || i >= wonders.size()) continue;
+
+		if (wonders[i] && !wonders[i]->isBuilt()) {
 			int totalCost = me.calculateTotalCost(wonders[i]->getCost(), opp);
 			bool canAfford = (me.getCoins() >= totalCost);
 
 			if (canAfford) {
-				// VERDE (Construibila)
+				// daca se poate construi - verde
 				btn->setStyleSheet("border: 3px solid #00FF00; border-radius: 5px;");
 				btn->setCursor(Qt::PointingHandCursor);
 				btn->setEnabled(true);
 
+				validOptionsCount++;
+
 				auto conn = connect(btn, &QPushButton::clicked, [&, i]() {
-					selectedIndex = static_cast<int>(i);
+					selectedIndex = i;
 					loop.quit();
 					});
 				connections.push_back(conn);
 			}
 			else {
-				// ROSU (Nu ai bani) - O facem semi-transparenta si rosie
+				// daca nu se poate construi - rosu
 				btn->setStyleSheet("border: 2px solid red; opacity: 0.7; background-color: rgba(50,0,0,100);");
 				btn->setCursor(Qt::ForbiddenCursor);
-				// O lasam dezactivata ca sa nu poata da click
-				// Sau o lasi activa si dai mesaj de eroare, dar e mai bine sa nu poata da click.
-				// Daca vrei click -> mesaj, pune connect si acolo.
-				// Aici o dezactivez:
-				// btn->setEnabled(false);
-
-				// Dar tooltip-ul ramane util
+				btn->setEnabled(false);
 				btn->setToolTip(QString("Not enough coins! Cost: %1").arg(totalCost));
 			}
 		}
-		else if (btn) {
-			// Minuni deja construite
+		else {
+			// minuni construite - dezactivate
 			btn->setDisabled(true);
 			btn->setStyleSheet("opacity: 0.3; background-color: rgba(0,0,0,100);");
 		}
 	}
 
+	if (validOptionsCount == 0) {
+		QMessageBox::information(this, "Cannot Build Wonder",
+			"You don't have enough resources or coins to build any of your Wonders right now.");
+
+		ui->label->setText(originalText);
+		ui->label->setStyleSheet("");
+
+		for (auto conn : connections) disconnect(conn);
+
+		return -1;
+	}
+
 	loop.exec();
 
+	// curatenie
 	for (auto conn : connections) disconnect(conn);
-
 	ui->label->setText(originalText);
 	ui->label->setStyleSheet("");
 
 	updatePlayerArea(getCurrentGameState().getCurrentPlayer(), ui->playerWonders, ui->playerCards);
+	updatePlayerArea(getCurrentGameState().getOpponent(), ui->opponentWonders, ui->opponentCards);
 
 	return selectedIndex;
 }
@@ -518,7 +550,7 @@ void MainWindow::onBtnStartClicked()
 			}
 
 			bbox->button(QDialogButtonBox::Ok)->setEnabled(nameOk && ipOk);
-		};
+			};
 
 		auto updateDlg = [&]() {
 			if (rbHost->isChecked()) {
@@ -541,7 +573,7 @@ void MainWindow::onBtnStartClicked()
 				lblMyIP->hide();
 			}
 			validateInputs();
-		};
+			};
 
 		connect(rbHost, &QRadioButton::toggled, &netDlg, updateDlg);
 		connect(editName, &QLineEdit::textChanged, validateInputs);
@@ -659,17 +691,6 @@ void MainWindow::onBtnLoadClicked()
 
 void MainWindow::onBtnExitClicked() {
 	QApplication::quit();
-}
-
-
-const GameState& MainWindow::getCurrentGameState() const {
-	if (m_isOnlineMode) {
-		if (m_networkState)
-			return *m_networkState;
-		return m_game.getGameState();
-	}
-	else
-		return m_game.getGameState();
 }
 
 void MainWindow::onBtnHintClicked() {
@@ -810,11 +831,11 @@ void MainWindow::fillWondersArea(const Player& player, QWidget* container, int w
 		const auto& wonder = wonders[i];
 
 		if (!wonder) {
-			if (isInteractive) m_myWonderButtons.push_back(nullptr);
 			continue;
 		}
 
 		QPushButton* btn = new QPushButton(container);
+		btn->setProperty("wonderIndex", static_cast<int>(i));
 		btn->setFixedSize(width, height);
 
 		QString imgPath = QString::fromStdString(wonder->getImagePath());
@@ -832,11 +853,11 @@ void MainWindow::fillWondersArea(const Player& player, QWidget* container, int w
 		if (wonder->isBuilt()) {
 			btn->setStyleSheet(
 				"QPushButton { "
-				"  border: 4px solid #FFD700; "      // Gold Border
+				"  border: 4px solid #FFD700; "
 				"  background-color: black; "
 				"  border-radius: 6px; "
 				"}"
-				"QPushButton:hover { border: 4px solid white; }" // Hover effect
+				"QPushButton:hover { border: 4px solid white; }"
 			);
 			btn->setToolTip("BUILT: " + QString::fromStdString(wonder->getDescription()));
 		}
@@ -853,10 +874,6 @@ void MainWindow::fillWondersArea(const Player& player, QWidget* container, int w
 				"\nEFFECT: " + QString::fromStdString(wonder->getDescription()));
 		}
 		container->layout()->addWidget(btn);
-
-		if (isInteractive) {
-			m_myWonderButtons.push_back(btn);
-		}
 	}
 
 	const auto& builtWonders = player.getConstructedWonders();
@@ -1068,11 +1085,10 @@ void MainWindow::setupNetworkConnections() {
 		ui->stackedWidget->update();
 		ui->cardContainer->update();
 		QTimer::singleShot(100, this, [this]() {
-			setupLayouts();     // Calculam coordonatele pe baza marimii actuale
-			updateGameUI();     // Desenam cartile si minunile
+			setupLayouts();
+			updateGameUI();
 			});
 
-		//QApplication::processEvents();
 		ui->actionSave->setEnabled(true);
 		});
 
@@ -1097,7 +1113,7 @@ void MainWindow::setupNetworkConnections() {
 		onStateUpdated();
 		});
 
-	// Cand primim eroare (de ex. "Opponent disconnected")
+	// Cand primim eroare
 	connect(m_netClient, &NetworkClient::errorOccurred, this, [this](const QString& msg) {
 		QMessageBox::critical(this, "Connection Error", msg);
 
@@ -1176,10 +1192,7 @@ void MainWindow::showActionDialog(int cardIndex)
 		btnWonder->setStyleSheet("background-color: #FF9800; color: white; padding: 10px;");
 		layout->addWidget(btnWonder);
 
-		// Variabila pentru a stoca alegerea utilizatorului
-		// 0 = Cancel, 1 = Build, 2 = Discard, 3 = Wonder
 		int userChoice = 0;
-
 
 		connect(btnBuild, &QPushButton::clicked, [&]() {
 			userChoice = 1;
@@ -1198,8 +1211,6 @@ void MainWindow::showActionDialog(int cardIndex)
 
 		dialog.exec();
 
-
-		// Daca userul a inchis fereastra din X, userChoice ramane 0 -> iesim din functie
 		if (userChoice == 0) return;
 
 		// CAZ 1: CONSTRUCT BUILDING
@@ -1267,7 +1278,7 @@ void MainWindow::showActionDialog(int cardIndex)
 				shouldReopenDialog = true;
 			}
 		}
-	} // End While
+	}
 
 	if (actionTaken && !m_isOnlineMode) {
 		onStateUpdated();
@@ -1384,20 +1395,16 @@ void MainWindow::showGameOverScreen()
 	bool p1Winner = (winnerIndex == 0);
 	bool p2Winner = (winnerIndex == 1);
 
-	// Adăugăm widget-ul pentru Player 1
 	playersLayout->addWidget(createPlayerEndGameWidget(player1, score1, p1Winner));
 
-	// Label VS
 	QLabel* vsLbl = new QLabel("VS");
 	vsLbl->setStyleSheet("font-size: 24px; font-weight: bold; color: gray;");
 	playersLayout->addWidget(vsLbl);
 
-	// Adăugăm widget-ul pentru Player 2
 	playersLayout->addWidget(createPlayerEndGameWidget(player2, score2, p2Winner));
 
 	mainLayout->addLayout(playersLayout);
 
-	// 6. Buton de "Back to Menu"
 	QPushButton* btnMenu = new QPushButton("Back to Menu");
 	btnMenu->setFixedSize(200, 50);
 	btnMenu->setStyleSheet(
@@ -1719,20 +1726,17 @@ void MainWindow::updateGameUI()
 		}
 	}
 	else {
-		// OFFLINE: Vrei ca Player 1 sa fie mereu jos, Player 2 sus?
-		// Atunci lasam bottomIndex = 0, topIndex = 1.
-		// Daca vrei ca jucatorul curent sa fie jos (Hotseat), folosesti codul vechi.
-		// Dar ai zis ca vrei FIX: P1 Jos, P2 Sus.
+		// OFFLINE: Vrei ca Player 1 sa fie mereu jos, Player 2 sus
 		bottomIndex = 0;
 		topIndex = 1;
 	}
 
-	// --- DESENARE JUCATOR JOS (Main) ---
-	updatePlayerPanel(*players[bottomIndex], false); // false = Main Panel
+	// desenare jucator jos
+	updatePlayerPanel(*players[bottomIndex], false);
 	updatePlayerArea(*players[bottomIndex], ui->playerWonders, ui->playerCards);
 
-	// --- DESENARE JUCATOR SUS (Opponent) ---
-	updatePlayerPanel(*players[topIndex], true); // true = Opponent Panel
+	// desenare jucator sus
+	updatePlayerPanel(*players[topIndex], true);
 	updatePlayerArea(*players[topIndex], ui->opponentWonders, ui->opponentCards);
 
 	updateMilitaryTrack();
@@ -1997,9 +2001,9 @@ void MainWindow::setupLayouts()
 		m_age3Layout[5 + i] = { startX_A3 + i * stepX_A3, startY_A3 + 4 * overlap_A3 };
 
 	// Randul 4 (mijloc - 2 carti)
-	if (true) { 
+	if (true) {
 		int yPos = startY_A3 + 3 * overlap_A3;
-		m_age3Layout[9] = { startX_A3 + (stepX_A3 / 2), yPos };              
+		m_age3Layout[9] = { startX_A3 + (stepX_A3 / 2), yPos };
 		m_age3Layout[10] = { startX_A3 + (stepX_A3 / 2) + 2 * stepX_A3, yPos };
 	}
 
@@ -2084,7 +2088,7 @@ void MainWindow::updateCardStructures()
 		cardH = pyramidTotalHeight / 3.8; // carti mai mici pt age3
 	}
 	else {
-		cardH = pyramidTotalHeight / 3;  
+		cardH = pyramidTotalHeight / 3;
 	}
 	const int cardW = cardH / 1.5;
 

@@ -127,7 +127,7 @@ void ConsoleUI::displayPyramid() const
 				<< colorCode << std::left << std::setw(20) << card.getName()<< Colors::RESET
 				<< std::left << std::setw(20) << card.getCost().toShortString()
 				<< card.getEffect().getDescription()
-				<< "\n"; // ramanem la cout pt ca e greu de aliniat cu println fara parametri optionali ai lui println - vezi documentatie
+				<< "\n";
 			foundAny = true;
 		}
 	}
@@ -537,7 +537,6 @@ void ConsoleUI::run()
 			}
 		}
 
-
 		while (gameIsRunning && !m_game.isGameOver())
 		{
 			displayGameState();
@@ -588,7 +587,6 @@ void ConsoleUI::run()
 			}
 		}
 
-
 		if (m_game.isGameOver()) {
 			// logica victorie
 			const auto& state = m_game.getGameState();
@@ -602,7 +600,6 @@ void ConsoleUI::run()
 			else
 				showVictoryScreen("Unknown...");
 		}
-
 	}
 }
 
@@ -617,8 +614,7 @@ void ConsoleUI::onError(const std::string& error) {
 }
 
 void ConsoleUI::onStateUpdated() {
-    // aici poate fi gol sau un simplu mesaj
-	// apelam displayGameState() in run loop explicit, previne afisare dubla
+    // ramane goala intentionat 
 }
 
 int ConsoleUI::askInt(int min, int max, const std::string& prompt) {

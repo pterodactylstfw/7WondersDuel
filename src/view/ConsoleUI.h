@@ -1,8 +1,10 @@
 #pragma once
 #include "GameController.h"
+
 class ConsoleUI: public IGameView
 {
 private:
+
 	GameController m_game;
 
 	void displayHeader() const;
@@ -44,6 +46,7 @@ private:
 	int askCardSelectionFromList(const std::vector<std::reference_wrapper<const Card>>& cards, const std::string& prompt) override;
 
 public:
+
 	ConsoleUI();
 	void run();
 

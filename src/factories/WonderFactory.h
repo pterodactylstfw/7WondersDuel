@@ -3,11 +3,9 @@
 #include <vector>
 #include <memory>
 #include "Wonder.h"
-#include "Cost.h"
-#include "CardEffect.h"
-#include "Constants.h"
+#include "CoreExport.h"
 
-class WonderFactory
+class CORE_API WonderFactory
 {
 public:
 	std::vector<std::unique_ptr<Wonder>> createWonders();

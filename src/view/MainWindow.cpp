@@ -1615,6 +1615,8 @@ void MainWindow::cleanupVisuals() // pentru resetarea UI-ului la iesirea din joc
 		m_btnHint->hide();
 	}
 
+	ui->actionSave->setEnabled(false);
+
 	if (ui->playerWonders) qDeleteAll(ui->playerWonders->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly));
 	if (ui->playerCards) qDeleteAll(ui->playerCards->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly));
 

@@ -797,7 +797,7 @@ QMenu {
     <iconset theme="QIcon::ThemeIcon::ApplicationExit"/>
    </property>
    <property name="text">
-    <string>Exit to Main Menu</string>
+    <string>Quit</string>
    </property>
   </action>
   <action name="actionAbout">
